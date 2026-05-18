@@ -231,6 +231,19 @@ http://localhost:5173
 
 ---
 
+---
+
+# Development Status
+
+This project is currently under active development.
+
+Current focus:
+- Deployment setup
+- Environment configuration
+- Production database connection
+- Load report history
+- Frontend/backend production build support
+
 # Author
 
 Developed for logistics and dispatch operations management.
