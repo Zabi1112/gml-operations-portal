@@ -1,0 +1,78 @@
+.history-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.history-tabs button {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.history-tabs button.active {
+  background: #0b2545;
+  color: white;
+}
+
+.history-filters {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.history-filters input,
+.history-filters select {
+  padding: 11px;
+  border: 1px solid #c8d8ee;
+  border-radius: 8px;
+}
+
+.history-filters button {
+  border: none;
+  border-radius: 8px;
+  background: #0b2545;
+  color: white;
+  cursor: pointer;
+}
+
+.history-table {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.history-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5eaf2;
+  text-align: left;
+}
+
+.history-table button {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #0b2545;
+  color: white;
+  cursor: pointer;
+}
+
+.coming-soon {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+}

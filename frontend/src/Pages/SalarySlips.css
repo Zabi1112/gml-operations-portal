@@ -1,0 +1,68 @@
+.salary-form {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.salary-form input,
+.salary-form select {
+  padding: 11px;
+  border: 1px solid #c8d8ee;
+  border-radius: 8px;
+}
+
+.salary-form button {
+  background: #0b2545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+.salary-preview {
+  background: #edf2f9;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.salary-table {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.salary-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.salary-table th,
+.salary-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5eaf2;
+  text-align: left;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0b2545;
+}
+
+.form-group input[readonly],
+.form-group select:disabled {
+  background: #edf2f9;
+  color: #5a7295;
+  cursor: not-allowed;
+}

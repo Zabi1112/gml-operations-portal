@@ -1,0 +1,81 @@
+.dashboard {
+  min-height: 100vh;
+  display: flex;
+  font-family: Arial, sans-serif;
+  background: #edf2f9;
+}
+
+.sidebar {
+  width: 260px;
+  background: #0b2545;
+  color: white;
+  padding: 22px;
+}
+
+.sidebar-logo {
+  width: 160px;
+  background: white;
+  padding: 8px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.sidebar button {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar button:hover {
+  background: rgba(255,255,255,0.22);
+}
+
+.content {
+  flex: 1;
+  padding: 30px;
+}
+
+.topbar {
+  background: white;
+  padding: 18px 22px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.logout {
+  background: #d0021b;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+}
+.content {
+  position: relative;
+  overflow: hidden;
+}
+
+.content::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("/logo.jpeg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 650px auto;
+  opacity: 0.055;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.content > * {
+  position: relative;
+  z-index: 1;
+}

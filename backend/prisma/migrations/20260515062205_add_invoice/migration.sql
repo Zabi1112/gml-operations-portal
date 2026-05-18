@@ -1,0 +1,51 @@
+-- CreateTable
+CREATE TABLE "Invoice" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "driverId" INTEGER,
+    "driverName" TEXT NOT NULL,
+    "carrierName" TEXT,
+    "mcNumber" TEXT,
+    "dotNumber" TEXT,
+    "truckNumber" TEXT,
+    "trailer" TEXT,
+    "ownerName" TEXT,
+    "companyName" TEXT,
+    "address" TEXT,
+    "contactNumber" TEXT,
+    "invoiceNumber" TEXT,
+    "invoiceStart" DATETIME NOT NULL,
+    "invoiceEnd" DATETIME NOT NULL,
+    "dueDate" DATETIME,
+    "accountNumber" TEXT,
+    "accountTitle" TEXT,
+    "dispatchPercent" REAL NOT NULL DEFAULT 0,
+    "accountsFeeWeeks" REAL NOT NULL DEFAULT 0,
+    "accountsFeeRate" REAL NOT NULL DEFAULT 0,
+    "accountsFeeTotal" REAL NOT NULL DEFAULT 0,
+    "totalLoadAmount" REAL NOT NULL DEFAULT 0,
+    "totalDispatchAmount" REAL NOT NULL DEFAULT 0,
+    "grossAmount" REAL NOT NULL DEFAULT 0,
+    "discountAmount" REAL NOT NULL DEFAULT 0,
+    "referralBonus" REAL NOT NULL DEFAULT 0,
+    "fineAmount" REAL NOT NULL DEFAULT 0,
+    "fineReason" TEXT,
+    "previousInvoiceAmount" REAL NOT NULL DEFAULT 0,
+    "includePreviousInvoiceInNet" BOOLEAN NOT NULL DEFAULT false,
+    "netPayable" REAL NOT NULL DEFAULT 0,
+    "notes" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "InvoiceLoad" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "invoiceId" INTEGER NOT NULL,
+    "date" DATETIME NOT NULL,
+    "pickup" TEXT NOT NULL,
+    "dropoff" TEXT NOT NULL,
+    "loadAmount" REAL NOT NULL DEFAULT 0,
+    "dispatchPercent" REAL NOT NULL DEFAULT 0,
+    "dispatchAmount" REAL NOT NULL DEFAULT 0,
+    CONSTRAINT "InvoiceLoad_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);

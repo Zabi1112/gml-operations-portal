@@ -1,0 +1,79 @@
+.load-config,
+.load-mini-form {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.load-config {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.load-mini-form {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.load-mini-form h3 {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.load-config input,
+.load-config select,
+.load-mini-form input,
+.load-mini-form select {
+  padding: 11px;
+  border: 1px solid #c8d8ee;
+  border-radius: 8px;
+}
+
+.load-config button,
+.load-mini-form button {
+  background: #0b2545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.load-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.load-table {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.load-table h3 {
+  margin: 12px 0;
+}
+
+.load-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.load-table th,
+.load-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5eaf2;
+  text-align: left;
+}
+
+@media (max-width: 1000px) {
+  .load-config,
+  .load-mini-form,
+  .load-sections {
+    grid-template-columns: 1fr;
+  }
+}

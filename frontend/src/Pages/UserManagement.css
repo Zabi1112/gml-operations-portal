@@ -1,0 +1,54 @@
+.user-form {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.user-form input,
+.user-form select {
+  padding: 11px;
+  border: 1px solid #c8d8ee;
+  border-radius: 8px;
+}
+
+.user-form button {
+  background: #0b2545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+.user-table {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+}
+
+.user-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5eaf2;
+  text-align: left;
+}
+
+.user-table button {
+  margin-right: 8px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.user-table .danger {
+  background: #d0021b;
+  color: white;
+}

@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum BillingType {
+  PERCENTAGE
+  FIXED
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  role       UserRole @default(VIEWER)
+  employeeId Int?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Employee {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phone       String?
+  email       String?
+  cnic        String?
+  role        String   @default("Driver")
+  salaryType  String   @default("FIXED")
+  fixedSalary Float    @default(0)
+  commission  Float    @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Driver {
+  id           Int      @id @default(autoincrement())
+
+  name         String
+  phone        String?
+  email        String?
+
+  companyId    Int?
+  company      Company? @relation(fields: [companyId], references: [id])
+
+  truckId      Int?
+  truck        Truck?   @relation(fields: [truckId], references: [id])
+
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SalarySlip {
+  id                Int      @id @default(autoincrement())
+
+  employeeId         Int
+  employeeName       String
+  designation        String?
+  cnic               String?
+
+  salaryType         String   // COMMISSION or FIXED
+
+  periodStart        DateTime
+  periodEnd          DateTime
+
+  dispatchCompany    String?
+  dispatchAmountUSD  Float    @default(0)
+  commissionPercent  Float    @default(0)
+  employeeShareUSD   Float    @default(0)
+
+  usdRate            Float    @default(0)
+  fixedSalaryPKR     Float    @default(0)
+  grossSalaryPKR     Float    @default(0)
+
+  loanDeduction      Float    @default(0)
+  advanceDeduction   Float    @default(0)
+  otherDeduction     Float    @default(0)
+  bonus              Float    @default(0)
+
+  netSalaryPKR       Float    @default(0)
+
+  notes              String?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Invoice {
+  id                         Int         @id @default(autoincrement())
+
+  companyId                  Int?
+  companyName                String?
+  ownerName                  String?
+  mcNumber                   String?
+  dotNumber                  String?
+  address                    String?
+  contactNumber              String?
+  email                      String?
+
+  billingType                BillingType @default(PERCENTAGE)
+  dispatchPercent            Float       @default(0)
+  fixedMonthlyRate           Float       @default(0)
+
+  truckNumbers               String?
+  driverNames                String?
+
+  invoiceNumber              String?
+  invoiceStart               DateTime
+  invoiceEnd                 DateTime
+  dueDate                    DateTime?
+
+  accountNumber              String?
+  accountTitle               String?
+
+  accountsFeeWeeks           Float       @default(0)
+  accountsFeeRate            Float       @default(0)
+  accountsFeeTotal           Float       @default(0)
+
+  totalLoadAmount            Float       @default(0)
+  totalDispatchAmount        Float       @default(0)
+  fixedBillingAmount         Float       @default(0)
+  grossAmount                Float       @default(0)
+
+  discountAmount             Float       @default(0)
+  referralBonus              Float       @default(0)
+  fineAmount                 Float       @default(0)
+  fineReason                 String?
+
+  previousInvoiceAmount      Float       @default(0)
+  includePreviousInvoiceInNet Boolean    @default(false)
+
+  netPayable                 Float       @default(0)
+
+  notes                      String?
+
+  loads                      InvoiceLoad[]
+
+  createdAt                  DateTime    @default(now())
+  updatedAt                  DateTime    @updatedAt
+}
+
+model InvoiceLoad {
+  id              Int      @id @default(autoincrement())
+
+  invoiceId       Int
+  invoice         Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  date            DateTime
+  pickup          String
+  dropoff         String
+  loadAmount      Float    @default(0)
+
+  dispatchPercent Float    @default(0)
+  dispatchAmount  Float    @default(0)
+}
+
+model Company {
+  id               Int      @id @default(autoincrement())
+
+  companyName      String
+  ownerName        String?
+
+  mcNumber         String?
+  dotNumber        String?
+
+  address          String?
+  contactNumber    String?
+  email            String?
+
+  billingType      BillingType @default(PERCENTAGE)
+
+  dispatchPercent  Float    @default(0)
+
+  fixedMonthlyRate Float    @default(0)
+
+  accountNumber    String?
+  accountTitle     String?
+
+  notes            String?
+
+  trucks           Truck[]
+  drivers          Driver[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Truck {
+  id             Int      @id @default(autoincrement())
+
+  companyId      Int
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  truckNumber    String
+  trailerNumber  String?
+
+  notes          String?
+
+  drivers        Driver[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Load {
+  id              Int      @id @default(autoincrement())
+
+  companyId       Int?
+  truckId         Int?
+  driverId        Int?
+
+  companyName     String?
+  truckNumber     String?
+  driverName      String?
+
+  loadDate        DateTime
+  pickupDate      DateTime?
+  dropoffDate     DateTime?
+  pickup          String
+  dropoff         String
+
+  miles           Float    @default(0)
+  ratePerMile     Float    @default(0)
+  grossAmount     Float    @default(0)
+
+  loadAmount      Float    @default(0)
+  dispatchPercent Float    @default(0)
+  dispatchAmount  Float    @default(0)
+
+  source          String   @default("MANUAL")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model LoadReportReason {
+  id          Int      @id @default(autoincrement())
+
+  companyId   Int?
+  truckId     Int?
+
+  companyName String?
+  truckNumber String?
+
+  reasonDate  DateTime
+  reasonType  String
+  reasonNote  String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
