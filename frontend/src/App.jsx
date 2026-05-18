@@ -3,7 +3,6 @@ import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import UserManagement from "./pages/UserManagement.jsx";
 import Employees from "./pages/Employees.jsx";
-import Drivers from "./pages/Drivers.jsx";
 import SalarySlips from "./pages/SalarySlips.jsx";
 import History from "./pages/History.jsx";
 import Invoices from "./pages/Invoices.jsx";
@@ -27,11 +26,6 @@ function App() {
       <Route
         path="/employees"
         element={token ? <Employees /> : <Navigate to="/login" />}
-      />
-
-      <Route
-        path="/drivers"
-        element={token ? <Drivers /> : <Navigate to="/login" />}
       />
 
       <Route
