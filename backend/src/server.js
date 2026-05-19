@@ -21,6 +21,18 @@ app.get("/", (req, res) => {
   res.json({ message: "GML Portal Backend Running" });
 });
 
+console.log("ROUTES CHECK", {
+  authRoutes: typeof authRoutes,
+  userRoutes: typeof userRoutes,
+  employeeRoutes: typeof employeeRoutes,
+  driverRoutes: typeof driverRoutes,
+  salaryRoutes: typeof salaryRoutes,
+  invoiceRoutes: typeof invoiceRoutes,
+  companyRoutes: typeof companyRoutes,
+  truckRoutes: typeof truckRoutes,
+  loadRoutes: typeof loadRoutes
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/employees", employeeRoutes);
