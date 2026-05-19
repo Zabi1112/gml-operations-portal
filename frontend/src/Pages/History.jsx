@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
-import SalarySlipView from "../components/SalarySlipView";
-import InvoiceView from "../components/InvoiceView";
+import Layout from "../components/Layout.jsx";
+import SalarySlipView from "../components/SalarySlipView.jsx";
+import InvoiceView from "../components/InvoiceView.jsx";
 import "./History.css";
 
 const API = "http://localhost:5000/api";

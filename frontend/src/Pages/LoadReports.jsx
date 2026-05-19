@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
-import LoadReportView from "../components/LoadReportView";
+import Layout from "../components/Layout.jsx";
+import LoadReportView from "../components/LoadReportView.jsx";
 import "./LoadReports.css";
 
 const API = "http://localhost:5000/api";

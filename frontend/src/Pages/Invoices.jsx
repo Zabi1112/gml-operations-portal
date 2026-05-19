@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
-import InvoiceView from "../components/InvoiceView";
+import Layout from "../components/Layout.jsx";
+import InvoiceView from "../components/InvoiceView.jsx";
 import "./Invoices.css";
 
 const API = "http://localhost:5000/api";

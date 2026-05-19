@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
+import Layout from "../components/Layout.jsx";
 import "./Drivers.css";
 
 const API = "http://localhost:5000/api";
