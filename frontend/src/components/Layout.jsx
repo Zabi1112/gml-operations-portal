@@ -1,4 +1,4 @@
-import "../pages/Dashboard.css";
+import "../Pages/Dashboard.css";
 
 function Layout({ title, children }) {
   const user = JSON.parse(localStorage.getItem("user"));

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
-import SalarySlipView from "../components/SalarySlipView";
+import Layout from "../components/Layout.jsx";
+import SalarySlipView from "../components/SalarySlipView.jsx";
 import "./SalarySlips.css";
 
 const API = "http://localhost:5000/api";
