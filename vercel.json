@@ -10,5 +10,10 @@
       "routePrefix": "/api"
     }
   },
-  "buildCommand": "cd backend && npx prisma generate"
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
 }
