@@ -26,7 +26,7 @@ const calculateSlip = (data) => {
   }
 
   const netSalaryPKR =
-      grossSalaryPKR + bonus - loanDeduction - advanceDeduction - otherDeduction;
+    grossSalaryPKR + bonus - loanDeduction - advanceDeduction - otherDeduction;
 
   return {
     employeeShareUSD,
@@ -37,15 +37,36 @@ const calculateSlip = (data) => {
 
 const createSalarySlip = async (req, res) => {
   try {
+    const { branchId } = req.body;
+
+    if (!branchId) {
+      return res.status(400).json({ message: "branchId is required" });
+    }
+
+    const branch = await prisma.branch.findUnique({
+      where: { id: Number(branchId) }
+    });
+
+    if (!branch) {
+      return res.status(404).json({ message: "Branch not found" });
+    }
+
     const calculated = calculateSlip(req.body);
 
     const slip = await prisma.salarySlip.create({
       data: {
-        ...req.body,
+        branchId: Number(branchId),
         employeeId: Number(req.body.employeeId),
+        employeeName: req.body.employeeName || "",
+        designation: req.body.designation || null,
+        cnic: req.body.cnic || null,
+
+        salaryType: req.body.salaryType || "FIXED",
+
         periodStart: new Date(req.body.periodStart),
         periodEnd: new Date(req.body.periodEnd),
 
+        dispatchCompany: req.body.dispatchCompany || null,
         dispatchAmountUSD: Number(req.body.dispatchAmountUSD || 0),
         commissionPercent: Number(req.body.commissionPercent || 0),
         usdRate: Number(req.body.usdRate || 0),
@@ -58,7 +79,9 @@ const createSalarySlip = async (req, res) => {
 
         employeeShareUSD: calculated.employeeShareUSD,
         grossSalaryPKR: calculated.grossSalaryPKR,
-        netSalaryPKR: calculated.netSalaryPKR
+        netSalaryPKR: calculated.netSalaryPKR,
+
+        notes: req.body.notes || null
       }
     });
 
@@ -74,9 +97,13 @@ const createSalarySlip = async (req, res) => {
 
 const getSalarySlips = async (req, res) => {
   try {
-    const { employeeId, from, to } = req.query;
+    const { branchId, employeeId, from, to } = req.query;
 
     const where = {};
+
+    if (branchId) {
+      where.branchId = Number(branchId);
+    }
 
     if (req.user.role === "VIEWER") {
       if (!req.user.employeeId) {
@@ -96,7 +123,9 @@ const getSalarySlips = async (req, res) => {
       }
 
       if (to) {
-        where.periodStart.lte = new Date(to);
+        const endDate = new Date(to);
+        endDate.setHours(23, 59, 59, 999);
+        where.periodStart.lte = endDate;
       }
     }
 

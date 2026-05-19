@@ -2,8 +2,34 @@ const prisma = require("../utils/prisma");
 
 const createEmployee = async (req, res) => {
   try {
+    const { branchId } = req.body;
+
+    if (!branchId) {
+      return res.status(400).json({ message: "branchId is required" });
+    }
+
+    const branch = await prisma.branch.findUnique({
+      where: { id: Number(branchId) }
+    });
+
+    if (!branch) {
+      return res.status(404).json({ message: "Branch not found" });
+    }
+
     const employee = await prisma.employee.create({
-      data: req.body
+      data: {
+        branchId: Number(branchId),
+        name: req.body.name,
+        phone: req.body.phone || null,
+        email: req.body.email || null,
+        cnic: req.body.cnic || null,
+        role: req.body.role || "Staff",
+        salaryType: req.body.salaryType || "FIXED",
+        fixedSalary: Number(req.body.fixedSalary || 0),
+        commission: Number(req.body.commission || 0),
+        isActive:
+          req.body.isActive !== undefined ? Boolean(req.body.isActive) : true
+      }
     });
 
     res.status(201).json({
@@ -18,7 +44,19 @@ const createEmployee = async (req, res) => {
 
 const getEmployees = async (req, res) => {
   try {
+    const { branchId } = req.query;
+
+    const where = {};
+
+    if (branchId) {
+      where.branchId = Number(branchId);
+    }
+
     const employees = await prisma.employee.findMany({
+      where,
+      include: {
+        branch: true
+      },
       orderBy: { createdAt: "desc" }
     });
 
@@ -35,7 +73,25 @@ const updateEmployee = async (req, res) => {
 
     const employee = await prisma.employee.update({
       where: { id: Number(id) },
-      data: req.body
+      data: {
+        branchId: req.body.branchId ? Number(req.body.branchId) : undefined,
+        name: req.body.name,
+        phone: req.body.phone,
+        email: req.body.email,
+        cnic: req.body.cnic,
+        role: req.body.role,
+        salaryType: req.body.salaryType,
+        fixedSalary:
+          req.body.fixedSalary !== undefined
+            ? Number(req.body.fixedSalary)
+            : undefined,
+        commission:
+          req.body.commission !== undefined
+            ? Number(req.body.commission)
+            : undefined,
+        isActive:
+          req.body.isActive !== undefined ? Boolean(req.body.isActive) : undefined
+      }
     });
 
     res.json({

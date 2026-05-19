@@ -1,7 +1,25 @@
+import axios from "axios";
+import { API } from "../api";
 import "./LoadReportView.css";
 
 function LoadReportView({ report, onClose }) {
+  const token = localStorage.getItem("token");
+
+  const auth = {
+    headers: { Authorization: `Bearer ${token}` }
+  };
+
   const printReport = () => window.print();
+
+  const saveToHistory = async () => {
+    try {
+      await axios.post(`${API}/load-reports`, report, auth);
+      alert("Load report saved in history");
+    } catch (error) {
+      console.log(error);
+      alert(error.response?.data?.message || "Failed to save load report");
+    }
+  };
 
   const formatDate = (value) => {
     if (!value) return "-";
@@ -61,6 +79,7 @@ function LoadReportView({ report, onClose }) {
     <div className="report-modal">
       <div className="report-actions no-print">
         <button onClick={onClose}>Close</button>
+        <button onClick={saveToHistory}>Save to History</button>
         <button onClick={printReport}>Print / Save PDF</button>
       </div>
 
@@ -82,12 +101,30 @@ function LoadReportView({ report, onClose }) {
         </div>
 
         <div className="dlr-info">
-          <div><span>Company</span><strong>{report.companyName}</strong></div>
-          <div><span>Owner</span><strong>{report.ownerName || "-"}</strong></div>
-          <div><span>MC</span><strong>{report.mcNumber || "-"}</strong></div>
-          <div><span>DOT</span><strong>{report.dotNumber || "-"}</strong></div>
-          <div><span>Truck</span><strong>{report.truckNumber}</strong></div>
-          <div><span>Trailer</span><strong>{report.trailerNumber || "-"}</strong></div>
+          <div>
+            <span>Company</span>
+            <strong>{report.companyName}</strong>
+          </div>
+          <div>
+            <span>Owner</span>
+            <strong>{report.ownerName || "-"}</strong>
+          </div>
+          <div>
+            <span>MC</span>
+            <strong>{report.mcNumber || "-"}</strong>
+          </div>
+          <div>
+            <span>DOT</span>
+            <strong>{report.dotNumber || "-"}</strong>
+          </div>
+          <div>
+            <span>Truck</span>
+            <strong>{report.truckNumber}</strong>
+          </div>
+          <div>
+            <span>Trailer</span>
+            <strong>{report.trailerNumber || "-"}</strong>
+          </div>
         </div>
 
         <div className="dlr-grid">
@@ -125,7 +162,11 @@ function LoadReportView({ report, onClose }) {
               <div>{formatDate(reason.reasonDate)}</div>
               <div>-</div>
               <div className="reason-text">
-                <span className={`badge-reason ${getReasonClass(reason.reasonType)}`}>
+                <span
+                  className={`badge-reason ${getReasonClass(
+                    reason.reasonType
+                  )}`}
+                >
                   {reason.reasonType}
                 </span>
               </div>

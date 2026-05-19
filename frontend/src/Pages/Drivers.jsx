@@ -1,25 +1,14 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../api";
 import Layout from "../components/Layout.jsx";
+import { BranchContext } from "../context/BranchContext.jsx";
 import "./Drivers.css";
 
 function Drivers() {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
-
-  const [drivers, setDrivers] = useState([]);
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    mcNumber: "",
-    dotNumber: "",
-    truckNumber: "",
-    trailer: "",
-    carrierName: "",
-    ratePercent: 0
-  });
+  const { selectedBranch } = useContext(BranchContext);
 
   const auth = {
     headers: { Authorization: `Bearer ${token}` }
@@ -28,117 +17,198 @@ function Drivers() {
   const canEdit = user?.role === "ADMIN" || user?.role === "EDITOR";
   const canDelete = user?.role === "ADMIN";
 
+  const emptyForm = {
+    companyId: "",
+    truckId: "",
+    name: "",
+    phone: "",
+    email: ""
+  };
+
+  const [companies, setCompanies] = useState([]);
+  const [drivers, setDrivers] = useState([]);
+  const [form, setForm] = useState(emptyForm);
+
+  const loadCompanies = async () => {
+    if (!selectedBranch?.id) {
+      setCompanies([]);
+      return;
+    }
+
+    const res = await axios.get(
+      `${API}/companies?branchId=${selectedBranch.id}`,
+      auth
+    );
+
+    setCompanies(res.data);
+  };
+
   const loadDrivers = async () => {
-    const res = await axios.get(`${API}/drivers`, auth);
+    if (!selectedBranch?.id) {
+      setDrivers([]);
+      return;
+    }
+
+    const res = await axios.get(
+      `${API}/drivers?branchId=${selectedBranch.id}`,
+      auth
+    );
+
     setDrivers(res.data);
   };
 
   useEffect(() => {
+    loadCompanies();
     loadDrivers();
-  }, []);
+    setForm(emptyForm);
+  }, [selectedBranch]);
+
+  const selectedCompany = companies.find(
+    (c) => c.id === Number(form.companyId)
+  );
+
+  const trucks = selectedCompany?.trucks || [];
 
   const createDriver = async (e) => {
     e.preventDefault();
 
-    try {
-      await axios.post(
-        `${API}/drivers`,
-        {
-          ...form,
-          ratePercent: Number(form.ratePercent)
-        },
-        auth
-      );
-
-      setForm({
-        name: "",
-        phone: "",
-        email: "",
-        mcNumber: "",
-        dotNumber: "",
-        truckNumber: "",
-        trailer: "",
-        carrierName: "",
-        ratePercent: 0
-      });
-
-      loadDrivers();
-    } catch (error) {
-      alert(error.response?.data?.message || "Failed to create driver");
+    if (!selectedBranch?.id) {
+      alert("Please select a branch first.");
+      return;
     }
+
+    await axios.post(
+      `${API}/drivers`,
+      {
+        branchId: selectedBranch.id,
+        companyId: Number(form.companyId),
+        truckId: form.truckId ? Number(form.truckId) : null,
+        name: form.name,
+        phone: form.phone,
+        email: form.email
+      },
+      auth
+    );
+
+    setForm(emptyForm);
+    loadDrivers();
+    loadCompanies();
   };
 
   const deleteDriver = async (id) => {
     if (!confirm("Delete this driver?")) return;
 
-    try {
-      await axios.delete(`${API}/drivers/${id}`, auth);
-      loadDrivers();
-    } catch (error) {
-      alert("Failed to delete driver");
-    }
+    await axios.delete(`${API}/drivers/${id}`, auth);
+    loadDrivers();
+    loadCompanies();
   };
 
   return (
     <Layout title="Driver Management">
-      {canEdit && (
+      {!selectedBranch && (
+        <div className="warning-message">
+          Please select a GML branch from Dashboard first.
+        </div>
+      )}
+
+      {selectedBranch && canEdit && (
         <form className="driver-form" onSubmit={createDriver}>
-          <input placeholder="Driver Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-          <input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-          <input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <input placeholder="MC Number" value={form.mcNumber} onChange={(e) => setForm({ ...form, mcNumber: e.target.value })} />
-          <input placeholder="DOT Number" value={form.dotNumber} onChange={(e) => setForm({ ...form, dotNumber: e.target.value })} />
-          <input placeholder="Truck Number" value={form.truckNumber} onChange={(e) => setForm({ ...form, truckNumber: e.target.value })} />
-          <input placeholder="Trailer" value={form.trailer} onChange={(e) => setForm({ ...form, trailer: e.target.value })} />
-          <input placeholder="Carrier Name" value={form.carrierName} onChange={(e) => setForm({ ...form, carrierName: e.target.value })} />
-          <input type="number" placeholder="Rate %" value={form.ratePercent} onChange={(e) => setForm({ ...form, ratePercent: e.target.value })} />
+          <select
+            value={form.companyId}
+            onChange={(e) =>
+              setForm({ ...form, companyId: e.target.value, truckId: "" })
+            }
+            required
+          >
+            <option value="">Select Client Company</option>
+            {companies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.companyName}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={form.truckId}
+            onChange={(e) => setForm({ ...form, truckId: e.target.value })}
+          >
+            <option value="">No Truck / Team Driver</option>
+            {trucks.map((truck) => (
+              <option key={truck.id} value={truck.id}>
+                {truck.truckNumber}
+                {truck.trailerNumber ? ` / ${truck.trailerNumber}` : ""}
+              </option>
+            ))}
+          </select>
+
+          <input
+            placeholder="Driver Name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            required
+          />
+
+          <input
+            placeholder="Phone"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          />
+
+          <input
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
 
           <button type="submit">Create Driver</button>
         </form>
       )}
 
-      <div className="driver-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Email</th>
-              <th>MC</th>
-              <th>DOT</th>
-              <th>Truck</th>
-              <th>Trailer</th>
-              <th>Carrier</th>
-              <th>Rate %</th>
-              {canDelete && <th>Actions</th>}
-            </tr>
-          </thead>
-
-          <tbody>
-            {drivers.map((driver) => (
-              <tr key={driver.id}>
-                <td>{driver.name}</td>
-                <td>{driver.phone || "-"}</td>
-                <td>{driver.email || "-"}</td>
-                <td>{driver.mcNumber || "-"}</td>
-                <td>{driver.dotNumber || "-"}</td>
-                <td>{driver.truckNumber || "-"}</td>
-                <td>{driver.trailer || "-"}</td>
-                <td>{driver.carrierName || "-"}</td>
-                <td>{driver.ratePercent}%</td>
-
-                {canDelete && (
-                  <td>
-                    <button className="danger" onClick={() => deleteDriver(driver.id)}>
-                      Delete
-                    </button>
-                  </td>
-                )}
+      {selectedBranch && (
+        <div className="driver-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Truck</th>
+                <th>Phone</th>
+                <th>Email</th>
+                {canDelete && <th>Actions</th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+
+            <tbody>
+              {drivers.map((driver) => (
+                <tr key={driver.id}>
+                  <td>{driver.name}</td>
+                  <td>{driver.company?.companyName || "-"}</td>
+                  <td>{driver.truck?.truckNumber || "-"}</td>
+                  <td>{driver.phone || "-"}</td>
+                  <td>{driver.email || "-"}</td>
+
+                  {canDelete && (
+                    <td>
+                      <button
+                        className="danger"
+                        onClick={() => deleteDriver(driver.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+
+              {drivers.length === 0 && (
+                <tr>
+                  <td colSpan="6">No drivers found for this branch.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </Layout>
   );
 }

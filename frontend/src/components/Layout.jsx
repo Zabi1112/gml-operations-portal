@@ -1,11 +1,16 @@
+import { useContext } from "react";
+import { BranchContext } from "../context/BranchContext.jsx";
 import "../Pages/Dashboard.css";
 
 function Layout({ title, children }) {
   const user = JSON.parse(localStorage.getItem("user"));
+  const { selectedBranch } = useContext(BranchContext);
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("selectedBranch");
+    localStorage.removeItem("branchId");
     window.location.href = "/login";
   };
 
@@ -37,13 +42,26 @@ function Layout({ title, children }) {
         <div className="topbar">
           <div>
             <h2>{title}</h2>
-            <p>Welcome, {user?.name} — {user?.role}</p>
+            <p>
+              Welcome, {user?.name} — {user?.role}
+              {selectedBranch && (
+                <>
+                  {" "} | Branch: <strong>{selectedBranch.branchName}</strong>
+                </>
+              )}
+            </p>
           </div>
 
           <button className="logout" onClick={logout}>Logout</button>
         </div>
 
-        {children}
+        {!selectedBranch && title !== "Dashboard" ? (
+          <div className="warning-message">
+            Please select a branch from Dashboard first.
+          </div>
+        ) : (
+          children
+        )}
       </main>
     </div>
   );

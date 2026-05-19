@@ -19,9 +19,9 @@ const {
 router.use(protect);
 
 router.get("/", getLoads);
+router.get("/reasons", getLoadReasons);
 router.post("/", allowRoles("ADMIN", "EDITOR"), createLoad);
 router.patch("/:id", allowRoles("ADMIN", "EDITOR"), updateLoad);
-router.get("/reasons", getLoadReasons);
 router.post("/reasons", allowRoles("ADMIN", "EDITOR"), createLoadReason);
 router.delete("/reasons/:id", allowRoles("ADMIN", "EDITOR"), deleteLoadReason);
 router.delete("/:id", allowRoles("ADMIN", "EDITOR"), deleteLoad);

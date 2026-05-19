@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import SalarySlipView from "../components/SalarySlipView.jsx";
+import { BranchContext } from "../context/BranchContext.jsx";
 import "./SalarySlips.css";
 
 function SalarySlips() {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
+  const { selectedBranch } = useContext(BranchContext);
 
   const [employees, setEmployees] = useState([]);
   const [previewSlip, setPreviewSlip] = useState(null);
@@ -41,13 +43,24 @@ function SalarySlips() {
   const canEdit = user?.role === "ADMIN" || user?.role === "EDITOR";
 
   const loadEmployees = async () => {
-    const empRes = await axios.get(`${API}/employees`, auth);
+    if (!selectedBranch?.id) {
+      setEmployees([]);
+      return;
+    }
+
+    const empRes = await axios.get(
+      `${API}/employees?branchId=${selectedBranch.id}`,
+      auth
+    );
+
     setEmployees(empRes.data);
   };
 
   useEffect(() => {
     loadEmployees();
-  }, []);
+    setForm(emptyForm);
+    setPreviewSlip(null);
+  }, [selectedBranch]);
 
   const handleEmployeeSelect = (id) => {
     const emp = employees.find((e) => e.id === Number(id));
@@ -95,8 +108,14 @@ function SalarySlips() {
   const previewSalarySlip = (e) => {
     e.preventDefault();
 
+    if (!selectedBranch?.id) {
+      alert("Please select a branch first.");
+      return;
+    }
+
     const slip = {
       ...form,
+      branchId: selectedBranch.id,
       employeeId: Number(form.employeeId),
       dispatchAmountUSD,
       commissionPercent,
@@ -121,8 +140,19 @@ function SalarySlips() {
 
   return (
     <Layout title="Salary Slips">
-      {canEdit && (
+      {!selectedBranch && (
+        <div className="warning-message">
+          Please select a GML branch from Dashboard first.
+        </div>
+      )}
+
+      {selectedBranch && canEdit && (
         <form className="salary-form" onSubmit={previewSalarySlip}>
+          <div className="form-group">
+            <label>Active GML Branch</label>
+            <input value={selectedBranch.branchName} readOnly />
+          </div>
+
           <div className="form-group">
             <label>Select Staff</label>
             <select

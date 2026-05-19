@@ -2,14 +2,39 @@ const prisma = require("../utils/prisma");
 
 const createTruck = async (req, res) => {
   try {
+    const { branchId, companyId } = req.body;
+
+    if (!branchId) {
+      return res.status(400).json({ message: "branchId is required" });
+    }
+
+    if (!companyId) {
+      return res.status(400).json({ message: "companyId is required" });
+    }
+
+    const company = await prisma.company.findFirst({
+      where: {
+        id: Number(companyId),
+        branchId: Number(branchId)
+      }
+    });
+
+    if (!company) {
+      return res.status(404).json({
+        message: "Company not found in this branch"
+      });
+    }
+
     const truck = await prisma.truck.create({
       data: {
-        companyId: Number(req.body.companyId),
+        branchId: Number(branchId),
+        companyId: Number(companyId),
         truckNumber: req.body.truckNumber,
         trailerNumber: req.body.trailerNumber || null,
         notes: req.body.notes || null
       },
       include: {
+        branch: true,
         company: true,
         drivers: true
       }
@@ -27,9 +52,13 @@ const createTruck = async (req, res) => {
 
 const getTrucks = async (req, res) => {
   try {
-    const { companyId } = req.query;
+    const { branchId, companyId } = req.query;
 
     const where = {};
+
+    if (branchId) {
+      where.branchId = Number(branchId);
+    }
 
     if (companyId) {
       where.companyId = Number(companyId);
@@ -38,6 +67,7 @@ const getTrucks = async (req, res) => {
     const trucks = await prisma.truck.findMany({
       where,
       include: {
+        branch: true,
         company: true,
         drivers: true
       },
@@ -58,12 +88,14 @@ const updateTruck = async (req, res) => {
     const truck = await prisma.truck.update({
       where: { id: Number(id) },
       data: {
+        branchId: req.body.branchId ? Number(req.body.branchId) : undefined,
         companyId: req.body.companyId ? Number(req.body.companyId) : undefined,
         truckNumber: req.body.truckNumber,
         trailerNumber: req.body.trailerNumber || null,
         notes: req.body.notes || null
       },
       include: {
+        branch: true,
         company: true,
         drivers: true
       }

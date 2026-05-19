@@ -1,11 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import App from "./App";
+import App from "./App.jsx";
+import { BranchProvider } from "./context/BranchContext.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+  <React.StrictMode>
+    <BrowserRouter>
+      <BranchProvider>
+        <App />
+      </BranchProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 );

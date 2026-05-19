@@ -72,12 +72,28 @@ const calculateInvoice = (data) => {
 
 const createInvoice = async (req, res) => {
   try {
+    const { branchId } = req.body;
+
+    if (!branchId) {
+      return res.status(400).json({ message: "branchId is required" });
+    }
+
+    // Verify branch exists
+    const branch = await prisma.branch.findUnique({
+      where: { id: Number(branchId) }
+    });
+
+    if (!branch) {
+      return res.status(404).json({ message: "Branch not found" });
+    }
+
     const calculated = calculateInvoice(req.body);
 
     const invoice = await prisma.invoice.create({
       data: {
-        companyId: req.body.companyId ? Number(req.body.companyId) : null,
+        branchId: Number(branchId),
         companyName: req.body.companyName || null,
+        branchName: req.body.branchName || null,
         ownerName: req.body.ownerName || null,
         mcNumber: req.body.mcNumber || null,
         dotNumber: req.body.dotNumber || null,
@@ -128,42 +144,44 @@ const createInvoice = async (req, res) => {
         loads: true
       }
     });
+
     if (invoice.billingType === "PERCENTAGE" && invoice.loads.length > 0) {
-  const truckIds = req.body.selectedTruckIds || [];
-  const driverIds = req.body.selectedDriverIds || [];
+      const truckIds = req.body.selectedTruckIds || [];
+      const driverIds = req.body.selectedDriverIds || [];
 
-  const firstTruckId = truckIds.length > 0 ? Number(truckIds[0]) : null;
-  const firstDriverId = driverIds.length > 0 ? Number(driverIds[0]) : null;
+      const firstTruckId = truckIds.length > 0 ? Number(truckIds[0]) : null;
+      const firstDriverId = driverIds.length > 0 ? Number(driverIds[0]) : null;
 
-  await prisma.load.createMany({
-    data: invoice.loads.map((load) => ({
-      companyId: invoice.companyId,
-      truckId: firstTruckId,
-      driverId: firstDriverId,
+      await prisma.load.createMany({
+        data: invoice.loads.map((load) => ({
+          branchId: Number(branchId),
+          truckId: firstTruckId,
+          driverId: firstDriverId,
 
-      companyName: invoice.companyName,
-      truckNumber: invoice.truckNumbers,
-      driverName: invoice.driverNames,
+          companyName: invoice.companyName,
+          branchName: invoice.branchName,
+          truckNumber: invoice.truckNumbers,
+          driverName: invoice.driverNames,
 
-      loadDate: load.date,
-      pickupDate: load.date,
-      dropoffDate: null,
-      
-      pickup: load.pickup,
-      dropoff: load.dropoff,
+          loadDate: load.date,
+          pickupDate: load.date,
+          dropoffDate: null,
 
-      miles: Number(load.miles || 0),
-      ratePerMile: Number(load.ratePerMile || 0),
-      grossAmount: Number(load.grossAmount || load.loadAmount || 0),
+          pickup: load.pickup,
+          dropoff: load.dropoff,
 
-      loadAmount: Number(load.loadAmount || 0),
-      dispatchPercent: Number(load.dispatchPercent || 0),
-      dispatchAmount: Number(load.dispatchAmount || 0),
+          miles: Number(load.miles || 0),
+          ratePerMile: Number(load.ratePerMile || 0),
+          grossAmount: Number(load.grossAmount || load.loadAmount || 0),
 
-      source: "INVOICE"
-    }))
-  });
-}
+          loadAmount: Number(load.loadAmount || 0),
+          dispatchPercent: Number(load.dispatchPercent || 0),
+          dispatchAmount: Number(load.dispatchAmount || 0),
+
+          source: "INVOICE"
+        }))
+      });
+    }
 
     res.status(201).json({
       message: "Invoice created successfully",
@@ -177,13 +195,44 @@ const createInvoice = async (req, res) => {
 
 const getInvoices = async (req, res) => {
   try {
-    const { companyId, from, to } = req.query;
+    const { branchId, from, to } = req.query;
 
     const where = {};
 
-    if (companyId) {
-      where.companyId = Number(companyId);
+    if (branchId) {
+      where.branchId = Number(branchId);
     }
+
+    if (from || to) {
+      where.invoiceStart = {};
+
+      if (from) where.invoiceStart.gte = new Date(from);
+      if (to) where.invoiceStart.lte = new Date(to);
+    }
+
+    const invoices = await prisma.invoice.findMany({
+      where,
+      include: {
+        loads: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+
+    res.json(invoices);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getInvoicesByBranch = async (req, res) => {
+  try {
+    const { branchId } = req.params;
+    const { from, to } = req.query;
+
+    const where = { branchId: Number(branchId) };
 
     if (from || to) {
       where.invoiceStart = {};
@@ -211,5 +260,6 @@ const getInvoices = async (req, res) => {
 
 module.exports = {
   createInvoice,
-  getInvoices
+  getInvoices,
+  getInvoicesByBranch
 };

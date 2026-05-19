@@ -9,8 +9,10 @@ const driverRoutes = require("./routes/driver.routes");
 const salaryRoutes = require("./routes/salary.routes");
 const invoiceRoutes = require("./routes/invoice.routes");
 const companyRoutes = require("./routes/company.routes");
+const branchRoutes = require("./routes/branch.routes");
 const truckRoutes = require("./routes/truck.routes");
 const loadRoutes = require("./routes/load.routes");
+const loadReportRoutes = require("./routes/loadReport.routes");
 
 const app = express();
 
@@ -29,19 +31,28 @@ console.log("ROUTES CHECK", {
   salaryRoutes: typeof salaryRoutes,
   invoiceRoutes: typeof invoiceRoutes,
   companyRoutes: typeof companyRoutes,
+  branchRoutes: typeof branchRoutes,
   truckRoutes: typeof truckRoutes,
-  loadRoutes: typeof loadRoutes
+  loadRoutes: typeof loadRoutes,
+  loadReportRoutes: typeof loadReportRoutes
 });
 
-app.use("/auth", authRoutes);
-app.use("/users", userRoutes);
-app.use("/employees", employeeRoutes);
-app.use("/drivers", driverRoutes);
-app.use("/salary-slips", salaryRoutes);
-app.use("/invoices", invoiceRoutes);
-app.use("/companies", companyRoutes);
-app.use("/trucks", truckRoutes);
-app.use("/loads", loadRoutes);
+const registerRoutes = (prefix = "") => {
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/users`, userRoutes);
+  app.use(`${prefix}/employees`, employeeRoutes);
+  app.use(`${prefix}/drivers`, driverRoutes);
+  app.use(`${prefix}/salary-slips`, salaryRoutes);
+  app.use(`${prefix}/invoices`, invoiceRoutes);
+  app.use(`${prefix}/branches`, branchRoutes);
+  app.use(`${prefix}/companies`, companyRoutes);
+  app.use(`${prefix}/trucks`, truckRoutes);
+  app.use(`${prefix}/load-reports`, loadReportRoutes);
+  app.use(`${prefix}/loads`, loadRoutes);
+};
+
+registerRoutes("");      // production Vercel
+registerRoutes("/api");  // local frontend
 const PORT = process.env.PORT || 5000;
 
 // app.listen(PORT, () => {

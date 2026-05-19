@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import InvoiceView from "../components/InvoiceView.jsx";
+import { BranchContext } from "../context/BranchContext.jsx";
 import "./Invoices.css";
 
 function Invoices() {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
+  const { selectedBranch } = useContext(BranchContext);
 
   const auth = {
     headers: { Authorization: `Bearer ${token}` }
@@ -70,13 +72,24 @@ function Invoices() {
   const [previewInvoice, setPreviewInvoice] = useState(null);
 
   const loadCompanies = async () => {
-    const res = await axios.get(`${API}/companies`, auth);
+    if (!selectedBranch?.id) {
+      setCompanies([]);
+      return;
+    }
+
+    const res = await axios.get(
+      `${API}/companies?branchId=${selectedBranch.id}`,
+      auth
+    );
+
     setCompanies(res.data);
   };
 
   useEffect(() => {
     loadCompanies();
-  }, []);
+    setForm(emptyForm);
+    setPreviewInvoice(null);
+  }, [selectedBranch]);
 
   const selectedCompany = companies.find(
     (c) => c.id === Number(form.companyId)
@@ -219,6 +232,11 @@ function Invoices() {
   const preview = (e) => {
     e.preventDefault();
 
+    if (!selectedBranch?.id) {
+      alert("Please select a branch first.");
+      return;
+    }
+
     if (form.selectedTruckIds.length === 0) {
       alert("Please select at least one truck.");
       return;
@@ -231,6 +249,7 @@ function Invoices() {
 
     const invoice = {
       ...form,
+      branchId: selectedBranch.id,
       companyId: Number(form.companyId),
       selectedTruckCount: form.selectedTruckIds.length,
 
@@ -273,14 +292,26 @@ function Invoices() {
   const resetAfterSave = () => {
     setPreviewInvoice(null);
     setForm(emptyForm);
+    loadCompanies();
   };
 
   return (
     <Layout title="Invoice Generator">
-      {canEdit && (
+      {!selectedBranch && (
+        <div className="warning-message">
+          Please select a GML branch from Dashboard first.
+        </div>
+      )}
+
+      {selectedBranch && canEdit && (
         <form className="invoice-form" onSubmit={preview}>
           <div className="form-group">
-            <label>Select Company</label>
+            <label>Active GML Branch</label>
+            <input value={selectedBranch.branchName} readOnly />
+          </div>
+
+          <div className="form-group">
+            <label>Select Client Company</label>
             <select
               value={form.companyId}
               onChange={(e) => handleCompanySelect(e.target.value)}
@@ -404,6 +435,7 @@ function Invoices() {
 
           <div className="invoice-loads">
             <h3>Select Trucks</h3>
+
             <div className="check-grid">
               {companyTrucks.map((truck) => (
                 <label key={truck.id}>
@@ -423,6 +455,7 @@ function Invoices() {
 
           <div className="invoice-loads">
             <h3>Select Drivers</h3>
+
             <div className="check-grid">
               {companyDrivers.map((driver) => (
                 <label key={driver.id}>
@@ -598,6 +631,14 @@ function Invoices() {
             </label>
           </div>
 
+          <div className="form-group">
+            <label>Notes</label>
+            <input
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            />
+          </div>
+
           <div className="invoice-preview-box">
             <strong>Selected Trucks:</strong> {form.truckNumbers || "-"}
             <br />
@@ -623,8 +664,7 @@ function Invoices() {
                 <strong>Selected Trucks Count:</strong>{" "}
                 {form.selectedTruckIds.length}
                 <br />
-                <strong>Fixed Billing:</strong> $
-                {fixedBillingAmount.toFixed(2)}
+                <strong>Fixed Billing:</strong> ${fixedBillingAmount.toFixed(2)}
                 <br />
               </>
             )}

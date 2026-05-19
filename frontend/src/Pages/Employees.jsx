@@ -1,12 +1,21 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../api";
 import Layout from "../components/Layout.jsx";
+import { BranchContext } from "../context/BranchContext.jsx";
 import "./Employees.css";
 
 function Employees() {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
+  const { selectedBranch } = useContext(BranchContext);
+
+  const auth = {
+    headers: { Authorization: `Bearer ${token}` }
+  };
+
+  const canEdit = user?.role === "ADMIN" || user?.role === "EDITOR";
+  const canDelete = user?.role === "ADMIN";
 
   const emptyForm = {
     name: "",
@@ -23,21 +32,24 @@ function Employees() {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
 
-  const auth = {
-    headers: { Authorization: `Bearer ${token}` }
-  };
-
-  const canEdit = user?.role === "ADMIN" || user?.role === "EDITOR";
-  const canDelete = user?.role === "ADMIN";
-
   const loadEmployees = async () => {
-    const res = await axios.get(`${API}/employees`, auth);
+    if (!selectedBranch?.id) {
+      setEmployees([]);
+      return;
+    }
+
+    const res = await axios.get(
+      `${API}/employees?branchId=${selectedBranch.id}`,
+      auth
+    );
+
     setEmployees(res.data);
   };
 
   useEffect(() => {
     loadEmployees();
-  }, []);
+    resetForm();
+  }, [selectedBranch]);
 
   const resetForm = () => {
     setForm(emptyForm);
@@ -47,10 +59,21 @@ function Employees() {
   const submitStaff = async (e) => {
     e.preventDefault();
 
+    if (!selectedBranch?.id) {
+      alert("Please select a branch first.");
+      return;
+    }
+
     const payload = {
-      ...form,
-      fixedSalary: Number(form.fixedSalary),
-      commission: Number(form.commission)
+      branchId: selectedBranch.id,
+      name: form.name,
+      phone: form.phone || "",
+      email: form.email || "",
+      cnic: form.cnic || "",
+      role: form.role || "Dispatcher",
+      salaryType: form.salaryType || "FIXED",
+      fixedSalary: Number(form.fixedSalary || 0),
+      commission: Number(form.commission || 0)
     };
 
     try {
@@ -69,6 +92,7 @@ function Employees() {
 
   const startEdit = (emp) => {
     setEditingId(emp.id);
+
     setForm({
       name: emp.name || "",
       phone: emp.phone || "",
@@ -79,22 +103,35 @@ function Employees() {
       fixedSalary: emp.fixedSalary || 0,
       commission: emp.commission || 0
     });
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const deleteEmployee = async (id) => {
     if (!confirm("Delete this staff member?")) return;
 
-    await axios.delete(`${API}/employees/${id}`, auth);
-    loadEmployees();
+    try {
+      await axios.delete(`${API}/employees/${id}`, auth);
+      loadEmployees();
+    } catch (error) {
+      alert("Failed to delete staff");
+    }
   };
 
   return (
     <Layout title="Staff Management">
-      {canEdit && (
+      {!selectedBranch && (
+        <div className="warning-message">
+          Please select a GML branch from Dashboard first.
+        </div>
+      )}
+
+      {selectedBranch && canEdit && (
         <form className="employee-form" onSubmit={submitStaff}>
+          <h3>{editingId ? "Edit Staff" : "Add Staff"} — {selectedBranch.branchName}</h3>
+
           <div className="form-group">
-            <label>Staff Name</label>
+            <label>Staff Name *</label>
             <input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -187,54 +224,67 @@ function Employees() {
         </form>
       )}
 
-      <div className="employee-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Email</th>
-              <th>CNIC</th>
-              <th>Role</th>
-              <th>Salary Type</th>
-              <th>Fixed Salary</th>
-              <th>Commission</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+      {selectedBranch && (
+        <div className="employee-table">
+          <h3>Staff List — {selectedBranch.branchName}</h3>
 
-          <tbody>
-            {employees.map((emp) => (
-              <tr key={emp.id}>
-                <td>{emp.name}</td>
-                <td>{emp.phone || "-"}</td>
-                <td>{emp.email || "-"}</td>
-                <td>{emp.cnic || "-"}</td>
-                <td>{emp.role}</td>
-                <td>{emp.salaryType}</td>
-                <td>{emp.fixedSalary}</td>
-                <td>{emp.commission}%</td>
-                <td>
-                  {canEdit && (
-                    <button onClick={() => startEdit(emp)}>
-                      Edit
-                    </button>
-                  )}
-
-                  {canDelete && (
-                    <button
-                      className="danger"
-                      onClick={() => deleteEmployee(emp.id)}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </td>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>CNIC</th>
+                <th>Role</th>
+                <th>Salary Type</th>
+                <th>Fixed Salary</th>
+                <th>Commission %</th>
+                {(canEdit || canDelete) && <th>Actions</th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+
+            <tbody>
+              {employees.map((emp) => (
+                <tr key={emp.id}>
+                  <td>{emp.name}</td>
+                  <td>{emp.phone || "-"}</td>
+                  <td>{emp.email || "-"}</td>
+                  <td>{emp.cnic || "-"}</td>
+                  <td>{emp.role}</td>
+                  <td>{emp.salaryType}</td>
+                  <td>{Number(emp.fixedSalary || 0).toFixed(0)}</td>
+                  <td>{Number(emp.commission || 0).toFixed(2)}</td>
+                  {(canEdit || canDelete) && (
+                    <td>
+                      {canEdit && (
+                        <button type="button" onClick={() => startEdit(emp)}>
+                          Edit
+                        </button>
+                      )}
+
+                      {canDelete && (
+                        <button
+                          type="button"
+                          className="danger"
+                          onClick={() => deleteEmployee(emp.id)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              ))}
+
+              {employees.length === 0 && (
+                <tr>
+                  <td colSpan="9">No staff found for this branch.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </Layout>
   );
 }
