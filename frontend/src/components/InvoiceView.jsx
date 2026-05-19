@@ -1,9 +1,8 @@
 import axios from "axios";
+import { API } from "../api";
 import "./InvoiceView.css";
 
-const API = "http://localhost:5000/api";
-
-function InvoiceView({ invoice, onClose, onSaved, isPreview = false }) {
+const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
   if (!invoice) return null;
 
   const token = localStorage.getItem("token");

@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import SalarySlipView from "../components/SalarySlipView.jsx";
 import "./SalarySlips.css";
-
-const API = "http://localhost:5000/api";
 
 function SalarySlips() {
   const token = localStorage.getItem("token");

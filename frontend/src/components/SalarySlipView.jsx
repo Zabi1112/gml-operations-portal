@@ -1,7 +1,6 @@
 import axios from "axios";
+import { API } from "../api";
 import "./SalarySlipView.css";
-
-const API = "http://localhost:5000/api";
 
 function SalarySlipView({ slip, onClose, onSaved, isPreview = false }) {
   if (!slip) return null;

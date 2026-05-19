@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import SalarySlipView from "../components/SalarySlipView.jsx";
 import InvoiceView from "../components/InvoiceView.jsx";
 import "./History.css";
-
-const API = "http://localhost:5000/api";
 
 function History() {
   const token = localStorage.getItem("token");

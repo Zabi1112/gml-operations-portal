@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import InvoiceView from "../components/InvoiceView.jsx";
 import "./Invoices.css";
-
-const API = "http://localhost:5000/api";
 
 function Invoices() {
   const token = localStorage.getItem("token");

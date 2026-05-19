@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import LoadReportView from "../components/LoadReportView.jsx";
 import "./LoadReports.css";
-
-const API = "http://localhost:5000/api";
 
 function LoadReports() {
     const token = localStorage.getItem("token");
