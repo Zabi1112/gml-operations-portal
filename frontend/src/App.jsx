@@ -1,14 +1,14 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import UserManagement from "./pages/UserManagement.jsx";
-import Employees from "./pages/Employees.jsx";
-import Drivers from "./pages/Drivers.jsx";
-import SalarySlips from "./pages/SalarySlips.jsx";
-import History from "./pages/History.jsx";
-import Invoices from "./pages/Invoices.jsx";
-import Companies from "./pages/Companies.jsx";
-import LoadReports from "./pages/LoadReports.jsx";
+import Login from "./Pages/Login.jsx";
+import Dashboard from "./Pages/Dashboard.jsx";
+import UserManagement from "./Pages/UserManagement.jsx";
+import Employees from "./Pages/Employees.jsx";
+import Drivers from "./Pages/Drivers.jsx";
+import SalarySlips from "./Pages/SalarySlips.jsx";
+import History from "./Pages/History.jsx";
+import Invoices from "./Pages/Invoices.jsx";
+import Companies from "./Pages/Companies.jsx";
+import LoadReports from "./Pages/LoadReports.jsx";
 
 function App() {
   const token = localStorage.getItem("token");
