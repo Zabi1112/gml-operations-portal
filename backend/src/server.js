@@ -33,15 +33,15 @@ console.log("ROUTES CHECK", {
   loadRoutes: typeof loadRoutes
 });
 
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/employees", employeeRoutes);
-app.use("/api/drivers", driverRoutes);
-app.use("/api/salary-slips", salaryRoutes);
-app.use("/api/invoices", invoiceRoutes);
-app.use("/api/companies", companyRoutes);
-app.use("/api/trucks", truckRoutes);
-app.use("/api/loads", loadRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/employees", employeeRoutes);
+app.use("/drivers", driverRoutes);
+app.use("/salary-slips", salaryRoutes);
+app.use("/invoices", invoiceRoutes);
+app.use("/companies", companyRoutes);
+app.use("/trucks", truckRoutes);
+app.use("/loads", loadRoutes);
 const PORT = process.env.PORT || 5000;
 
 // app.listen(PORT, () => {
