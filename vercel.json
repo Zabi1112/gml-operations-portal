@@ -9,5 +9,6 @@
       "entrypoint": "backend",
       "routePrefix": "/api"
     }
-  }
+  },
+  "buildCommand": "cd backend && npx prisma generate"
 }
