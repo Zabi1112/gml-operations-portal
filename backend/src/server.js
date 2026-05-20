@@ -13,6 +13,7 @@ const branchRoutes = require("./routes/branch.routes");
 const truckRoutes = require("./routes/truck.routes");
 const loadRoutes = require("./routes/load.routes");
 const loadReportRoutes = require("./routes/loadReport.routes");
+const financeRoutes = require("./routes/finance.routes");
 
 const app = express();
 
@@ -34,7 +35,8 @@ console.log("ROUTES CHECK", {
   branchRoutes: typeof branchRoutes,
   truckRoutes: typeof truckRoutes,
   loadRoutes: typeof loadRoutes,
-  loadReportRoutes: typeof loadReportRoutes
+  loadReportRoutes: typeof loadReportRoutes,
+  financeRoutes: typeof financeRoutes
 });
 
 const registerRoutes = (prefix = "") => {
@@ -49,6 +51,7 @@ const registerRoutes = (prefix = "") => {
   app.use(`${prefix}/trucks`, truckRoutes);
   app.use(`${prefix}/load-reports`, loadReportRoutes);
   app.use(`${prefix}/loads`, loadRoutes);
+  app.use(`${prefix}/finance`, financeRoutes);
 };
 
 registerRoutes("");      // production Vercel

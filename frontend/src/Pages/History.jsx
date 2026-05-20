@@ -10,11 +10,14 @@ import "./History.css";
 
 function History() {
   const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
   const { selectedBranch } = useContext(BranchContext);
 
   const auth = {
     headers: { Authorization: `Bearer ${token}` }
   };
+
+  const isAdmin = user?.role === "ADMIN";
 
   const [activeTab, setActiveTab] = useState("salary");
 
@@ -29,23 +32,21 @@ function History() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [selectedLoadReport, setSelectedLoadReport] = useState(null);
 
-  const [salaryFilters, setSalaryFilters] = useState({
-    employeeId: ""
+  const [clearInvoiceData, setClearInvoiceData] = useState(null);
+
+  const [settlementForm, setSettlementForm] = useState({
+    usdRate: "",
+    dispatcherPercent: "",
+    accountsPercent: "",
+    notes: ""
   });
 
-  const [invoiceFilters, setInvoiceFilters] = useState({
-    companyId: ""
-  });
-
-  const [loadReportFilters, setLoadReportFilters] = useState({
-    companyId: ""
-  });
+  const [salaryFilters, setSalaryFilters] = useState({ employeeId: "" });
+  const [invoiceFilters, setInvoiceFilters] = useState({ companyId: "" });
+  const [loadReportFilters, setLoadReportFilters] = useState({ companyId: "" });
 
   const loadEmployees = async () => {
-    if (!selectedBranch?.id) {
-      setEmployees([]);
-      return;
-    }
+    if (!selectedBranch?.id) return setEmployees([]);
 
     const res = await axios.get(
       `${API}/employees?branchId=${selectedBranch.id}`,
@@ -56,10 +57,7 @@ function History() {
   };
 
   const loadCompanies = async () => {
-    if (!selectedBranch?.id) {
-      setCompanies([]);
-      return;
-    }
+    if (!selectedBranch?.id) return setCompanies([]);
 
     const res = await axios.get(
       `${API}/companies?branchId=${selectedBranch.id}`,
@@ -70,10 +68,7 @@ function History() {
   };
 
   const loadSalaryHistory = async () => {
-    if (!selectedBranch?.id) {
-      setSalarySlips([]);
-      return;
-    }
+    if (!selectedBranch?.id) return setSalarySlips([]);
 
     const params = new URLSearchParams();
     params.append("branchId", selectedBranch.id);
@@ -82,19 +77,12 @@ function History() {
       params.append("employeeId", salaryFilters.employeeId);
     }
 
-    const res = await axios.get(
-      `${API}/salary-slips?${params.toString()}`,
-      auth
-    );
-
+    const res = await axios.get(`${API}/salary-slips?${params.toString()}`, auth);
     setSalarySlips(res.data);
   };
 
   const loadInvoiceHistory = async () => {
-    if (!selectedBranch?.id) {
-      setInvoices([]);
-      return;
-    }
+    if (!selectedBranch?.id) return setInvoices([]);
 
     const params = new URLSearchParams();
     params.append("branchId", selectedBranch.id);
@@ -108,10 +96,7 @@ function History() {
   };
 
   const loadLoadReportHistory = async () => {
-    if (!selectedBranch?.id) {
-      setLoadReports([]);
-      return;
-    }
+    if (!selectedBranch?.id) return setLoadReports([]);
 
     const params = new URLSearchParams();
     params.append("branchId", selectedBranch.id);
@@ -120,11 +105,7 @@ function History() {
       params.append("companyId", loadReportFilters.companyId);
     }
 
-    const res = await axios.get(
-      `${API}/load-reports?${params.toString()}`,
-      auth
-    );
-
+    const res = await axios.get(`${API}/load-reports?${params.toString()}`, auth);
     setLoadReports(res.data);
   };
 
@@ -139,6 +120,65 @@ function History() {
   const openLoadReport = (item) => {
     setSelectedLoadReport(item.reportData);
   };
+
+  const openClearInvoice = (invoice) => {
+    setClearInvoiceData(invoice);
+
+    setSettlementForm({
+      usdRate: "",
+      dispatcherPercent: selectedBranch?.dispatcherPercent || 25,
+      accountsPercent: selectedBranch?.accountsPercent || 10,
+      notes: ""
+    });
+  };
+
+  const closeClearInvoice = () => {
+    setClearInvoiceData(null);
+    setSettlementForm({
+      usdRate: "",
+      dispatcherPercent: "",
+      accountsPercent: "",
+      notes: ""
+    });
+  };
+
+  const submitClearInvoice = async (e) => {
+    e.preventDefault();
+
+    if (!clearInvoiceData) return;
+
+    try {
+      await axios.post(
+        `${API}/finance/clear-invoice/${clearInvoiceData.id}`,
+        {
+          invoiceAmountUSD: Number(clearInvoiceData.netPayable || 0),
+          usdRate: Number(settlementForm.usdRate || 0),
+          dispatcherPercent: Number(settlementForm.dispatcherPercent || 0),
+          accountsPercent: Number(settlementForm.accountsPercent || 0),
+          notes: settlementForm.notes
+        },
+        auth
+      );
+
+      alert("Invoice cleared successfully");
+      closeClearInvoice();
+      loadInvoiceHistory();
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to clear invoice");
+    }
+  };
+
+  const invoiceAmountUSD = Number(clearInvoiceData?.netPayable || 0);
+  const usdRate = Number(settlementForm.usdRate || 0);
+  const invoiceAmountPKR = invoiceAmountUSD * usdRate;
+
+  const dispatcherPercent = Number(settlementForm.dispatcherPercent || 0);
+  const accountsPercent = Number(settlementForm.accountsPercent || 0);
+
+  const dispatcherAmountPKR = (invoiceAmountPKR * dispatcherPercent) / 100;
+  const accountsAmountPKR = (invoiceAmountPKR * accountsPercent) / 100;
+  const partnerProfitPKR =
+    invoiceAmountPKR - dispatcherAmountPKR - accountsAmountPKR;
 
   return (
     <Layout title="History">
@@ -282,12 +322,14 @@ function History() {
                     <tr>
                       <th>Invoice #</th>
                       <th>Company</th>
-                      <th>Billing Type</th>
+                      <th>Billing</th>
                       <th>Period</th>
                       <th>Trucks</th>
                       <th>Net Payable</th>
+                      <th>Status</th>
                       <th>Created</th>
                       <th>Action</th>
+                      {isAdmin && <th>Clear</th>}
                     </tr>
                   </thead>
 
@@ -304,19 +346,37 @@ function History() {
                         <td>{invoice.truckNumbers || "-"}</td>
                         <td>${Number(invoice.netPayable || 0).toFixed(2)}</td>
                         <td>
-                          {new Date(invoice.createdAt).toLocaleDateString()}
+                          {invoice.isCleared ? (
+                            <span className="status-cleared">Cleared</span>
+                          ) : (
+                            <span className="status-pending">Pending</span>
+                          )}
                         </td>
+                        <td>{new Date(invoice.createdAt).toLocaleDateString()}</td>
                         <td>
                           <button onClick={() => setSelectedInvoice(invoice)}>
                             View
                           </button>
                         </td>
+
+                        {isAdmin && (
+                          <td>
+                            <button
+                              disabled={invoice.isCleared}
+                              onClick={() => openClearInvoice(invoice)}
+                            >
+                              {invoice.isCleared ? "Cleared" : "Clear"}
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
 
                     {invoices.length === 0 && (
                       <tr>
-                        <td colSpan="8">No invoice history found.</td>
+                        <td colSpan={isAdmin ? "10" : "9"}>
+                          No invoice history found.
+                        </td>
                       </tr>
                     )}
                   </tbody>
@@ -399,6 +459,112 @@ function History() {
                 </table>
               </div>
             </>
+          )}
+
+          {clearInvoiceData && (
+            <div className="settlement-modal">
+              <div className="settlement-box">
+                <h2>Clear Invoice</h2>
+
+                <p>
+                  <strong>Invoice:</strong>{" "}
+                  {clearInvoiceData.invoiceNumber || "-"}
+                </p>
+                <p>
+                  <strong>Company:</strong> {clearInvoiceData.companyName || "-"}
+                </p>
+                <p>
+                  <strong>Invoice Amount USD:</strong> $
+                  {invoiceAmountUSD.toFixed(2)}
+                </p>
+
+                <form onSubmit={submitClearInvoice}>
+                  <div className="form-group">
+                    <label>USD Rate</label>
+                    <input
+                      type="number"
+                      value={settlementForm.usdRate}
+                      onChange={(e) =>
+                        setSettlementForm({
+                          ...settlementForm,
+                          usdRate: e.target.value
+                        })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Dispatcher %</label>
+                    <input
+                      type="number"
+                      value={settlementForm.dispatcherPercent}
+                      onChange={(e) =>
+                        setSettlementForm({
+                          ...settlementForm,
+                          dispatcherPercent: e.target.value
+                        })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Accounts %</label>
+                    <input
+                      type="number"
+                      value={settlementForm.accountsPercent}
+                      onChange={(e) =>
+                        setSettlementForm({
+                          ...settlementForm,
+                          accountsPercent: e.target.value
+                        })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="settlement-summary">
+                    <p>
+                      <strong>Invoice PKR:</strong>{" "}
+                      {invoiceAmountPKR.toFixed(0)}
+                    </p>
+                    <p>
+                      <strong>Dispatcher Amount:</strong>{" "}
+                      {dispatcherAmountPKR.toFixed(0)}
+                    </p>
+                    <p>
+                      <strong>Accounts Amount:</strong>{" "}
+                      {accountsAmountPKR.toFixed(0)}
+                    </p>
+                    <p>
+                      <strong>Partner Profit:</strong>{" "}
+                      {partnerProfitPKR.toFixed(0)}
+                    </p>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Notes</label>
+                    <input
+                      value={settlementForm.notes}
+                      onChange={(e) =>
+                        setSettlementForm({
+                          ...settlementForm,
+                          notes: e.target.value
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="settlement-actions">
+                    <button type="submit">Save Settlement</button>
+                    <button type="button" onClick={closeClearInvoice}>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           )}
 
           {selectedSlip && (

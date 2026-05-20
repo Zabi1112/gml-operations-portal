@@ -1,0 +1,132 @@
+.settlement-view-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  z-index: 9999;
+  overflow-y: auto;
+  padding: 30px;
+}
+
+.settlement-view-actions {
+  max-width: 900px;
+  margin: 0 auto 15px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.settlement-view-actions button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #0b2545;
+  color: white;
+  cursor: pointer;
+}
+
+.settlement-print {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  padding: 35px;
+  border-radius: 12px;
+  color: #111827;
+}
+
+.settlement-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 2px solid #0b2545;
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+}
+
+.settlement-header img {
+  width: 90px;
+}
+
+.settlement-header h1 {
+  margin: 0;
+  color: #0b2545;
+}
+
+.settlement-info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.settlement-info div {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.settlement-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+
+.settlement-table th,
+.settlement-table td {
+  border: 1px solid #d1d5db;
+  padding: 11px;
+  text-align: left;
+}
+
+.settlement-table th {
+  background: #0b2545;
+  color: white;
+}
+
+.net-row td {
+  font-weight: bold;
+  background: #eef6ff;
+}
+
+.settlement-notes {
+  background: #fff7ed;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 28px;
+}
+
+.signature-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  margin-top: 45px;
+}
+
+.signature-line {
+  border-bottom: 1px solid #111827;
+  margin-top: 40px;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .settlement-print,
+  .settlement-print * {
+    visibility: visible;
+  }
+
+  .settlement-print {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 25px;
+    border-radius: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

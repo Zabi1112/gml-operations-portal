@@ -10,6 +10,7 @@ import History from "./Pages/History.jsx";
 import Invoices from "./Pages/Invoices.jsx";
 import Companies from "./Pages/Companies.jsx";
 import LoadReports from "./Pages/LoadReports.jsx";
+import FinanceSettings from "./Pages/FinanceSettings.jsx";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -37,8 +38,8 @@ function App() {
         />
 
         <Route
-           path="/salary-slips"
-           element={token ? <SalarySlips /> : <Navigate to="/login" />}
+          path="/salary-slips"
+          element={token ? <SalarySlips /> : <Navigate to="/login" />}
         />
 
         <Route
@@ -59,6 +60,11 @@ function App() {
         <Route
           path="/load-reports"
           element={token ? <LoadReports /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/finance-settings"
+          element={token ? <FinanceSettings /> : <Navigate to="/login" />}
         />
 
         <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} />} />

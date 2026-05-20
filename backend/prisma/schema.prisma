@@ -38,6 +38,8 @@ model Branch {
   phone       String?
   email       String?
   isActive    Boolean  @default(true)
+  dispatcherPercent Float @default(25)
+  accountsPercent   Float @default(10)
 
   employees   Employee[]
   companies   Company[]
@@ -48,9 +50,59 @@ model Branch {
   loads       Load[]
   loadReports LoadReport[]
   loadReportReasons LoadReportReason[]
+  partners           BranchPartner[]
+  settlements        InvoiceSettlement[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model BranchPartner {
+  id        Int      @id @default(autoincrement())
+
+  branchId  Int
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  name      String
+  percent   Float    @default(0)
+  phone     String?
+  notes     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InvoiceSettlement {
+  id                     Int      @id @default(autoincrement())
+
+  branchId               Int
+  branch                 Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  invoiceId              Int
+  invoiceNumber          String?
+  companyName            String?
+
+  invoiceAmountUSD       Float    @default(0)
+  usdRate                Float    @default(0)
+  invoiceAmountPKR       Float    @default(0)
+
+  dispatcherPercent      Float    @default(25)
+  dispatcherAmountPKR    Float    @default(0)
+
+  accountsPercent        Float    @default(10)
+  accountsAmountPKR      Float    @default(0)
+
+  partnerProfitPKR       Float    @default(0)
+
+  partnerSplits          Json
+
+  clearedBy              String?
+  clearedAt              DateTime @default(now())
+
+  notes                  String?
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 model Employee {
@@ -222,6 +274,8 @@ model Invoice {
 
   netPayable                  Float       @default(0)
   notes                       String?
+  isCleared Boolean @default(false)
+  clearedAt DateTime?
 
   loads                       InvoiceLoad[]
 
