@@ -124,7 +124,8 @@ function Invoices() {
       selectedTruckIds: [],
       selectedDriverIds: [],
       truckNumbers: "",
-      driverNames: ""
+      driverNames: "",
+      loads: emptyForm.loads
     }));
   };
 
@@ -162,6 +163,63 @@ function Invoices() {
       selectedDriverIds,
       driverNames: selectedDrivers.map((d) => d.name).join(", ")
     });
+  };
+
+  const fetchSavedLoads = async () => {
+    if (!selectedBranch?.id) {
+      alert("Please select a branch first.");
+      return;
+    }
+
+    if (!form.companyId || form.selectedTruckIds.length === 0) {
+      alert("Please select company and at least one truck first.");
+      return;
+    }
+
+    if (!form.invoiceStart || !form.invoiceEnd) {
+      alert("Please select invoice start and invoice end date first.");
+      return;
+    }
+
+    try {
+      const allFetchedLoads = [];
+
+      for (const truckId of form.selectedTruckIds) {
+        const params = new URLSearchParams();
+
+        params.append("branchId", selectedBranch.id);
+        params.append("companyId", form.companyId);
+        params.append("truckId", truckId);
+        params.append("from", form.invoiceStart);
+        params.append("to", form.invoiceEnd);
+
+        const res = await axios.get(`${API}/loads?${params.toString()}`, auth);
+
+        allFetchedLoads.push(...res.data);
+      }
+
+      if (allFetchedLoads.length === 0) {
+        alert("No saved loads found for selected company, truck and date range.");
+        return;
+      }
+
+      const invoiceLoads = allFetchedLoads.map((load) => ({
+        date: String(load.loadDate || load.pickupDate || "").slice(0, 10),
+        pickup: load.pickup || "",
+        dropoff: load.dropoff || "",
+        loadAmount: Number(load.grossAmount || load.loadAmount || 0)
+      }));
+
+      setForm({
+        ...form,
+        loads: invoiceLoads
+      });
+
+      alert(`${invoiceLoads.length} loads fetched successfully.`);
+    } catch (error) {
+      console.log(error);
+      alert(error.response?.data?.message || "Failed to fetch saved loads.");
+    }
   };
 
   const updateLoad = (index, key, value) => {
@@ -377,6 +435,7 @@ function Invoices() {
               onChange={(e) =>
                 setForm({ ...form, invoiceNumber: e.target.value })
               }
+              placeholder="Leave empty for auto number"
             />
           </div>
 
@@ -477,7 +536,13 @@ function Invoices() {
 
           {form.billingType === "PERCENTAGE" && (
             <div className="invoice-loads">
-              <h3>Loads</h3>
+              <div className="loads-header">
+                <h3>Loads</h3>
+
+                <button type="button" onClick={fetchSavedLoads}>
+                  Fetch Loads
+                </button>
+              </div>
 
               {form.loads.map((load, index) => (
                 <div className="load-row" key={index}>
@@ -534,7 +599,7 @@ function Invoices() {
               ))}
 
               <button type="button" onClick={addLoad}>
-                Add Load
+                Add Manual Load
               </button>
             </div>
           )}
@@ -676,6 +741,12 @@ function Invoices() {
 
           <button type="submit">Preview Invoice</button>
         </form>
+      )}
+
+      {selectedBranch && !canEdit && (
+        <div className="warning-message">
+          You do not have permission to create invoices.
+        </div>
       )}
 
       {previewInvoice && (
