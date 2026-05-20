@@ -5,6 +5,7 @@ import Layout from "../components/Layout.jsx";
 import SalarySlipView from "../components/SalarySlipView.jsx";
 import InvoiceView from "../components/InvoiceView.jsx";
 import LoadReportView from "../components/LoadReportView.jsx";
+import SettlementView from "../components/SettlementView.jsx";
 import { BranchContext } from "../context/BranchContext.jsx";
 import "./History.css";
 
@@ -27,10 +28,12 @@ function History() {
   const [salarySlips, setSalarySlips] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [loadReports, setLoadReports] = useState([]);
+  const [settlements, setSettlements] = useState([]);
 
   const [selectedSlip, setSelectedSlip] = useState(null);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [selectedLoadReport, setSelectedLoadReport] = useState(null);
+  const [selectedSettlement, setSelectedSettlement] = useState(null);
 
   const [clearInvoiceData, setClearInvoiceData] = useState(null);
 
@@ -77,7 +80,11 @@ function History() {
       params.append("employeeId", salaryFilters.employeeId);
     }
 
-    const res = await axios.get(`${API}/salary-slips?${params.toString()}`, auth);
+    const res = await axios.get(
+      `${API}/salary-slips?${params.toString()}`,
+      auth
+    );
+
     setSalarySlips(res.data);
   };
 
@@ -105,8 +112,29 @@ function History() {
       params.append("companyId", loadReportFilters.companyId);
     }
 
-    const res = await axios.get(`${API}/load-reports?${params.toString()}`, auth);
+    const res = await axios.get(
+      `${API}/load-reports?${params.toString()}`,
+      auth
+    );
+
     setLoadReports(res.data);
+  };
+
+  const loadSettlements = async () => {
+    if (!selectedBranch?.id || !isAdmin) {
+      setSettlements([]);
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.append("branchId", selectedBranch.id);
+
+    const res = await axios.get(
+      `${API}/finance/settlements?${params.toString()}`,
+      auth
+    );
+
+    setSettlements(res.data);
   };
 
   useEffect(() => {
@@ -115,6 +143,7 @@ function History() {
     loadSalaryHistory();
     loadInvoiceHistory();
     loadLoadReportHistory();
+    loadSettlements();
   }, [selectedBranch]);
 
   const openLoadReport = (item) => {
@@ -134,6 +163,7 @@ function History() {
 
   const closeClearInvoice = () => {
     setClearInvoiceData(null);
+
     setSettlementForm({
       usdRate: "",
       dispatcherPercent: "",
@@ -148,7 +178,7 @@ function History() {
     if (!clearInvoiceData) return;
 
     try {
-      await axios.post(
+      const res = await axios.post(
         `${API}/finance/clear-invoice/${clearInvoiceData.id}`,
         {
           invoiceAmountUSD: Number(clearInvoiceData.netPayable || 0),
@@ -161,11 +191,23 @@ function History() {
       );
 
       alert("Invoice cleared successfully");
+
       closeClearInvoice();
       loadInvoiceHistory();
+      loadSettlements();
+
+      if (res.data?.settlement) {
+        setSelectedSettlement(res.data.settlement);
+      }
     } catch (error) {
       alert(error.response?.data?.message || "Failed to clear invoice");
     }
+  };
+
+  const findSettlementByInvoiceId = (invoiceId) => {
+    return settlements.find(
+      (item) => Number(item.invoiceId) === Number(invoiceId)
+    );
   };
 
   const invoiceAmountUSD = Number(clearInvoiceData?.netPayable || 0);
@@ -177,6 +219,7 @@ function History() {
 
   const dispatcherAmountPKR = (invoiceAmountPKR * dispatcherPercent) / 100;
   const accountsAmountPKR = (invoiceAmountPKR * accountsPercent) / 100;
+
   const partnerProfitPKR =
     invoiceAmountPKR - dispatcherAmountPKR - accountsAmountPKR;
 
@@ -211,6 +254,15 @@ function History() {
             >
               Load Report History
             </button>
+
+            {isAdmin && (
+              <button
+                className={activeTab === "settlement" ? "active" : ""}
+                onClick={() => setActiveTab("settlement")}
+              >
+                Settlement History
+              </button>
+            )}
           </div>
 
           {activeTab === "salary" && (
@@ -232,6 +284,7 @@ function History() {
                   }
                 >
                   <option value="">All Staff</option>
+
                   {employees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.name} — {emp.role}
@@ -306,6 +359,7 @@ function History() {
                   }
                 >
                   <option value="">All Companies</option>
+
                   {companies.map((company) => (
                     <option key={company.id} value={company.id}>
                       {company.companyName}
@@ -328,53 +382,86 @@ function History() {
                       <th>Net Payable</th>
                       <th>Status</th>
                       <th>Created</th>
-                      <th>Action</th>
+                      <th>View</th>
+                      {isAdmin && <th>Settlement</th>}
                       {isAdmin && <th>Clear</th>}
                     </tr>
                   </thead>
 
                   <tbody>
-                    {invoices.map((invoice) => (
-                      <tr key={invoice.id}>
-                        <td>{invoice.invoiceNumber || "-"}</td>
-                        <td>{invoice.companyName || "-"}</td>
-                        <td>{invoice.billingType}</td>
-                        <td>
-                          {new Date(invoice.invoiceStart).toLocaleDateString()} -{" "}
-                          {new Date(invoice.invoiceEnd).toLocaleDateString()}
-                        </td>
-                        <td>{invoice.truckNumbers || "-"}</td>
-                        <td>${Number(invoice.netPayable || 0).toFixed(2)}</td>
-                        <td>
-                          {invoice.isCleared ? (
-                            <span className="status-cleared">Cleared</span>
-                          ) : (
-                            <span className="status-pending">Pending</span>
-                          )}
-                        </td>
-                        <td>{new Date(invoice.createdAt).toLocaleDateString()}</td>
-                        <td>
-                          <button onClick={() => setSelectedInvoice(invoice)}>
-                            View
-                          </button>
-                        </td>
+                    {invoices.map((invoice) => {
+                      const settlement = findSettlementByInvoiceId(invoice.id);
 
-                        {isAdmin && (
+                      return (
+                        <tr key={invoice.id}>
+                          <td>{invoice.invoiceNumber || "-"}</td>
+                          <td>{invoice.companyName || "-"}</td>
+                          <td>{invoice.billingType}</td>
                           <td>
-                            <button
-                              disabled={invoice.isCleared}
-                              onClick={() => openClearInvoice(invoice)}
-                            >
-                              {invoice.isCleared ? "Cleared" : "Clear"}
+                            {new Date(invoice.invoiceStart).toLocaleDateString()} -{" "}
+                            {new Date(invoice.invoiceEnd).toLocaleDateString()}
+                          </td>
+                          <td>{invoice.truckNumbers || "-"}</td>
+                          <td>${Number(invoice.netPayable || 0).toFixed(2)}</td>
+                          <td>
+                            {invoice.isCleared ? (
+                              <span className="status-cleared">Cleared</span>
+                            ) : (
+                              <span className="status-pending">Pending</span>
+                            )}
+                          </td>
+                          <td>
+                            {new Date(invoice.createdAt).toLocaleDateString()}
+                          </td>
+                          <td>
+                            <button onClick={() => setSelectedInvoice(invoice)}>
+                              View
                             </button>
                           </td>
-                        )}
-                      </tr>
-                    ))}
+
+                          {isAdmin && (
+                            <td>
+                              {invoice.isCleared ? (
+                                <button
+                                  onClick={() => {
+                                    if (!settlement) {
+                                      alert(
+                                        "Settlement not found. Please refresh history."
+                                      );
+                                      return;
+                                    }
+
+                                    setSelectedSettlement(settlement);
+                                  }}
+                                >
+                                  View Settlement
+                                </button>
+                              ) : (
+                                "-"
+                              )}
+                            </td>
+                          )}
+
+                          {isAdmin && (
+                            <td>
+                              <button
+                                className={
+                                  invoice.isCleared ? "disabled-btn" : ""
+                                }
+                                disabled={invoice.isCleared}
+                                onClick={() => openClearInvoice(invoice)}
+                              >
+                                {invoice.isCleared ? "Cleared" : "Clear"}
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
 
                     {invoices.length === 0 && (
                       <tr>
-                        <td colSpan={isAdmin ? "10" : "9"}>
+                        <td colSpan={isAdmin ? "11" : "9"}>
                           No invoice history found.
                         </td>
                       </tr>
@@ -404,6 +491,7 @@ function History() {
                   }
                 >
                   <option value="">All Companies</option>
+
                   {companies.map((company) => (
                     <option key={company.id} value={company.id}>
                       {company.companyName}
@@ -461,6 +549,76 @@ function History() {
             </>
           )}
 
+          {activeTab === "settlement" && isAdmin && (
+            <div className="history-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Company</th>
+                    <th>Invoice USD</th>
+                    <th>USD Rate</th>
+                    <th>Invoice PKR</th>
+                    <th>Dispatcher</th>
+                    <th>Accounts</th>
+                    <th>Partner Profit</th>
+                    <th>Cleared By</th>
+                    <th>Cleared Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {settlements.map((settlement) => (
+                    <tr key={settlement.id}>
+                      <td>{settlement.invoiceNumber || "-"}</td>
+                      <td>{settlement.companyName || "-"}</td>
+                      <td>
+                        ${Number(settlement.invoiceAmountUSD || 0).toFixed(2)}
+                      </td>
+                      <td>{Number(settlement.usdRate || 0).toFixed(2)}</td>
+                      <td>
+                        {Number(settlement.invoiceAmountPKR || 0).toFixed(0)}
+                      </td>
+                      <td>
+                        {Number(settlement.dispatcherAmountPKR || 0).toFixed(0)}{" "}
+                        ({settlement.dispatcherPercent}%)
+                      </td>
+                      <td>
+                        {Number(settlement.accountsAmountPKR || 0).toFixed(0)}{" "}
+                        ({settlement.accountsPercent}%)
+                      </td>
+                      <td>
+                        {Number(settlement.partnerProfitPKR || 0).toFixed(0)}
+                      </td>
+                      <td>{settlement.clearedBy || "-"}</td>
+                      <td>
+                        {settlement.clearedAt
+                          ? new Date(settlement.clearedAt).toLocaleDateString()
+                          : settlement.createdAt
+                          ? new Date(settlement.createdAt).toLocaleDateString()
+                          : "-"}
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => setSelectedSettlement(settlement)}
+                        >
+                          View / Print
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {settlements.length === 0 && (
+                    <tr>
+                      <td colSpan="11">No settlement history found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           {clearInvoiceData && (
             <div className="settlement-modal">
               <div className="settlement-box">
@@ -470,9 +628,12 @@ function History() {
                   <strong>Invoice:</strong>{" "}
                   {clearInvoiceData.invoiceNumber || "-"}
                 </p>
+
                 <p>
-                  <strong>Company:</strong> {clearInvoiceData.companyName || "-"}
+                  <strong>Company:</strong>{" "}
+                  {clearInvoiceData.companyName || "-"}
                 </p>
+
                 <p>
                   <strong>Invoice Amount USD:</strong> $
                   {invoiceAmountUSD.toFixed(2)}
@@ -529,14 +690,17 @@ function History() {
                       <strong>Invoice PKR:</strong>{" "}
                       {invoiceAmountPKR.toFixed(0)}
                     </p>
+
                     <p>
                       <strong>Dispatcher Amount:</strong>{" "}
                       {dispatcherAmountPKR.toFixed(0)}
                     </p>
+
                     <p>
                       <strong>Accounts Amount:</strong>{" "}
                       {accountsAmountPKR.toFixed(0)}
                     </p>
+
                     <p>
                       <strong>Partner Profit:</strong>{" "}
                       {partnerProfitPKR.toFixed(0)}
@@ -558,6 +722,7 @@ function History() {
 
                   <div className="settlement-actions">
                     <button type="submit">Save Settlement</button>
+
                     <button type="button" onClick={closeClearInvoice}>
                       Cancel
                     </button>
@@ -585,6 +750,13 @@ function History() {
             <LoadReportView
               report={selectedLoadReport}
               onClose={() => setSelectedLoadReport(null)}
+            />
+          )}
+
+          {selectedSettlement && (
+            <SettlementView
+              settlement={selectedSettlement}
+              onClose={() => setSelectedSettlement(null)}
             />
           )}
         </>

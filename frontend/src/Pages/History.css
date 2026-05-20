@@ -2,6 +2,7 @@
   display: flex;
   gap: 10px;
   margin-bottom: 18px;
+  flex-wrap: wrap;
 }
 
 .history-tabs button {
@@ -60,6 +61,7 @@
   padding: 12px;
   border-bottom: 1px solid #e5eaf2;
   text-align: left;
+  white-space: nowrap;
 }
 
 .history-table button {
@@ -71,8 +73,111 @@
   cursor: pointer;
 }
 
+.history-table button:disabled,
+.disabled-btn {
+  background: #94a3b8 !important;
+  cursor: not-allowed !important;
+}
+
+.status-cleared {
+  background: #dcfce7;
+  color: #166534;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-weight: bold;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-weight: bold;
+}
+
 .coming-soon {
   background: white;
   padding: 25px;
   border-radius: 12px;
+}
+
+.settlement-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.settlement-box {
+  background: white;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.settlement-box h2 {
+  margin-top: 0;
+  color: #0b2545;
+}
+
+.settlement-box .form-group {
+  margin-bottom: 12px;
+}
+
+.settlement-box .form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.settlement-box .form-group input {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #c8d8ee;
+  border-radius: 8px;
+}
+
+.settlement-summary {
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 10px;
+  margin: 12px 0;
+}
+
+.settlement-summary p {
+  margin: 7px 0;
+}
+
+.settlement-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.settlement-actions button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #0b2545;
+  color: white;
+  cursor: pointer;
+}
+
+.settlement-actions button[type="button"] {
+  background: #64748b;
+}
+
+@media (max-width: 900px) {
+  .history-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .history-tabs button {
+    flex: 1;
+  }
 }

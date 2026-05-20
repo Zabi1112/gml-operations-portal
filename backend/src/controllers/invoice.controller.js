@@ -1,5 +1,14 @@
 const prisma = require("../utils/prisma");
 
+const generateInvoiceNumber = async (branchId) => {
+  const count = await prisma.invoice.count({
+    where: { branchId: Number(branchId) }
+  });
+
+  const nextNumber = count + 1;
+  return `INV-${String(nextNumber).padStart(5, "0")}`;
+};
+
 const calculateInvoice = (data) => {
   const loads = data.loads || [];
   const billingType = data.billingType || "PERCENTAGE";
@@ -33,9 +42,7 @@ const calculateInvoice = (data) => {
   });
 
   const fixedBillingAmount =
-    billingType === "FIXED"
-      ? fixedMonthlyRate * selectedTruckCount
-      : 0;
+    billingType === "FIXED" ? fixedMonthlyRate * selectedTruckCount : 0;
 
   if (billingType === "FIXED") {
     totalDispatchAmount = fixedBillingAmount;
@@ -78,7 +85,6 @@ const createInvoice = async (req, res) => {
       return res.status(400).json({ message: "branchId is required" });
     }
 
-    // Verify branch exists
     const branch = await prisma.branch.findUnique({
       where: { id: Number(branchId) }
     });
@@ -89,11 +95,15 @@ const createInvoice = async (req, res) => {
 
     const calculated = calculateInvoice(req.body);
 
+    const invoiceNumber =
+      req.body.invoiceNumber || (await generateInvoiceNumber(branchId));
+
     const invoice = await prisma.invoice.create({
       data: {
         branchId: Number(branchId),
+        companyId: req.body.companyId ? Number(req.body.companyId) : null,
+
         companyName: req.body.companyName || null,
-        branchName: req.body.branchName || null,
         ownerName: req.body.ownerName || null,
         mcNumber: req.body.mcNumber || null,
         dotNumber: req.body.dotNumber || null,
@@ -108,7 +118,7 @@ const createInvoice = async (req, res) => {
         truckNumbers: req.body.truckNumbers || null,
         driverNames: req.body.driverNames || null,
 
-        invoiceNumber: req.body.invoiceNumber || null,
+        invoiceNumber,
         invoiceStart: new Date(req.body.invoiceStart),
         invoiceEnd: new Date(req.body.invoiceEnd),
         dueDate: req.body.dueDate ? new Date(req.body.dueDate) : null,
@@ -155,11 +165,11 @@ const createInvoice = async (req, res) => {
       await prisma.load.createMany({
         data: invoice.loads.map((load) => ({
           branchId: Number(branchId),
+          companyId: req.body.companyId ? Number(req.body.companyId) : null,
           truckId: firstTruckId,
           driverId: firstDriverId,
 
           companyName: invoice.companyName,
-          branchName: invoice.branchName,
           truckNumber: invoice.truckNumbers,
           driverName: invoice.driverNames,
 
@@ -170,9 +180,9 @@ const createInvoice = async (req, res) => {
           pickup: load.pickup,
           dropoff: load.dropoff,
 
-          miles: Number(load.miles || 0),
-          ratePerMile: Number(load.ratePerMile || 0),
-          grossAmount: Number(load.grossAmount || load.loadAmount || 0),
+          miles: 0,
+          ratePerMile: 0,
+          grossAmount: Number(load.loadAmount || 0),
 
           loadAmount: Number(load.loadAmount || 0),
           dispatchPercent: Number(load.dispatchPercent || 0),
@@ -189,18 +199,24 @@ const createInvoice = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      message: error.message || "Server error"
+    });
   }
 };
 
 const getInvoices = async (req, res) => {
   try {
-    const { branchId, from, to } = req.query;
+    const { branchId, companyId, from, to } = req.query;
 
     const where = {};
 
     if (branchId) {
       where.branchId = Number(branchId);
+    }
+
+    if (companyId) {
+      where.companyId = Number(companyId);
     }
 
     if (from || to) {
@@ -223,7 +239,9 @@ const getInvoices = async (req, res) => {
     res.json(invoices);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      message: error.message || "Server error"
+    });
   }
 };
 
@@ -254,7 +272,9 @@ const getInvoicesByBranch = async (req, res) => {
     res.json(invoices);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      message: error.message || "Server error"
+    });
   }
 };
 

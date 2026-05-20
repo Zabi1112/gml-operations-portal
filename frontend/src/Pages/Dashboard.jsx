@@ -13,6 +13,7 @@ function Dashboard() {
     useContext(BranchContext);
 
   const [showForm, setShowForm] = useState(false);
+  const [settlements, setSettlements] = useState([]);
 
   const [branchForm, setBranchForm] = useState({
     branchName: "",
@@ -43,9 +44,32 @@ function Dashboard() {
     }
   };
 
+  const loadSettlements = async () => {
+    if (!canEdit || !selectedBranch?.id) {
+      setSettlements([]);
+      return;
+    }
+
+    try {
+      const res = await axios.get(
+        `${API}/finance/settlements?branchId=${selectedBranch.id}`,
+        auth
+      );
+
+      setSettlements(res.data || []);
+    } catch (error) {
+      console.log(error);
+      setSettlements([]);
+    }
+  };
+
   useEffect(() => {
     loadBranches();
   }, []);
+
+  useEffect(() => {
+    loadSettlements();
+  }, [selectedBranch]);
 
   const createBranch = async (e) => {
     e.preventDefault();
@@ -91,6 +115,39 @@ function Dashboard() {
       alert(error.response?.data?.message || "Failed to delete branch");
     }
   };
+
+  const totalGeneratedPKR = settlements.reduce(
+    (sum, item) => sum + Number(item.invoiceAmountPKR || 0),
+    0
+  );
+
+  const totalAccountsPKR = settlements.reduce(
+    (sum, item) => sum + Number(item.accountsAmountPKR || 0),
+    0
+  );
+
+  const partnerTotals = {};
+
+  settlements.forEach((settlement) => {
+    const splits = Array.isArray(settlement.partnerSplits)
+      ? settlement.partnerSplits
+      : [];
+
+    splits.forEach((partner) => {
+      const name = partner.name || "Unknown Partner";
+
+      if (!partnerTotals[name]) {
+        partnerTotals[name] = 0;
+      }
+
+      partnerTotals[name] += Number(partner.amountPKR || 0);
+    });
+  });
+
+  const partnerRows = Object.entries(partnerTotals).map(([name, amount]) => ({
+    name,
+    amount
+  }));
 
   return (
     <Layout title="Dashboard">
@@ -199,38 +256,102 @@ function Dashboard() {
           </div>
 
           {selectedBranch ? (
-            <div className="branch-info">
-              <h3>Active Branch: {selectedBranch.branchName}</h3>
+            <>
+              <div className="branch-info">
+                <h3>Active Branch: {selectedBranch.branchName}</h3>
 
-              <div className="info-grid">
-                <div>
-                  <strong>Location:</strong>{" "}
-                  {selectedBranch.location || "N/A"}
+                <div className="info-grid">
+                  <div>
+                    <strong>Location:</strong>{" "}
+                    {selectedBranch.location || "N/A"}
+                  </div>
+
+                  <div>
+                    <strong>Phone:</strong> {selectedBranch.phone || "N/A"}
+                  </div>
+
+                  <div>
+                    <strong>Email:</strong> {selectedBranch.email || "N/A"}
+                  </div>
+
+                  <div>
+                    <strong>Status:</strong>{" "}
+                    {selectedBranch.isActive ? "Active" : "Inactive"}
+                  </div>
                 </div>
 
-                <div>
-                  <strong>Phone:</strong> {selectedBranch.phone || "N/A"}
-                </div>
-
-                <div>
-                  <strong>Email:</strong> {selectedBranch.email || "N/A"}
-                </div>
-
-                <div>
-                  <strong>Status:</strong>{" "}
-                  {selectedBranch.isActive ? "Active" : "Inactive"}
-                </div>
+                {canEdit && (
+                  <button
+                    className="danger"
+                    onClick={() => deleteBranch(selectedBranch.id)}
+                  >
+                    Delete This Branch
+                  </button>
+                )}
               </div>
 
               {canEdit && (
-                <button
-                  className="danger"
-                  onClick={() => deleteBranch(selectedBranch.id)}
-                >
-                  Delete This Branch
-                </button>
+                <div className="finance-summary-section">
+                  <div className="finance-summary-header">
+                    <div>
+                      <h2>Company Finance Summary</h2>
+                      <p>
+                        Based on cleared invoice settlements for this branch.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="finance-summary-cards">
+                    <div className="finance-summary-card">
+                      <span>Total Generated</span>
+                      <strong>
+                        PKR {totalGeneratedPKR.toLocaleString()}
+                      </strong>
+                    </div>
+
+                    <div className="finance-summary-card accounts-card">
+                      <span>Total Accounts Money</span>
+                      <strong>
+                        PKR {totalAccountsPKR.toLocaleString()}
+                      </strong>
+                    </div>
+
+                    <div className="finance-summary-card">
+                      <span>Total Settlements</span>
+                      <strong>{settlements.length}</strong>
+                    </div>
+                  </div>
+
+                  <div className="partner-earning-box">
+                    <h3>Partner Earnings</h3>
+
+                    <table className="partner-earning-table">
+                      <thead>
+                        <tr>
+                          <th>Partner Name</th>
+                          <th>Total Amount</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {partnerRows.map((partner) => (
+                          <tr key={partner.name}>
+                            <td>{partner.name}</td>
+                            <td>PKR {partner.amount.toLocaleString()}</td>
+                          </tr>
+                        ))}
+
+                        {partnerRows.length === 0 && (
+                          <tr>
+                            <td colSpan="2">No partner earnings found yet.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
-            </div>
+            </>
           ) : (
             <div className="warning-message">
               No branch selected. Please select or create a branch to continue.
