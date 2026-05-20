@@ -30,6 +30,8 @@ const createLoad = async (req, res) => {
         companyName: req.body.companyName || null,
         truckNumber: req.body.truckNumber || null,
         driverName: req.body.driverName || null,
+        driverType: req.body.driverType || null,
+        bookedByTeam: req.body.bookedByTeam || null,
 
         loadDate: new Date(req.body.loadDate),
         pickupDate: req.body.pickupDate ? new Date(req.body.pickupDate) : null,
@@ -56,13 +58,22 @@ const createLoad = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
 const getLoads = async (req, res) => {
   try {
-    const { branchId, companyId, truckId, driverId, from, to } = req.query;
+    const {
+      branchId,
+      companyId,
+      truckId,
+      driverId,
+      from,
+      to,
+      bookedByTeam,
+      source
+    } = req.query;
 
     const where = {};
 
@@ -70,11 +81,17 @@ const getLoads = async (req, res) => {
     if (companyId) where.companyId = Number(companyId);
     if (truckId) where.truckId = Number(truckId);
     if (driverId) where.driverId = Number(driverId);
+    if (bookedByTeam) where.bookedByTeam = bookedByTeam;
+    if (source) where.source = source;
 
     if (from || to) {
       where.loadDate = {};
       if (from) where.loadDate.gte = new Date(from);
-      if (to) where.loadDate.lte = new Date(to);
+      if (to) {
+        const endDate = new Date(to);
+        endDate.setHours(23, 59, 59, 999);
+        where.loadDate.lte = endDate;
+      }
     }
 
     const loads = await prisma.load.findMany({
@@ -85,7 +102,7 @@ const getLoads = async (req, res) => {
     res.json(loads);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -107,7 +124,10 @@ const updateLoad = async (req, res) => {
         miles,
         ratePerMile,
         grossAmount,
-        loadAmount: grossAmount
+        loadAmount: grossAmount,
+        driverName: req.body.driverName,
+        driverType: req.body.driverType,
+        bookedByTeam: req.body.bookedByTeam
       }
     });
 
@@ -117,7 +137,7 @@ const updateLoad = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -130,7 +150,7 @@ const deleteLoad = async (req, res) => {
     res.json({ message: "Load deleted successfully" });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -163,7 +183,7 @@ const createLoadReason = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -191,7 +211,7 @@ const getLoadReasons = async (req, res) => {
     res.json(reasons);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -204,7 +224,7 @@ const deleteLoadReason = async (req, res) => {
     res.json({ message: "Reason deleted successfully" });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 

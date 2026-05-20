@@ -26,6 +26,9 @@ function Layout({ title, children }) {
         <button onClick={() => go("/dashboard")}>Dashboard</button>
         <button onClick={() => go("/salary-slips")}>Salary Slips</button>
         <button onClick={() => go("/load-reports")}>Load Reports</button>
+        {(user?.role === "ADMIN" || user?.role === "EDITOR") && (
+          <button onClick={() => go("/daily-report")}>Daily Report</button>
+        )}
         <button onClick={() => go("/invoices")}>Invoices</button>
         <button>Attendance</button>
         <button onClick={() => go("/employees")}>Staff</button>
@@ -39,7 +42,9 @@ function Layout({ title, children }) {
           <button onClick={() => go("/finance-settings")}>Finance Settings</button>
         )}
 
-        <button onClick={() => go("/history")}>History</button>
+         {user?.role === "ADMIN" && (
+          <button onClick={() => go("/history")}>History</button>
+        )}
       </aside>
 
       <main className="content">

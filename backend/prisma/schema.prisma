@@ -310,6 +310,8 @@ model Load {
   companyName     String?
   truckNumber     String?
   driverName      String?
+  driverType      String?
+  bookedByTeam    String?
 
   loadDate        DateTime
   pickupDate      DateTime?

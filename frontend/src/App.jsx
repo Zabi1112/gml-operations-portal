@@ -11,6 +11,7 @@ import Invoices from "./Pages/Invoices.jsx";
 import Companies from "./Pages/Companies.jsx";
 import LoadReports from "./Pages/LoadReports.jsx";
 import FinanceSettings from "./Pages/FinanceSettings.jsx";
+import DailyReport from "./Pages/DailyReport.jsx";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -65,6 +66,11 @@ function App() {
         <Route
           path="/finance-settings"
           element={token ? <FinanceSettings /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/daily-report"
+          element={token ? <DailyReport /> : <Navigate to="/login" />}
         />
 
         <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
