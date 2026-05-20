@@ -72,41 +72,52 @@
   color: #64748b;
 }
 
-.daily-table-wrap {
-  overflow-x: auto;
+.daily-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.daily-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 1500px;
-}
-
-.daily-table th,
-.daily-table td {
-  border: 1px solid #e5e7eb;
-  padding: 9px;
-  text-align: left;
-}
-
-.daily-table th {
-  background: #0b2545;
-  color: white;
-  font-size: 13px;
-}
-
-.daily-table input,
-.daily-table select {
-  width: 100%;
-  min-width: 120px;
-  padding: 9px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  box-sizing: border-box;
-}
-
-.daily-table tfoot td {
+.daily-load-card {
   background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.daily-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.daily-card-top h3 {
+  margin: 0;
+  color: #0b2545;
+}
+
+.daily-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.daily-card-grid label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.daily-card-grid input,
+.daily-card-grid select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-sizing: border-box;
 }
 
 .danger-mini {
@@ -117,49 +128,6 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
-}
-
-@media print {
-  body * {
-    visibility: hidden;
-  }
-
-  .daily-print-area,
-  .daily-print-area * {
-    visibility: visible;
-  }
-
-  .daily-print-area {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    padding: 20px;
-    box-shadow: none;
-    border-radius: 0;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  .daily-table {
-    min-width: 100%;
-    font-size: 10px;
-  }
-
-  .daily-table input,
-  .daily-table select {
-    border: none;
-    padding: 0;
-    font-size: 10px;
-  }
-}
-
-@media (max-width: 900px) {
-  .daily-report-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 }
 
 .daily-print-report {
@@ -188,9 +156,9 @@
 .team-print-table th,
 .team-print-table td {
   border: 1px solid #d1d5db;
-  padding: 8px;
+  padding: 7px;
   text-align: left;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .team-print-table th {
@@ -213,8 +181,48 @@
   font-weight: bold;
 }
 
+@media (max-width: 1200px) {
+  .daily-card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .daily-report-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .daily-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-print-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 @media print {
-  .daily-table-wrap {
+  body * {
+    visibility: hidden;
+  }
+
+  .daily-print-area,
+  .daily-print-area * {
+    visibility: visible;
+  }
+
+  .daily-print-area {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 18px;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .no-print {
     display: none !important;
   }
 
@@ -229,6 +237,13 @@
   .team-print-section h2 {
     background: #0b2545 !important;
     color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .team-print-table th {
+    background: #eef2ff !important;
+    color: #0b2545 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

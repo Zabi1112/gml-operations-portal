@@ -32,6 +32,10 @@ const createLoad = async (req, res) => {
         driverName: req.body.driverName || null,
         driverType: req.body.driverType || null,
         bookedByTeam: req.body.bookedByTeam || null,
+        brokerNameCompany: req.body.brokerNameCompany || null,
+        pickupTime: req.body.pickupTime || null,
+        deliveryTime: req.body.deliveryTime || null,
+        loadNumber: req.body.loadNumber || null,
 
         loadDate: new Date(req.body.loadDate),
         pickupDate: req.body.pickupDate ? new Date(req.body.pickupDate) : null,
@@ -127,7 +131,11 @@ const updateLoad = async (req, res) => {
         loadAmount: grossAmount,
         driverName: req.body.driverName,
         driverType: req.body.driverType,
-        bookedByTeam: req.body.bookedByTeam
+        bookedByTeam: req.body.bookedByTeam,
+        brokerNameCompany: req.body.brokerNameCompany,
+        pickupTime: req.body.pickupTime,
+        deliveryTime: req.body.deliveryTime,
+        loadNumber: req.body.loadNumber
       }
     });
 

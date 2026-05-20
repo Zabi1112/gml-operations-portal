@@ -24,12 +24,18 @@ function Layout({ title, children }) {
         <img src="/logo.jpeg" className="sidebar-logo" />
 
         <button onClick={() => go("/dashboard")}>Dashboard</button>
-        <button onClick={() => go("/salary-slips")}>Salary Slips</button>
+        {(user?.role === "ADMIN") && (
+          <button onClick={() => go("/salary-slips")}>Salary Slips</button>
+        )}
+        
         <button onClick={() => go("/load-reports")}>Load Reports</button>
         {(user?.role === "ADMIN" || user?.role === "EDITOR") && (
           <button onClick={() => go("/daily-report")}>Daily Report</button>
         )}
-        <button onClick={() => go("/invoices")}>Invoices</button>
+        {(user?.role === "ADMIN") && (
+          <button onClick={() => go("/invoices")}>Invoices</button>
+        )}
+        
         <button>Attendance</button>
         <button onClick={() => go("/employees")}>Staff</button>
         <button onClick={() => go("/companies")}>Companies</button>

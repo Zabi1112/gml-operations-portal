@@ -312,6 +312,10 @@ model Load {
   driverName      String?
   driverType      String?
   bookedByTeam    String?
+  brokerNameCompany String?
+  deliveryTime      String?
+  pickupTime        String?
+  loadNumber        String?
 
   loadDate        DateTime
   pickupDate      DateTime?
