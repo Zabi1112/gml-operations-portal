@@ -13,13 +13,10 @@ const Settlements = () => {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const [settlements, setSettlements] = useState([]);
-  const [partners, setPartners] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-
-  const [formData, setFormData] = useState({
+  const emptyForm = {
     totalAmountPKR: "",
+    totalAmountUSD: "",
+    dollarRate: "",
     dispatcherValue: "",
     dispatcherType: "PERCENTAGE",
     accountsValue: "",
@@ -27,7 +24,13 @@ const Settlements = () => {
     companyName: "",
     settlementDate: new Date().toISOString().split("T")[0],
     notes: ""
-  });
+  };
+
+  const [settlements, setSettlements] = useState([]);
+  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState(emptyForm);
 
   const [calculatedAmounts, setCalculatedAmounts] = useState({
     dispatcherAmount: 0,
@@ -115,10 +118,36 @@ const Settlements = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: value
+      };
+
+      const rate = Number(updated.dollarRate) || 0;
+
+      if (name === "totalAmountUSD" && rate > 0) {
+        updated.totalAmountPKR = (Number(value || 0) * rate).toFixed(2);
+      }
+
+      if (name === "totalAmountPKR" && rate > 0) {
+        updated.totalAmountUSD = (Number(value || 0) / rate).toFixed(2);
+      }
+
+      if (name === "dollarRate" && Number(value) > 0) {
+        if (updated.totalAmountUSD) {
+          updated.totalAmountPKR = (
+            Number(updated.totalAmountUSD || 0) * Number(value)
+          ).toFixed(2);
+        } else if (updated.totalAmountPKR) {
+          updated.totalAmountUSD = (
+            Number(updated.totalAmountPKR || 0) / Number(value)
+          ).toFixed(2);
+        }
+      }
+
+      return updated;
+    });
   };
 
   const handleAccountsTypeChange = (e) => {
@@ -148,11 +177,7 @@ const Settlements = () => {
     }
 
     if (formData.accountsValue === "") {
-      alert(
-        `Please enter accounts ${
-          formData.accountsType === "PERCENTAGE" ? "percentage" : "amount"
-        }`
-      );
+      alert("Please enter accounts value");
       return;
     }
 
@@ -174,18 +199,7 @@ const Settlements = () => {
       );
 
       alert("Settlement created successfully!");
-
-      setFormData({
-        totalAmountPKR: "",
-        dispatcherValue: "",
-        dispatcherType: "PERCENTAGE",
-        accountsValue: "",
-        accountsType: "PERCENTAGE",
-        companyName: "",
-        settlementDate: new Date().toISOString().split("T")[0],
-        notes: ""
-      });
-
+      setFormData(emptyForm);
       setShowForm(false);
       fetchSettlements();
     } catch (error) {
@@ -202,12 +216,18 @@ const Settlements = () => {
     }).format(Number(value || 0));
   };
 
+  const formatUSD = (value) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2
+    }).format(Number(value || 0));
+  };
+
   if (!selectedBranch) {
     return (
       <div className="settlements-container">
-        <div className="warning-message">
-          Please select a branch first.
-        </div>
+        <div className="warning-message">Please select a branch first.</div>
       </div>
     );
   }
@@ -239,13 +259,37 @@ const Settlements = () => {
 
               <div className="form-row">
                 <div className="form-group">
+                  <label>Dollar Amount ($)</label>
+                  <input
+                    type="number"
+                    name="totalAmountUSD"
+                    value={formData.totalAmountUSD}
+                    onChange={handleInputChange}
+                    placeholder="Enter dollar amount"
+                    step="0.01"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Dollar Rate</label>
+                  <input
+                    type="number"
+                    name="dollarRate"
+                    value={formData.dollarRate}
+                    onChange={handleInputChange}
+                    placeholder="e.g. 280"
+                    step="0.01"
+                  />
+                </div>
+
+                <div className="form-group">
                   <label>Total Amount Received (PKR) *</label>
                   <input
                     type="number"
                     name="totalAmountPKR"
                     value={formData.totalAmountPKR}
                     onChange={handleInputChange}
-                    placeholder="Enter total amount received"
+                    placeholder="Enter PKR amount"
                     step="0.01"
                     required
                   />
@@ -258,7 +302,7 @@ const Settlements = () => {
                     name="companyName"
                     value={formData.companyName}
                     onChange={handleInputChange}
-                    placeholder="e.g., ABC Company"
+                    placeholder="e.g. ABC Company"
                   />
                 </div>
 
@@ -272,6 +316,27 @@ const Settlements = () => {
                   />
                 </div>
               </div>
+
+              {formData.dollarRate && (
+                <div className="calculation-summary">
+                  <h3>Currency Conversion</h3>
+
+                  <div className="summary-row">
+                    <span>Dollar Amount:</span>
+                    <strong>{formatUSD(formData.totalAmountUSD)}</strong>
+                  </div>
+
+                  <div className="summary-row">
+                    <span>Dollar Rate:</span>
+                    <strong>{formData.dollarRate}</strong>
+                  </div>
+
+                  <div className="summary-row total">
+                    <span>PKR Amount:</span>
+                    <strong>{formatCurrency(formData.totalAmountPKR)}</strong>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="form-section">
@@ -370,9 +435,7 @@ const Settlements = () => {
 
                 <div className="summary-row">
                   <span>Total Amount Received:</span>
-                  <strong>
-                    {formatCurrency(Number(formData.totalAmountPKR))}
-                  </strong>
+                  <strong>{formatCurrency(formData.totalAmountPKR)}</strong>
                 </div>
 
                 <div className="summary-row">
