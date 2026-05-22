@@ -7,6 +7,7 @@ const {
   createPartner,
   deletePartner,
   clearInvoice,
+  createManualSettlement,
   getSettlements
 } = require("../controllers/finance.controller");
 
@@ -25,6 +26,7 @@ router.post("/partners", createPartner);
 router.delete("/partners/:id", deletePartner);
 
 router.post("/clear-invoice/:invoiceId", clearInvoice);
+router.post("/manual-settlement", createManualSettlement);
 router.get("/settlements", getSettlements);
 
 module.exports = router;

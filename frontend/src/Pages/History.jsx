@@ -40,7 +40,8 @@ function History() {
   const [settlementForm, setSettlementForm] = useState({
     usdRate: "",
     dispatcherPercent: "",
-    accountsPercent: "",
+    accountsValue: "",
+    accountsType: "PERCENTAGE",
     notes: ""
   });
 
@@ -156,7 +157,8 @@ function History() {
     setSettlementForm({
       usdRate: "",
       dispatcherPercent: selectedBranch?.dispatcherPercent || 25,
-      accountsPercent: selectedBranch?.accountsPercent || 10,
+      accountsValue: selectedBranch?.accountsPercent || 10,
+      accountsType: "PERCENTAGE",
       notes: ""
     });
   };
@@ -167,7 +169,8 @@ function History() {
     setSettlementForm({
       usdRate: "",
       dispatcherPercent: "",
-      accountsPercent: "",
+      accountsValue: "",
+      accountsType: "PERCENTAGE",
       notes: ""
     });
   };
@@ -183,8 +186,9 @@ function History() {
         {
           invoiceAmountUSD: Number(clearInvoiceData.netPayable || 0),
           usdRate: Number(settlementForm.usdRate || 0),
-          dispatcherPercent: Number(settlementForm.dispatcherPercent || 0),
-          accountsPercent: Number(settlementForm.accountsPercent || 0),
+          dispatcherValue: Number(settlementForm.dispatcherPercent || 0),
+          accountsValue: Number(settlementForm.accountsValue || 0),
+          accountsType: settlementForm.accountsType,
           notes: settlementForm.notes
         },
         auth
@@ -215,10 +219,17 @@ function History() {
   const invoiceAmountPKR = invoiceAmountUSD * usdRate;
 
   const dispatcherPercent = Number(settlementForm.dispatcherPercent || 0);
-  const accountsPercent = Number(settlementForm.accountsPercent || 0);
+  const accountsValue = Number(settlementForm.accountsValue || 0);
 
   const dispatcherAmountPKR = (invoiceAmountPKR * dispatcherPercent) / 100;
-  const accountsAmountPKR = (invoiceAmountPKR * accountsPercent) / 100;
+  
+  // Accounts can be percentage or absolute
+  let accountsAmountPKR = 0;
+  if (settlementForm.accountsType === "PERCENTAGE") {
+    accountsAmountPKR = (invoiceAmountPKR * accountsValue) / 100;
+  } else {
+    accountsAmountPKR = accountsValue;
+  }
 
   const partnerProfitPKR =
     invoiceAmountPKR - dispatcherAmountPKR - accountsAmountPKR;
@@ -671,15 +682,60 @@ function History() {
                   </div>
 
                   <div className="form-group">
-                    <label>Accounts %</label>
+                    <label>Accounts Payment Type</label>
+                    <div style={{ display: "flex", gap: "15px", marginBottom: "10px" }}>
+                      <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <input
+                          type="radio"
+                          name="accountsType"
+                          value="PERCENTAGE"
+                          checked={settlementForm.accountsType === "PERCENTAGE"}
+                          onChange={(e) =>
+                            setSettlementForm({
+                              ...settlementForm,
+                              accountsType: e.target.value,
+                              accountsValue: ""
+                            })
+                          }
+                        />
+                        Percentage (%)
+                      </label>
+                      <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <input
+                          type="radio"
+                          name="accountsType"
+                          value="ABSOLUTE"
+                          checked={settlementForm.accountsType === "ABSOLUTE"}
+                          onChange={(e) =>
+                            setSettlementForm({
+                              ...settlementForm,
+                              accountsType: e.target.value,
+                              accountsValue: ""
+                            })
+                          }
+                        />
+                        Absolute (PKR)
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>
+                      Accounts {settlementForm.accountsType === "PERCENTAGE" ? "(%)" : "(PKR)"}
+                    </label>
                     <input
                       type="number"
-                      value={settlementForm.accountsPercent}
+                      value={settlementForm.accountsValue}
                       onChange={(e) =>
                         setSettlementForm({
                           ...settlementForm,
-                          accountsPercent: e.target.value
+                          accountsValue: e.target.value
                         })
+                      }
+                      placeholder={
+                        settlementForm.accountsType === "PERCENTAGE"
+                          ? "Enter percentage (e.g., 10)"
+                          : "Enter amount in PKR"
                       }
                       required
                     />

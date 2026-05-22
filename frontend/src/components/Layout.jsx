@@ -35,6 +35,10 @@ function Layout({ title, children }) {
         {(user?.role === "ADMIN") && (
           <button onClick={() => go("/invoices")}>Invoices</button>
         )}
+
+        {(user?.role === "ADMIN") && (
+          <button onClick={() => go("/settlements")}>Settlements</button>
+        )}
         
         <button>Attendance</button>
         <button onClick={() => go("/employees")}>Staff</button>
