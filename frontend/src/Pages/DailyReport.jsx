@@ -1,5 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import { BranchContext } from "../context/BranchContext.jsx";
@@ -197,6 +199,45 @@ function DailyReport() {
     window.print();
   };
 
+
+  const downloadPdf = async () => {
+    const element = document.querySelector(".daily-print-area");
+    if (!element) return;
+
+    const oldDisplay = document.querySelector(".daily-print-report")?.style.display;
+    const printReportEl = document.querySelector(".daily-print-report");
+
+    if (printReportEl) {
+      printReportEl.style.display = "block";
+    }
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
+    });
+
+    if (printReportEl) {
+      printReportEl.style.display = oldDisplay || "";
+    }
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdfWidth = 297;
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    const pdf = new jsPDF({
+      orientation: "l",
+      unit: "mm",
+      format: [pdfWidth, pdfHeight]
+    });
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+    pdf.save(`daily-load-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
+
   const totalGross = rows.reduce(
     (sum, row) => sum + Number(row.grossAmount || 0),
     0
@@ -232,6 +273,9 @@ function DailyReport() {
               </button>
               <button type="button" onClick={saveLoads}>
                 Save Loads
+              </button>
+              <button type="button" onClick={downloadPdf}>
+                Download PDF
               </button>
               <button type="button" onClick={printReport}>
                 Print

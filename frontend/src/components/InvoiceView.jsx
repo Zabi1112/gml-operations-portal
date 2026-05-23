@@ -1,4 +1,6 @@
 import axios from "axios";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import { API } from "../api";
 import "./InvoiceView.css";
 
@@ -30,13 +32,38 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
 
   const handlePrint = async () => {
     try {
-      await saveInvoice();
-      setTimeout(() => {
-        window.print();
-        if (onSaved) onSaved();
-      }, 200);
+      const savedInvoice = await saveInvoice();
+
+      const element = document.querySelector(".invoice-print");
+      if (!element) return;
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdfWidth = 210; // A4 width in mm
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      const pdf = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: [pdfWidth, pdfHeight]
+      });
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+      const fileName =
+        savedInvoice?.invoiceNumber || invoice.invoiceNumber || "invoice";
+
+      pdf.save(`${fileName}.pdf`);
+
+      if (onSaved) onSaved();
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to save before print");
+      alert(error.response?.data?.message || "Failed to create PDF");
     }
   };
 
@@ -52,7 +79,7 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
       <div className="invoice-actions no-print">
         <button onClick={onClose}>Close / Edit</button>
         {isPreview && <button onClick={handleSave}>Save to History</button>}
-        <button onClick={handlePrint}>Print / Save PDF</button>
+        <button onClick={handlePrint}>Download PDF</button>
       </div>
 
       <div className="invoice-print">

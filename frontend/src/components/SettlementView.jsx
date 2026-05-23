@@ -1,4 +1,6 @@
 import "./SettlementView.css";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 function SettlementView({ settlement, onClose }) {
   if (!settlement) return null;
@@ -7,13 +9,35 @@ function SettlementView({ settlement, onClose }) {
     ? settlement.partnerSplits
     : [];
 
-  const printSettlement = () => window.print();
+  const printSettlement = async () => {
+    const element = document.querySelector(".settlement-print");
+    if (!element) return;
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdfWidth = 210;
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: [pdfWidth, pdfHeight]
+    });
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`settlement-${settlement.invoiceNumber || "report"}.pdf`);
+  };
 
   return (
     <div className="settlement-view-modal">
       <div className="settlement-view-actions no-print">
         <button onClick={onClose}>Close</button>
-        <button onClick={printSettlement}>Print / Save PDF</button>
+        <button onClick={printSettlement}>DownloadPDF</button>
       </div>
 
       <div className="settlement-print">

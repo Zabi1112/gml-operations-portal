@@ -1,4 +1,6 @@
 import axios from "axios";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import { API } from "../api";
 import "./LoadReportView.css";
 
@@ -9,7 +11,29 @@ function LoadReportView({ report, onClose }) {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const printReport = () => window.print();
+  const printReport = async () => {
+    const element = document.querySelector(".dlr-report-print");
+    if (!element) return;
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdfWidth = 297; // landscape width
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    const pdf = new jsPDF({
+      orientation: "l",
+      unit: "mm",
+      format: [pdfWidth, pdfHeight]
+    });
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`load-report-${report.companyName || "report"}.pdf`);
+  };
 
   const saveToHistory = async () => {
     try {
@@ -80,7 +104,7 @@ function LoadReportView({ report, onClose }) {
       <div className="report-actions no-print">
         <button onClick={onClose}>Close</button>
         <button onClick={saveToHistory}>Save to History</button>
-        <button onClick={printReport}>Print / Save PDF</button>
+        <button onClick={printReport}>Download PDF</button>
       </div>
 
       <div className="dlr-report-print">

@@ -1,4 +1,6 @@
 import axios from "axios";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import { API } from "../api";
 import "./SalarySlipView.css";
 
@@ -31,16 +33,39 @@ function SalarySlipView({ slip, onClose, onSaved, isPreview = false }) {
   };
 
   const handlePrint = async () => {
-    try {
-      await saveSlip();
-      setTimeout(() => {
-        window.print();
-        if (onSaved) onSaved();
-      }, 200);
-    } catch (error) {
-      alert(error.response?.data?.message || "Failed to save before print");
-    }
-  };
+  try {
+    const savedSlip = await saveSlip();
+
+    const element = document.querySelector(".salary-slip-print");
+    if (!element) return;
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdfWidth = 210;
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: [pdfWidth, pdfHeight]
+    });
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+    pdf.save(
+      `salary-slip-${savedSlip?.employeeName || slip.employeeName || "employee"}.pdf`
+    );
+
+    if (onSaved) onSaved();
+  } catch (error) {
+    alert(error.response?.data?.message || "Failed to create PDF");
+  }
+};
 
   return (
     <div className="slip-modal">
@@ -52,7 +77,7 @@ function SalarySlipView({ slip, onClose, onSaved, isPreview = false }) {
         )}
 
         <button onClick={handlePrint}>
-          Print / Save PDF
+          Download PDF
         </button>
       </div>
 
