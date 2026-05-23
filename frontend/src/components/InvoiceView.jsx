@@ -31,7 +31,6 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
   const handlePrint = async () => {
     try {
       await saveInvoice();
-
       setTimeout(() => {
         window.print();
         if (onSaved) onSaved();
@@ -40,6 +39,13 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
       alert(error.response?.data?.message || "Failed to save before print");
     }
   };
+
+  const formatDate = (value) => {
+    if (!value) return "-";
+    return new Date(value).toLocaleDateString();
+  };
+
+  const loads = invoice.loads || [];
 
   return (
     <div className="invoice-modal">
@@ -50,150 +56,206 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
       </div>
 
       <div className="invoice-print">
-        <h1>Invoice</h1>
+        <div className="invoice-brand-header">
+          <img src="/logo.jpeg" alt="GML Logo" />
 
-        <div className="invoice-header">
           <div>
-            <h3>Get Moving Logistics</h3>
-            <p><strong>Address:</strong> 30 N Gould Street, Sheridan, WY, US 82801</p>
-            <p><strong>Phone:</strong> (256) 272-4062</p>
-            <p><strong>Email:</strong> info@getmovinglogistics.org</p>
-            <p><strong>Website:</strong> www.getmovinglogistics.org</p>
-            <p><strong>Account Number:</strong> {invoice.accountNumber || "-"}</p>
-            <p><strong>Account Title:</strong> {invoice.accountTitle || "-"}</p>
+            <h1>Invoice</h1>
+            <p>Get Moving Logistics</p>
           </div>
 
-          <div className="invoice-right">
-            <p><strong>Invoice #:</strong> {invoice.invoiceNumber || "-"}</p>
-            <p><strong>Company:</strong> {invoice.companyName || "-"}</p>
-            <p><strong>Owner:</strong> {invoice.ownerName || "-"}</p>
-            <p><strong>MC #:</strong> {invoice.mcNumber || "-"}</p>
-            <p><strong>DOT #:</strong> {invoice.dotNumber || "-"}</p>
-            <p><strong>Phone:</strong> {invoice.contactNumber || "-"}</p>
+          <div className="invoice-meta-card">
+            <span>Invoice #</span>
+            <strong>{invoice.invoiceNumber || "Auto Generated"}</strong>
           </div>
         </div>
 
-        <div className="invoice-dates">
-          <p>
-            <strong>Invoice Period:</strong>{" "}
-            {new Date(invoice.invoiceStart).toLocaleDateString()} -{" "}
-            {new Date(invoice.invoiceEnd).toLocaleDateString()}
-          </p>
+        <div className="invoice-company-row">
+          <div className="company-block">
+            <h3>From</h3>
+            <p><strong>Get Moving Logistics</strong></p>
+            <p>30 N Gould Street, Sheridan, WY, US 82801</p>
+            <p>Phone: (256) 272-4062</p>
+            <p>Email: info@getmovinglogistics.org</p>
+            <p>Website: www.getmovinglogistics.org</p>
+          </div>
 
-          <p>
-            <strong>Due Date:</strong>{" "}
-            {invoice.dueDate
-              ? new Date(invoice.dueDate).toLocaleDateString()
-              : "-"}
-          </p>
+          <div className="company-block right">
+            <h3>Bill To</h3>
+            <p><strong>{invoice.companyName || "-"}</strong></p>
+            <p>Owner: {invoice.ownerName || "-"}</p>
+            <p>MC #: {invoice.mcNumber || "-"}</p>
+            <p>DOT #: {invoice.dotNumber || "-"}</p>
+            <p>Phone: {invoice.contactNumber || "-"}</p>
+          </div>
+        </div>
 
-          <p><strong>Truck(s):</strong> {invoice.truckNumbers || "-"}</p>
-          <p><strong>Driver(s):</strong> {invoice.driverNames || "-"}</p>
+        <div className="invoice-info-grid">
+          <div>
+            <span>Invoice Period</span>
+            <strong>
+              {formatDate(invoice.invoiceStart)} - {formatDate(invoice.invoiceEnd)}
+            </strong>
+          </div>
+
+          <div>
+            <span>Due Date</span>
+            <strong>{formatDate(invoice.dueDate)}</strong>
+          </div>
+
+          <div>
+            <span>Billing Type</span>
+            <strong>{invoice.billingType}</strong>
+          </div>
+
+          <div>
+            <span>Status</span>
+            <strong>{invoice.isCleared ? "Cleared" : "Pending"}</strong>
+          </div>
+
+          <div>
+            <span>Truck(s)</span>
+            <strong>{invoice.truckNumbers || "-"}</strong>
+          </div>
+
+          <div>
+            <span>Driver(s)</span>
+            <strong>{invoice.driverNames || "-"}</strong>
+          </div>
         </div>
 
         {invoice.billingType === "PERCENTAGE" && (
-          <table className="invoice-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Pickup</th>
-                <th>Drop-off</th>
-                <th>Load Amount</th>
-                <th>Dispatch %</th>
-                <th>Dispatch Amount</th>
-              </tr>
-            </thead>
+          <>
+            <h3 className="section-title">Load Details</h3>
 
-            <tbody>
-              {invoice.loads?.map((load, index) => (
-                <tr key={index}>
-                  <td>{new Date(load.date).toLocaleDateString()}</td>
-                  <td>{load.pickup}</td>
-                  <td>{load.dropoff}</td>
-                  <td>${Number(load.loadAmount || 0).toFixed(2)}</td>
-                  <td>{load.dispatchPercent}%</td>
-                  <td>${Number(load.dispatchAmount || 0).toFixed(2)}</td>
+            <table className="invoice-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Pickup</th>
+                  <th>Drop-off</th>
+                  <th>Load Amount</th>
+                  <th>Dispatch %</th>
+                  <th>Dispatch Amount</th>
                 </tr>
-              ))}
-            </tbody>
+              </thead>
 
-            <tfoot>
-              <tr>
-                <td colSpan="3"><strong>Totals</strong></td>
-                <td>${Number(invoice.totalLoadAmount || 0).toFixed(2)}</td>
-                <td>{invoice.dispatchPercent}%</td>
-                <td>${Number(invoice.totalDispatchAmount || 0).toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
+              <tbody>
+                {loads.map((load, index) => (
+                  <tr key={index}>
+                    <td>{formatDate(load.date)}</td>
+                    <td>{load.pickup || "-"}</td>
+                    <td>{load.dropoff || "-"}</td>
+                    <td>${Number(load.loadAmount || 0).toFixed(2)}</td>
+                    <td>{Number(load.dispatchPercent || invoice.dispatchPercent || 0)}%</td>
+                    <td>${Number(load.dispatchAmount || 0).toFixed(2)}</td>
+                  </tr>
+                ))}
+
+                {loads.length === 0 && (
+                  <tr>
+                    <td colSpan="6">No loads added.</td>
+                  </tr>
+                )}
+              </tbody>
+
+              <tfoot>
+                <tr>
+                  <td colSpan="3">Totals</td>
+                  <td>${Number(invoice.totalLoadAmount || 0).toFixed(2)}</td>
+                  <td>{Number(invoice.dispatchPercent || 0)}%</td>
+                  <td>${Number(invoice.totalDispatchAmount || 0).toFixed(2)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </>
         )}
 
         {invoice.billingType === "FIXED" && (
-          <table className="summary-table fixed-table">
-            <tbody>
-              <tr>
-                <td>Billing Type</td>
-                <td>Fixed Monthly Per Truck</td>
-              </tr>
-              <tr>
-                <td>Fixed Monthly Rate</td>
-                <td>${Number(invoice.fixedMonthlyRate || 0).toFixed(2)}</td>
-              </tr>
-              <tr>
-                <td>Selected Trucks</td>
-                <td>{invoice.selectedTruckCount || 0}</td>
-              </tr>
-              <tr>
-                <td>Fixed Billing Amount</td>
-                <td>${Number(invoice.fixedBillingAmount || 0).toFixed(2)}</td>
-              </tr>
-            </tbody>
-          </table>
+          <>
+            <h3 className="section-title">Fixed Billing Details</h3>
+
+            <table className="invoice-table">
+              <tbody>
+                <tr>
+                  <td>Fixed Monthly Rate / Truck</td>
+                  <td>${Number(invoice.fixedMonthlyRate || 0).toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td>Selected Trucks</td>
+                  <td>{invoice.selectedTruckCount || 0}</td>
+                </tr>
+                <tr>
+                  <td>Fixed Billing Amount</td>
+                  <td>${Number(invoice.fixedBillingAmount || 0).toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </>
         )}
 
-        <h3>Accounts Fee & Deductions Summary</h3>
+        <div className="invoice-summary-grid">
+          <div className="summary-card">
+            <span>Total Load Amount</span>
+            <strong>${Number(invoice.totalLoadAmount || 0).toFixed(2)}</strong>
+          </div>
+
+          <div className="summary-card">
+            <span>Dispatch / Fixed Amount</span>
+            <strong>${Number(invoice.totalDispatchAmount || invoice.fixedBillingAmount || 0).toFixed(2)}</strong>
+          </div>
+
+          <div className="summary-card">
+            <span>Accounts Fee</span>
+            <strong>${Number(invoice.accountsFeeTotal || 0).toFixed(2)}</strong>
+          </div>
+
+          <div className="summary-card accent">
+            <span>Net Payable</span>
+            <strong>${Number(invoice.netPayable || 0).toFixed(2)}</strong>
+          </div>
+        </div>
+
+        <div className="payment-details-block">
+          <div className="payment-icon">💳</div>
+          <div className="payment-details">
+            <h3>Payment Details</h3>
+            <p><strong>Account Title:</strong> {invoice.accountTitle || "-"}</p>
+            <p><strong>Account Number:</strong> {invoice.accountNumber || "-"}</p>
+          </div>
+        </div>
+
+        <h3 className="section-title">Accounts Fee & Deductions</h3>
 
         <table className="summary-table">
           <tbody>
             <tr>
-              <td>Accounts Fee ({invoice.accountsFeeWeeks} × ${invoice.accountsFeeRate})</td>
+              <td>Accounts Fee ({invoice.accountsFeeWeeks || 0} × ${invoice.accountsFeeRate || 0})</td>
               <td>${Number(invoice.accountsFeeTotal || 0).toFixed(2)}</td>
             </tr>
 
             <tr>
-              <td>
-                Gross (
-                {invoice.billingType === "FIXED"
-                  ? "Fixed Billing + Accounts Fee"
-                  : "Dispatch + Accounts Fee"}
-                )
-              </td>
+              <td>Gross Amount</td>
               <td>${Number(invoice.grossAmount || 0).toFixed(2)}</td>
             </tr>
 
             <tr>
-              <td>
-                Previous Invoice Amount{" "}
-                {invoice.includePreviousInvoiceInNet ? "(Added)" : "(Reference)"}
-              </td>
+              <td>Previous Invoice Amount {invoice.includePreviousInvoiceInNet ? "(Added)" : "(Reference)"}</td>
               <td>${Number(invoice.previousInvoiceAmount || 0).toFixed(2)}</td>
             </tr>
 
             <tr>
-              <td>Less: Discounts</td>
+              <td>Discount</td>
               <td>-${Number(invoice.discountAmount || 0).toFixed(2)}</td>
             </tr>
 
             <tr>
-              <td>Less: Referral Bonus</td>
+              <td>Referral Bonus</td>
               <td>-${Number(invoice.referralBonus || 0).toFixed(2)}</td>
             </tr>
 
             <tr>
-              <td>
-                Less: Fine{" "}
-                {invoice.fineReason ? `(${invoice.fineReason})` : ""}
-              </td>
+              <td>Fine {invoice.fineReason ? `(${invoice.fineReason})` : ""}</td>
               <td>-${Number(invoice.fineAmount || 0).toFixed(2)}</td>
             </tr>
 
@@ -204,15 +266,27 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
           </tbody>
         </table>
 
-        <div className="invoice-warning">
-          <strong>⚠️ Please Note:</strong>
-          <br />
-          Please clear them by the due date to avoid charges — a 10% late fee
-          will apply for each day past due until payment.
+        {invoice.notes && (
+          <div className="invoice-notes">
+            <strong>Notes:</strong> {invoice.notes}
+          </div>
+        )}
+
+        <div className="payment-terms-block">
+          <div className="note-icon">⚠️</div>
+          <div className="note-content">
+            <h3>Payment Terms</h3>
+            <p>Please clear this invoice by the due date. A 10% late fee may apply for each day past due until payment is completed.</p>
+          </div>
+        </div>
+
+        <div className="invoice-footer">
+          <span>Generated by GML Portal</span>
+          <span>{new Date().toLocaleString()}</span>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default InvoiceView;
