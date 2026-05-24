@@ -37,7 +37,7 @@ function SettlementView({ settlement, onClose }) {
     <div className="settlement-view-modal">
       <div className="settlement-view-actions no-print">
         <button onClick={onClose}>Close</button>
-        <button onClick={printSettlement}>DownloadPDF</button>
+        <button onClick={printSettlement}>Download PDF</button>
       </div>
 
       <div className="settlement-print">
