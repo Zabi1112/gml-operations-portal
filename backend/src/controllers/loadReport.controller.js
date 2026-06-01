@@ -83,7 +83,38 @@ const getLoadReports = async (req, res) => {
   }
 };
 
+const deleteLoadReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Load report ID is required" });
+    }
+
+    const report = await prisma.loadReport.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!report) {
+      return res.status(404).json({ message: "Load report not found" });
+    }
+
+    await prisma.loadReport.delete({
+      where: { id: Number(id) }
+    });
+
+    res.status(200).json({
+      message: "Load report deleted successfully",
+      id: Number(id)
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
 module.exports = {
   createLoadReport,
-  getLoadReports
+  getLoadReports,
+  deleteLoadReport
 };

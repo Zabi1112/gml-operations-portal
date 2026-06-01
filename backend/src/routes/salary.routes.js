@@ -3,7 +3,8 @@ const router = express.Router();
 
 const {
   createSalarySlip,
-  getSalarySlips
+  getSalarySlips,
+  deleteSalarySlip
 } = require("../controllers/salary.controller");
 
 const {
@@ -15,5 +16,6 @@ router.use(protect);
 
 router.get("/", getSalarySlips);
 router.post("/", allowRoles("ADMIN", "EDITOR"), createSalarySlip);
+router.delete("/:id", allowRoles("ADMIN"), deleteSalarySlip);
 
 module.exports = router;

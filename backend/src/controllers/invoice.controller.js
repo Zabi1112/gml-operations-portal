@@ -1,4 +1,5 @@
 const prisma = require("../utils/prisma");
+const { createLoadsSafely } = require("../utils/loadDedup");
 
 const generateInvoiceNumber = async (branchId) => {
   const count = await prisma.invoice.count({
@@ -155,47 +156,50 @@ const createInvoice = async (req, res) => {
       }
     });
 
-    if (invoice.billingType === "PERCENTAGE" && invoice.loads.length > 0) {
-      const truckIds = req.body.selectedTruckIds || [];
-      const driverIds = req.body.selectedDriverIds || [];
+    // Save manual loads that don't already exist (smart deduplication)
+    const loadSaveResults = await createLoadsSafely(
+      invoice.loads.map((load) => ({
+        branchId: Number(branchId),
+        companyId: req.body.companyId ? Number(req.body.companyId) : null,
+        truckId: req.body.selectedTruckIds?.[0] ? Number(req.body.selectedTruckIds[0]) : null,
+        driverId: req.body.selectedDriverIds?.[0] ? Number(req.body.selectedDriverIds[0]) : null,
 
-      const firstTruckId = truckIds.length > 0 ? Number(truckIds[0]) : null;
-      const firstDriverId = driverIds.length > 0 ? Number(driverIds[0]) : null;
+        companyName: invoice.companyName,
+        truckNumber: invoice.truckNumbers,
+        driverName: invoice.driverNames,
 
-      await prisma.load.createMany({
-        data: invoice.loads.map((load) => ({
-          branchId: Number(branchId),
-          companyId: req.body.companyId ? Number(req.body.companyId) : null,
-          truckId: firstTruckId,
-          driverId: firstDriverId,
+        loadDate: load.date,
+        pickupDate: load.date,
+        dropoffDate: null,
 
-          companyName: invoice.companyName,
-          truckNumber: invoice.truckNumbers,
-          driverName: invoice.driverNames,
+        pickup: load.pickup,
+        dropoff: load.dropoff,
 
-          loadDate: load.date,
-          pickupDate: load.date,
-          dropoffDate: null,
+        miles: 0,
+        ratePerMile: 0,
+        grossAmount: Number(load.loadAmount || 0),
 
-          pickup: load.pickup,
-          dropoff: load.dropoff,
+        loadAmount: Number(load.loadAmount || 0),
+        dispatchPercent: Number(load.dispatchPercent || 0),
+        dispatchAmount: Number(load.dispatchAmount || 0),
 
-          miles: 0,
-          ratePerMile: 0,
-          grossAmount: Number(load.loadAmount || 0),
-
-          loadAmount: Number(load.loadAmount || 0),
-          dispatchPercent: Number(load.dispatchPercent || 0),
-          dispatchAmount: Number(load.dispatchAmount || 0),
-
-          source: "INVOICE"
-        }))
-      });
-    }
+        source: "MANUAL"
+      }))
+    );
 
     res.status(201).json({
       message: "Invoice created successfully",
-      invoice
+      invoice,
+      loadsSaved: {
+        created: loadSaveResults.created.length,
+        duplicates: loadSaveResults.duplicates.length,
+        errors: loadSaveResults.errors.length,
+        details: {
+          created: loadSaveResults.created,
+          duplicates: loadSaveResults.duplicates,
+          errors: loadSaveResults.errors
+        }
+      }
     });
   } catch (error) {
     console.log(error);
@@ -278,8 +282,45 @@ const getInvoicesByBranch = async (req, res) => {
   }
 };
 
+const deleteInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Invoice ID is required" });
+    }
+
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!invoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+
+    // Delete related invoice loads first
+    await prisma.invoiceLoad.deleteMany({
+      where: { invoiceId: Number(id) }
+    });
+
+    // Delete the invoice
+    await prisma.invoice.delete({
+      where: { id: Number(id) }
+    });
+
+    res.status(200).json({
+      message: "Invoice deleted successfully",
+      id: Number(id)
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
 module.exports = {
   createInvoice,
   getInvoices,
-  getInvoicesByBranch
+  getInvoicesByBranch,
+  deleteInvoice
 };

@@ -266,6 +266,45 @@ const getSettlements = async (req, res) => {
   }
 };
 
+const deleteSettlement = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Settlement ID is required" });
+    }
+
+    const settlement = await prisma.invoiceSettlement.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!settlement) {
+      return res.status(404).json({ message: "Settlement not found" });
+    }
+
+    // If settlement has an associated invoice, mark it as not cleared
+    if (settlement.invoiceId) {
+      await prisma.invoice.update({
+        where: { id: settlement.invoiceId },
+        data: { isCleared: false, clearedAt: null }
+      });
+    }
+
+    // Delete the settlement
+    await prisma.invoiceSettlement.delete({
+      where: { id: Number(id) }
+    });
+
+    res.status(200).json({
+      message: "Settlement deleted successfully",
+      id: Number(id)
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
 module.exports = {
   getFinanceSettings,
   updateFinanceSettings,
@@ -273,5 +312,6 @@ module.exports = {
   deletePartner,
   clearInvoice,
   createManualSettlement,
-  getSettlements
+  getSettlements,
+  deleteSettlement
 };

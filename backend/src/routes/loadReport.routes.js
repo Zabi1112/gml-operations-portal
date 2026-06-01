@@ -3,7 +3,8 @@ const router = express.Router();
 
 const {
   createLoadReport,
-  getLoadReports
+  getLoadReports,
+  deleteLoadReport
 } = require("../controllers/loadReport.controller");
 
 const {
@@ -15,5 +16,6 @@ router.use(protect);
 
 router.get("/", getLoadReports);
 router.post("/", allowRoles("ADMIN", "EDITOR"), createLoadReport);
+router.delete("/:id", allowRoles("ADMIN"), deleteLoadReport);
 
 module.exports = router;

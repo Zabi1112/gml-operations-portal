@@ -141,7 +141,38 @@ const getSalarySlips = async (req, res) => {
   }
 };
 
+const deleteSalarySlip = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Salary slip ID is required" });
+    }
+
+    const slip = await prisma.salarySlip.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!slip) {
+      return res.status(404).json({ message: "Salary slip not found" });
+    }
+
+    await prisma.salarySlip.delete({
+      where: { id: Number(id) }
+    });
+
+    res.status(200).json({
+      message: "Salary slip deleted successfully",
+      id: Number(id)
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
 module.exports = {
   createSalarySlip,
-  getSalarySlips
+  getSalarySlips,
+  deleteSalarySlip
 };

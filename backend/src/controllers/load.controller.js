@@ -1,4 +1,5 @@
 const prisma = require("../utils/prisma");
+const { createLoadSafely } = require("../utils/loadDedup");
 
 const createLoad = async (req, res) => {
   try {
@@ -20,45 +21,61 @@ const createLoad = async (req, res) => {
     const ratePerMile = Number(req.body.ratePerMile || 0);
     const grossAmount = Number(req.body.grossAmount || miles * ratePerMile || 0);
 
-    const load = await prisma.load.create({
-      data: {
-        branchId: Number(branchId),
-        companyId: companyId ? Number(companyId) : null,
-        truckId: truckId ? Number(truckId) : null,
-        driverId: driverId ? Number(driverId) : null,
+    // Prepare load data
+    const loadData = {
+      branchId: Number(branchId),
+      companyId: companyId ? Number(companyId) : null,
+      truckId: truckId ? Number(truckId) : null,
+      driverId: driverId ? Number(driverId) : null,
 
-        companyName: req.body.companyName || null,
-        truckNumber: req.body.truckNumber || null,
-        driverName: req.body.driverName || null,
-        driverType: req.body.driverType || null,
-        bookedByTeam: req.body.bookedByTeam || null,
-        brokerNameCompany: req.body.brokerNameCompany || null,
-        pickupTime: req.body.pickupTime || null,
-        deliveryTime: req.body.deliveryTime || null,
-        loadNumber: req.body.loadNumber || null,
+      companyName: req.body.companyName || null,
+      truckNumber: req.body.truckNumber || null,
+      driverName: req.body.driverName || null,
+      driverType: req.body.driverType || null,
+      bookedByTeam: req.body.bookedByTeam || null,
+      brokerNameCompany: req.body.brokerNameCompany || null,
+      pickupTime: req.body.pickupTime || null,
+      deliveryTime: req.body.deliveryTime || null,
+      loadNumber: req.body.loadNumber || null,
 
-        loadDate: new Date(req.body.loadDate),
-        pickupDate: req.body.pickupDate ? new Date(req.body.pickupDate) : null,
-        dropoffDate: req.body.dropoffDate ? new Date(req.body.dropoffDate) : null,
+      loadDate: new Date(req.body.loadDate),
+      pickupDate: req.body.pickupDate ? new Date(req.body.pickupDate) : null,
+      dropoffDate: req.body.dropoffDate ? new Date(req.body.dropoffDate) : null,
 
-        pickup: req.body.pickup,
-        dropoff: req.body.dropoff,
+      pickup: req.body.pickup,
+      dropoff: req.body.dropoff,
 
-        miles,
-        ratePerMile,
-        grossAmount,
+      miles,
+      ratePerMile,
+      grossAmount,
 
-        loadAmount: Number(req.body.loadAmount || grossAmount || 0),
-        dispatchPercent: Number(req.body.dispatchPercent || 0),
-        dispatchAmount: Number(req.body.dispatchAmount || 0),
+      loadAmount: Number(req.body.loadAmount || grossAmount || 0),
+      dispatchPercent: Number(req.body.dispatchPercent || 0),
+      dispatchAmount: Number(req.body.dispatchAmount || 0),
 
-        source: req.body.source || "MANUAL"
-      }
-    });
+      source: req.body.source || "MANUAL"
+    };
+
+    // Create load safely - will skip if duplicate exists
+    const result = await createLoadSafely(loadData);
+
+    if (result.isDuplicate) {
+      return res.status(409).json({
+        message: result.message,
+        isDuplicate: true,
+        load: result.load
+      });
+    }
+
+    if (!result.success) {
+      return res.status(500).json({
+        message: result.message
+      });
+    }
 
     res.status(201).json({
-      message: "Load created successfully",
-      load
+      message: result.message,
+      load: result.load
     });
   } catch (error) {
     console.log(error);

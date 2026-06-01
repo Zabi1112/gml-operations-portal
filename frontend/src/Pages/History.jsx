@@ -208,6 +208,64 @@ function History() {
     }
   };
 
+  // Delete functions
+  const handleDeleteSalarySlip = async (slipId) => {
+    if (!window.confirm("Are you sure you want to delete this salary slip? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/salary-slips/${slipId}`, auth);
+      alert("Salary slip deleted successfully");
+      loadSalaryHistory();
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to delete salary slip");
+    }
+  };
+
+  const handleDeleteInvoice = async (invoiceId) => {
+    if (!window.confirm("Are you sure you want to delete this invoice? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/invoices/${invoiceId}`, auth);
+      alert("Invoice deleted successfully");
+      loadInvoiceHistory();
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to delete invoice");
+    }
+  };
+
+  const handleDeleteLoadReport = async (reportId) => {
+    if (!window.confirm("Are you sure you want to delete this load report? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/load-reports/${reportId}`, auth);
+      alert("Load report deleted successfully");
+      loadLoadReportHistory();
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to delete load report");
+    }
+  };
+
+  const handleDeleteSettlement = async (settlementId) => {
+    if (!window.confirm("Are you sure you want to delete this settlement? The associated invoice will be marked as not cleared. This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/finance/settlements/${settlementId}`, auth);
+      alert("Settlement deleted successfully");
+      loadInvoiceHistory();
+      loadSettlements();
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to delete settlement");
+    }
+  };
+
   const findSettlementByInvoiceId = (invoiceId) => {
     return settlements.find(
       (item) => Number(item.invoiceId) === Number(invoiceId)
@@ -316,7 +374,7 @@ function History() {
                       <th>Gross PKR</th>
                       <th>Net PKR</th>
                       <th>Created</th>
-                      <th>Action</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
 
@@ -332,10 +390,18 @@ function History() {
                         <td>{Number(slip.grossSalaryPKR || 0).toFixed(0)}</td>
                         <td>{Number(slip.netSalaryPKR || 0).toFixed(0)}</td>
                         <td>{new Date(slip.createdAt).toLocaleDateString()}</td>
-                        <td>
+                        <td style={{ display: "flex", gap: "5px" }}>
                           <button onClick={() => setSelectedSlip(slip)}>
                             View
                           </button>
+                          {isAdmin && (
+                            <button
+                              className="delete-btn"
+                              onClick={() => handleDeleteSalarySlip(slip.id)}
+                            >
+                              Delete
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -396,6 +462,7 @@ function History() {
                       <th>View</th>
                       {isAdmin && <th>Settlement</th>}
                       {isAdmin && <th>Clear</th>}
+                      {isAdmin && <th>Delete</th>}
                     </tr>
                   </thead>
 
@@ -466,13 +533,24 @@ function History() {
                               </button>
                             </td>
                           )}
+
+                          {isAdmin && (
+                            <td>
+                              <button
+                                className="delete-btn"
+                                onClick={() => handleDeleteInvoice(invoice.id)}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       );
                     })}
 
                     {invoices.length === 0 && (
                       <tr>
-                        <td colSpan={isAdmin ? "11" : "9"}>
+                        <td colSpan={isAdmin ? "12" : "9"}>
                           No invoice history found.
                         </td>
                       </tr>
@@ -524,7 +602,7 @@ function History() {
                       <th>Loads</th>
                       <th>Total Gross</th>
                       <th>Created</th>
-                      <th>Action</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
 
@@ -541,10 +619,18 @@ function History() {
                         <td>{item.totalLoads}</td>
                         <td>${Number(item.totalGross || 0).toFixed(2)}</td>
                         <td>{new Date(item.createdAt).toLocaleDateString()}</td>
-                        <td>
+                        <td style={{ display: "flex", gap: "5px" }}>
                           <button onClick={() => openLoadReport(item)}>
                             View
                           </button>
+                          {isAdmin && (
+                            <button
+                              className="delete-btn"
+                              onClick={() => handleDeleteLoadReport(item.id)}
+                            >
+                              Delete
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -575,7 +661,7 @@ function History() {
                     <th>Partner Profit</th>
                     <th>Cleared By</th>
                     <th>Cleared Date</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
 
@@ -610,11 +696,17 @@ function History() {
                           ? new Date(settlement.createdAt).toLocaleDateString()
                           : "-"}
                       </td>
-                      <td>
+                      <td style={{ display: "flex", gap: "5px" }}>
                         <button
                           onClick={() => setSelectedSettlement(settlement)}
                         >
                           View / Print
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDeleteSettlement(settlement.id)}
+                        >
+                          Delete
                         </button>
                       </td>
                     </tr>
