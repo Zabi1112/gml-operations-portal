@@ -1,11 +1,8 @@
 const prisma = require("../utils/prisma");
 
-// Helper function to calculate settlement amounts
 const calculateSettlementAmounts = (totalAmountPKR, dispatcherValue, dispatcherType, accountsValue, accountsType, partners) => {
-  // Dispatcher is always percentage
   const dispatcherAmountPKR = (totalAmountPKR * dispatcherValue) / 100;
 
-  // Accounts can be percentage or absolute
   let accountsAmountPKR = 0;
   if (accountsType === "PERCENTAGE") {
     accountsAmountPKR = (totalAmountPKR * accountsValue) / 100;
@@ -13,10 +10,8 @@ const calculateSettlementAmounts = (totalAmountPKR, dispatcherValue, dispatcherT
     accountsAmountPKR = accountsValue;
   }
 
-  // Partner profit is what remains
   const partnerProfitPKR = totalAmountPKR - dispatcherAmountPKR - accountsAmountPKR;
 
-  // Calculate partner splits
   const partnerSplits = partners.map((partner) => ({
     partnerId: partner.id,
     name: partner.name,
@@ -120,17 +115,15 @@ const clearInvoice = async (req, res) => {
 
     const invoiceAmountUSD = Number(req.body.invoiceAmountUSD || invoice.netPayable || 0);
     const usdRate = Number(req.body.usdRate || 0);
-    const totalAmountPKR = invoiceAmountUSD * usdRate;
+    const totalAmountPKR = usdRate > 0 ? invoiceAmountUSD * usdRate : Number(req.body.totalAmountPKR || 0);
 
-    // Dispatcher is always percentage
     const dispatcherType = "PERCENTAGE";
     const dispatcherValue = Number(req.body.dispatcherValue ?? branch.dispatcherPercent ?? 25);
-    
-    // Accounts can be percentage or absolute
+
     const accountsType = req.body.accountsType || "PERCENTAGE";
     const accountsValue = Number(req.body.accountsValue ?? branch.accountsPercent ?? 10);
 
-    const { dispatcherAmountPKR, accountsAmountPKR, partnerProfitPKR, partnerSplits } = 
+    const { dispatcherAmountPKR, accountsAmountPKR, partnerProfitPKR, partnerSplits } =
       calculateSettlementAmounts(totalAmountPKR, dispatcherValue, dispatcherType, accountsValue, accountsType, branch.partners);
 
     const settlement = await prisma.invoiceSettlement.create({
@@ -141,7 +134,9 @@ const clearInvoice = async (req, res) => {
         companyName: invoice.companyName,
 
         totalAmountPKR,
-        amountType: "MIXED", // Dispatcher always %, Accounts can be either
+        invoiceAmountUSD,
+        usdRate,
+        amountType: "MIXED",
 
         dispatcherValue,
         dispatcherAmountPKR,
@@ -176,15 +171,17 @@ const clearInvoice = async (req, res) => {
   }
 };
 
-// Create manual settlement (not tied to invoice) - for old settlements that were already given
 const createManualSettlement = async (req, res) => {
   try {
     const branchId = Number(req.body.branchId);
+    const usdRate = Number(req.body.dollarRate || req.body.usdRate || 0);
+    const invoiceAmountUSD = Number(req.body.totalAmountUSD || 0);
     const totalAmountPKR = Number(req.body.totalAmountPKR || 0);
+
     const dispatcherValue = Number(req.body.dispatcherValue || 0);
-    const dispatcherType = req.body.dispatcherType || "PERCENTAGE"; // Always PERCENTAGE
+    const dispatcherType = req.body.dispatcherType || "PERCENTAGE";
     const accountsValue = Number(req.body.accountsValue || 0);
-    const accountsType = req.body.accountsType || "PERCENTAGE"; // Can be PERCENTAGE or ABSOLUTE
+    const accountsType = req.body.accountsType || "PERCENTAGE";
     const companyName = req.body.companyName || "Manual Settlement";
     const settlementDate = new Date(req.body.settlementDate) || new Date();
 
@@ -195,19 +192,17 @@ const createManualSettlement = async (req, res) => {
 
     if (!branch) return res.status(404).json({ message: "Branch not found" });
 
-    // Validate amounts
     if (totalAmountPKR <= 0) {
       return res.status(400).json({ message: "Total amount must be greater than 0" });
     }
 
-    const { dispatcherAmountPKR, accountsAmountPKR, partnerProfitPKR, partnerSplits } = 
+    const { dispatcherAmountPKR, accountsAmountPKR, partnerProfitPKR, partnerSplits } =
       calculateSettlementAmounts(totalAmountPKR, dispatcherValue, dispatcherType, accountsValue, accountsType, branch.partners);
 
-    // Validation: dispatcher + accounts should not exceed total (with some tolerance)
     if (accountsType === "ABSOLUTE") {
       if (dispatcherAmountPKR + accountsAmountPKR > totalAmountPKR + 1) {
-        return res.status(400).json({ 
-          message: "Dispatcher + Accounts amounts cannot exceed total amount received" 
+        return res.status(400).json({
+          message: "Dispatcher + Accounts amounts cannot exceed total amount received"
         });
       }
     }
@@ -215,12 +210,14 @@ const createManualSettlement = async (req, res) => {
     const settlement = await prisma.invoiceSettlement.create({
       data: {
         branchId,
-        invoiceId: null, // No invoice reference for manual settlements
+        invoiceId: null,
         invoiceNumber: null,
         companyName,
 
         totalAmountPKR,
-        amountType: "MIXED", // Dispatcher always %, Accounts can be either
+        invoiceAmountUSD,
+        usdRate,
+        amountType: "MIXED",
 
         dispatcherValue,
         dispatcherAmountPKR,
@@ -282,7 +279,6 @@ const deleteSettlement = async (req, res) => {
       return res.status(404).json({ message: "Settlement not found" });
     }
 
-    // If settlement has an associated invoice, mark it as not cleared
     if (settlement.invoiceId) {
       await prisma.invoice.update({
         where: { id: settlement.invoiceId },
@@ -290,7 +286,6 @@ const deleteSettlement = async (req, res) => {
       });
     }
 
-    // Delete the settlement
     await prisma.invoiceSettlement.delete({
       where: { id: Number(id) }
     });

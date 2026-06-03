@@ -9,6 +9,20 @@ function SettlementView({ settlement, onClose }) {
     ? settlement.partnerSplits
     : [];
 
+  const totalAmountPKR = Number(settlement.totalAmountPKR ?? 0);
+  const invoiceAmountUSD = Number(settlement.invoiceAmountUSD ?? 0);
+  const usdRate = Number(settlement.usdRate ?? 0);
+  const dispatcherValue = Number(settlement.dispatcherValue ?? 0);
+  const accountsValue = Number(settlement.accountsValue ?? 0);
+  const dispatcherAmountPKR = Number(settlement.dispatcherAmountPKR ?? 0);
+  const accountsAmountPKR = Number(settlement.accountsAmountPKR ?? 0);
+  const partnerProfitPKR = Number(settlement.partnerProfitPKR ?? 0);
+
+  const accountsLabel =
+    settlement.accountsType === "ABSOLUTE"
+      ? `Accounts (Fixed PKR)`
+      : `Accounts (${accountsValue}%)`;
+
   const printSettlement = async () => {
     const element = document.querySelector(".settlement-print");
     if (!element) return;
@@ -43,7 +57,6 @@ function SettlementView({ settlement, onClose }) {
       <div className="settlement-print">
         <div className="settlement-header">
           <img src="/logo.jpeg" alt="GML Logo" />
-
           <div>
             <h1>Invoice Settlement</h1>
             <p>Get Moving Logistics</p>
@@ -64,6 +77,8 @@ function SettlementView({ settlement, onClose }) {
             <strong>Cleared Date:</strong>{" "}
             {settlement.clearedAt
               ? new Date(settlement.clearedAt).toLocaleString()
+              : settlement.settlementDate
+              ? new Date(settlement.settlementDate).toLocaleString()
               : "-"}
           </div>
         </div>
@@ -74,32 +89,32 @@ function SettlementView({ settlement, onClose }) {
           <tbody>
             <tr>
               <td>Invoice Amount USD</td>
-              <td>${Number(settlement.invoiceAmountUSD || 0).toFixed(2)}</td>
+              <td>{invoiceAmountUSD > 0 ? `$${invoiceAmountUSD.toFixed(2)}` : "-"}</td>
             </tr>
 
             <tr>
               <td>USD Rate</td>
-              <td>{Number(settlement.usdRate || 0).toFixed(2)}</td>
+              <td>{usdRate > 0 ? usdRate.toFixed(2) : "-"}</td>
             </tr>
 
             <tr>
               <td>Invoice Amount PKR</td>
-              <td>{Number(settlement.invoiceAmountPKR || 0).toFixed(0)}</td>
+              <td>{totalAmountPKR.toLocaleString()}</td>
             </tr>
 
             <tr>
-              <td>Dispatcher ({settlement.dispatcherPercent}%)</td>
-              <td>{Number(settlement.dispatcherAmountPKR || 0).toFixed(0)}</td>
+              <td>Dispatcher ({dispatcherValue}%)</td>
+              <td>{dispatcherAmountPKR.toLocaleString()}</td>
             </tr>
 
             <tr>
-              <td>Accounts ({settlement.accountsPercent}%)</td>
-              <td>{Number(settlement.accountsAmountPKR || 0).toFixed(0)}</td>
+              <td>{accountsLabel}</td>
+              <td>{accountsAmountPKR.toLocaleString()}</td>
             </tr>
 
             <tr className="net-row">
               <td>Partner Profit</td>
-              <td>{Number(settlement.partnerProfitPKR || 0).toFixed(0)}</td>
+              <td>{partnerProfitPKR.toLocaleString()}</td>
             </tr>
           </tbody>
         </table>
@@ -120,7 +135,7 @@ function SettlementView({ settlement, onClose }) {
               <tr key={index}>
                 <td>{partner.name}</td>
                 <td>{partner.percent}%</td>
-                <td>{Number(partner.amountPKR || 0).toFixed(0)}</td>
+                <td>{Number(partner.amountPKR || 0).toLocaleString()}</td>
               </tr>
             ))}
 

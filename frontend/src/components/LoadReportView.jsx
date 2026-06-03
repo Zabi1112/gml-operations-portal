@@ -22,7 +22,7 @@ function LoadReportView({ report, onClose }) {
     });
 
     const imgData = canvas.toDataURL("image/png");
-    const pdfWidth = 297; // landscape width
+    const pdfWidth = 297;
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
     const pdf = new jsPDF({
@@ -89,15 +89,18 @@ function LoadReportView({ report, onClose }) {
   const perDayGross = daysWorked > 0 ? totalGross / daysWorked : 0;
   const expectedGross = perDayGross * reasonDays;
 
-  const sortedLoads = [...loads].sort(
-    (a, b) =>
-      new Date(a.pickupDate || a.loadDate) -
-      new Date(b.pickupDate || b.loadDate)
-  );
-
-  const sortedReasons = [...reasons].sort(
-    (a, b) => new Date(a.reasonDate) - new Date(b.reasonDate)
-  );
+  const mergedRows = [
+    ...loads.map((l) => ({
+      ...l,
+      _type: "load",
+      _sortDate: new Date(l.pickupDate || l.loadDate)
+    })),
+    ...reasons.map((r) => ({
+      ...r,
+      _type: "reason",
+      _sortDate: new Date(r.reasonDate)
+    }))
+  ].sort((a, b) => a._sortDate - b._sortDate);
 
   return (
     <div className="report-modal">
@@ -162,46 +165,44 @@ function LoadReportView({ report, onClose }) {
             <div>Booking</div>
           </div>
 
-          {sortedLoads.map((load) => {
-            const gross = Number(load.grossAmount || load.loadAmount || 0);
-            const miles = Number(load.miles || 0);
+          {mergedRows.map((row) => {
+            if (row._type === "reason") {
+              return (
+                <div className="dlr-grid-row reason-row" key={`reason-${row.id}`}>
+                  <div>{formatDate(row.reasonDate)}</div>
+                  <div>-</div>
+                  <div className="reason-text">
+                    <span className={`badge-reason ${getReasonClass(row.reasonType)}`}>
+                      {row.reasonType}
+                    </span>
+                  </div>
+                  <div className="reason-note">
+                    {row.reasonNote || "No load added for this date."}
+                  </div>
+                  <div className="num">0</div>
+                  <div className="num">$0.00</div>
+                  <div className="num">$0.00</div>
+                </div>
+              );
+            }
+
+            const gross = Number(row.grossAmount || row.loadAmount || 0);
+            const miles = Number(row.miles || 0);
             const rpm =
-              Number(load.ratePerMile || 0) || (miles > 0 ? gross / miles : 0);
+              Number(row.ratePerMile || 0) || (miles > 0 ? gross / miles : 0);
 
             return (
-              <div className="dlr-grid-row" key={`load-${load.id}`}>
-                <div>{formatDate(load.pickupDate || load.loadDate)}</div>
-                <div>{formatDate(load.dropoffDate)}</div>
-                <div>{load.pickup || "-"}</div>
-                <div>{load.dropoff || "-"}</div>
+              <div className="dlr-grid-row" key={`load-${row.id}`}>
+                <div>{formatDate(row.pickupDate || row.loadDate)}</div>
+                <div>{formatDate(row.dropoffDate)}</div>
+                <div>{row.pickup || "-"}</div>
+                <div>{row.dropoff || "-"}</div>
                 <div className="num">{miles.toFixed(0)}</div>
                 <div className="num">${rpm.toFixed(2)}</div>
                 <div className="num">${gross.toFixed(2)}</div>
               </div>
             );
           })}
-
-          {sortedReasons.map((reason) => (
-            <div className="dlr-grid-row reason-row" key={`reason-${reason.id}`}>
-              <div>{formatDate(reason.reasonDate)}</div>
-              <div>-</div>
-              <div className="reason-text">
-                <span
-                  className={`badge-reason ${getReasonClass(
-                    reason.reasonType
-                  )}`}
-                >
-                  {reason.reasonType}
-                </span>
-              </div>
-              <div className="reason-note">
-                {reason.reasonNote || "No load added for this date."}
-              </div>
-              <div className="num">0</div>
-              <div className="num">$0.00</div>
-              <div className="num">$0.00</div>
-            </div>
-          ))}
 
           <div className="dlr-grid-row total-row">
             <div className="total-label">Totals</div>

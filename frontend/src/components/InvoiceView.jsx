@@ -69,7 +69,15 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
 
   const formatDate = (value) => {
     if (!value) return "-";
-    return new Date(value).toLocaleDateString();
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+
+    return date.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric"
+    });
   };
 
   const loads = invoice.loads || [];

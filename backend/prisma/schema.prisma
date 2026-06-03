@@ -58,6 +58,7 @@ model Branch {
   loadReportReasons LoadReportReason[]
   partners           BranchPartner[]
   settlements        InvoiceSettlement[]
+  loans       PartnerLoan[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -84,36 +85,28 @@ model InvoiceSettlement {
   branchId               Int
   branch                 Branch      @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
-  // Optional invoice reference - can be null for manual settlements
   invoiceId              Int?
   invoiceNumber          String?
   companyName            String?
 
-  // Total amount received (base amount for calculations)
   totalAmountPKR         Float       @default(0)
+  invoiceAmountUSD       Float       @default(0)    // ADD THIS
+  usdRate                Float       @default(0)    // ADD THIS
 
-  // Settlement type: percentage or absolute value
   amountType             AmountType  @default(PERCENTAGE)
 
-  // Dispatcher settlement - can be percentage or absolute amount
-  dispatcherValue        Float       @default(25)   // percentage or amount PKR
-  dispatcherAmountPKR    Float       @default(0)    // calculated amount in PKR
+  dispatcherValue        Float       @default(25)
+  dispatcherAmountPKR    Float       @default(0)
 
-  // Accounts settlement - can be percentage or absolute amount
-  accountsValue          Float       @default(10)   // percentage or amount PKR
-  accountsAmountPKR      Float       @default(0)    // calculated amount in PKR
+  accountsValue          Float       @default(10)
+  accountsAmountPKR      Float       @default(0)
 
-  // Partner profit (remaining after dispatcher and accounts)
   partnerProfitPKR       Float       @default(0)
-
-  // Partner splits with percentages
   partnerSplits          Json
 
-  // Metadata
   clearedBy              String?
   clearedAt              DateTime    @default(now())
   settlementDate         DateTime?
-  
   notes                  String?
 
   createdAt              DateTime    @default(now())
@@ -401,4 +394,40 @@ model LoadReport {
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model PartnerLoan {
+  id              Int      @id @default(autoincrement())
+
+  branchId        Int
+  branch          Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  lenderPartnerId Int
+  lenderName      String
+
+  borrowerPartnerId Int
+  borrowerName      String
+
+  amount          Float    @default(0)
+  note            String?
+  loanDate        DateTime @default(now())
+
+  repayments      PartnerLoanRepayment[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PartnerLoanRepayment {
+  id        Int         @id @default(autoincrement())
+
+  loanId    Int
+  loan      PartnerLoan @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  amount    Float       @default(0)
+  note      String?
+  paidDate  DateTime    @default(now())
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
