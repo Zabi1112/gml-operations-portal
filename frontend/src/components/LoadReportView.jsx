@@ -64,8 +64,29 @@ function LoadReportView({ report, onClose }) {
   // };
 
   const printReport = () => {
-  window.print();
-};
+    const element = document.querySelector(".dlr-report-print");
+    if (!element) return;
+
+    const heightPx = element.scrollHeight;
+    const heightMm = Math.ceil(heightPx * 0.264583) + 20;
+
+    const oldStyle = document.getElementById("dynamic-print-size");
+    if (oldStyle) oldStyle.remove();
+
+    const style = document.createElement("style");
+    style.id = "dynamic-print-size";
+    style.innerHTML = `
+    @media print {
+      @page {
+        size: 297mm ${heightMm}mm;
+        margin: 0;
+      }
+    }
+  `;
+
+    document.head.appendChild(style);
+    window.print();
+  };
 
 
   const saveToHistory = async () => {
