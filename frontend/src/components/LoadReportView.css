@@ -272,6 +272,10 @@
 }
 
 @media print {
+  @page {
+    size: 297mm 1000mm;
+    margin: 0;
+  }
 
   body * {
     visibility: hidden;
@@ -286,23 +290,18 @@
     position: absolute;
     left: 0;
     top: 0;
-    max-width: none;
-    width: 100%;
-    box-shadow: none;
-    border-radius: 0;
+    width: 1100px !important;
+    max-width: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
   }
 
   .no-print {
-    display: none;
-  }
-
-  .report-modal {
-    position: static;
-    background: white;
-    padding: 0;
+    display: none !important;
   }
 }
-
 .dlr-report-print {
   width: 1100px;
   max-width: 1100px;

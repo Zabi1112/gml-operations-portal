@@ -11,59 +11,63 @@ function LoadReportView({ report, onClose }) {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const printReport = async () => {
-    const element = document.querySelector(".dlr-report-print");
-    if (!element) return;
+  // const printReport = async () => {
+  //   const element = document.querySelector(".dlr-report-print");
+  //   if (!element) return;
 
-    const clone = element.cloneNode(true);
+  //   const clone = element.cloneNode(true);
 
-    clone.style.position = "absolute";
-    clone.style.left = "0";
-    clone.style.top = "0";
-    clone.style.width = "1100px";
-    clone.style.maxWidth = "1100px";
-    clone.style.height = "auto";
-    clone.style.maxHeight = "none";
-    clone.style.overflow = "visible";
-    clone.style.boxShadow = "none";
-    clone.style.borderRadius = "0";
-    clone.style.background = "#ffffff";
-    clone.style.zIndex = "-1";
+  //   clone.style.position = "absolute";
+  //   clone.style.left = "0";
+  //   clone.style.top = "0";
+  //   clone.style.width = "1100px";
+  //   clone.style.maxWidth = "1100px";
+  //   clone.style.height = "auto";
+  //   clone.style.maxHeight = "none";
+  //   clone.style.overflow = "visible";
+  //   clone.style.boxShadow = "none";
+  //   clone.style.borderRadius = "0";
+  //   clone.style.background = "#ffffff";
+  //   clone.style.zIndex = "-1";
 
-    document.body.appendChild(clone);
+  //   document.body.appendChild(clone);
 
-    await new Promise((resolve) => setTimeout(resolve, 300));
+  //   await new Promise((resolve) => setTimeout(resolve, 300));
 
-    const canvas = await html2canvas(clone, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      width: clone.scrollWidth,
-      height: clone.scrollHeight,
-      windowWidth: clone.scrollWidth,
-      windowHeight: clone.scrollHeight,
-      scrollX: 0,
-      scrollY: 0
-    });
+  //   const canvas = await html2canvas(clone, {
+  //     scale: 2,
+  //     useCORS: true,
+  //     backgroundColor: "#ffffff",
+  //     width: clone.scrollWidth,
+  //     height: clone.scrollHeight,
+  //     windowWidth: clone.scrollWidth,
+  //     windowHeight: clone.scrollHeight,
+  //     scrollX: 0,
+  //     scrollY: 0
+  //   });
 
-    document.body.removeChild(clone);
+  //   document.body.removeChild(clone);
 
-    const imgData = canvas.toDataURL("image/png");
+  //   const imgData = canvas.toDataURL("image/png");
 
-    const pdfWidth = 297;
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+  //   const pdfWidth = 297;
+  //   const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    const pdf = new jsPDF({
-      orientation: "l",
-      unit: "mm",
-      format: [pdfWidth, pdfHeight]
-    });
+  //   const pdf = new jsPDF({
+  //     orientation: "l",
+  //     unit: "mm",
+  //     format: [pdfWidth, pdfHeight]
+  //   });
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`load-report-${report.companyName || "report"}.pdf`);
-  };
+  //   pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+  //   pdf.save(`load-report-${report.companyName || "report"}.pdf`);
+  // };
 
-  
+  const printReport = () => {
+  window.print();
+};
+
+
   const saveToHistory = async () => {
     try {
       await axios.post(`${API}/load-reports`, report, auth);
