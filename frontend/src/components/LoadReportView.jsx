@@ -15,21 +15,28 @@ function LoadReportView({ report, onClose }) {
     const element = document.querySelector(".dlr-report-print");
     if (!element) return;
 
+    element.style.height = "auto";
+    element.style.maxHeight = "none";
+    element.style.overflow = "visible";
+
+    const fullWidth = element.scrollWidth;
+    const fullHeight = element.scrollHeight;
+
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight,
-      width: element.scrollWidth,
-      height: element.scrollHeight,
+      width: fullWidth,
+      height: fullHeight,
+      windowWidth: fullWidth,
+      windowHeight: fullHeight,
       scrollX: 0,
       scrollY: 0
     });
 
     const imgData = canvas.toDataURL("image/png");
 
-    const pdfWidth = 297; // landscape
+    const pdfWidth = 297;
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
     const pdf = new jsPDF({
@@ -41,7 +48,6 @@ function LoadReportView({ report, onClose }) {
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`load-report-${report.companyName || "report"}.pdf`);
   };
-
   const saveToHistory = async () => {
     try {
       await axios.post(`${API}/load-reports`, report, auth);
