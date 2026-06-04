@@ -30,55 +30,89 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
     }
   };
 
+  // const handlePrint = async () => {
+  //   try {
+  //     const savedInvoice = await saveInvoice();
+
+  //     const element = document.querySelector(".invoice-print");
+  //     if (!element) return;
+
+  //     element.style.height = "auto";
+  //     element.style.maxHeight = "none";
+  //     element.style.overflow = "visible";
+
+  //     const fullWidth = element.scrollWidth;
+  //     const fullHeight = element.scrollHeight;
+
+  //     const canvas = await html2canvas(element, {
+  //       scale: 2,
+  //       useCORS: true,
+  //       backgroundColor: "#ffffff",
+  //       width: fullWidth,
+  //       height: fullHeight,
+  //       windowWidth: fullWidth,
+  //       windowHeight: fullHeight,
+  //       scrollX: 0,
+  //       scrollY: 0
+  //     });
+
+  //     const imgData = canvas.toDataURL("image/png");
+
+  //     const pdfWidth = 210;
+  //     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+  //     const pdf = new jsPDF({
+  //       orientation: "p",
+  //       unit: "mm",
+  //       format: [pdfWidth, pdfHeight]
+  //     });
+
+  //     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+  //     const fileName =
+  //       savedInvoice?.invoiceNumber || invoice.invoiceNumber || "invoice";
+
+  //     pdf.save(`${fileName}.pdf`);
+
+  //     if (onSaved) onSaved();
+  //   } catch (error) {
+  //     alert(error.response?.data?.message || "Failed to create PDF");
+  //   }
+  // };
+
   const handlePrint = async () => {
     try {
-      const savedInvoice = await saveInvoice();
+      await saveInvoice();
 
       const element = document.querySelector(".invoice-print");
       if (!element) return;
 
-      element.style.height = "auto";
-      element.style.maxHeight = "none";
-      element.style.overflow = "visible";
+      const heightPx = element.scrollHeight;
+      const heightMm = Math.ceil(heightPx * 0.264583) + 20;
 
-      const fullWidth = element.scrollWidth;
-      const fullHeight = element.scrollHeight;
+      const oldStyle = document.getElementById("dynamic-invoice-print-size");
+      if (oldStyle) oldStyle.remove();
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        width: fullWidth,
-        height: fullHeight,
-        windowWidth: fullWidth,
-        windowHeight: fullHeight,
-        scrollX: 0,
-        scrollY: 0
-      });
+      const style = document.createElement("style");
+      style.id = "dynamic-invoice-print-size";
+      style.innerHTML = `
+      @media print {
+        @page {
+          size: 210mm ${heightMm}mm;
+          margin: 0;
+        }
+      }
+    `;
 
-      const imgData = canvas.toDataURL("image/png");
-
-      const pdfWidth = 210;
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      const pdf = new jsPDF({
-        orientation: "p",
-        unit: "mm",
-        format: [pdfWidth, pdfHeight]
-      });
-
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-
-      const fileName =
-        savedInvoice?.invoiceNumber || invoice.invoiceNumber || "invoice";
-
-      pdf.save(`${fileName}.pdf`);
+      document.head.appendChild(style);
+      window.print();
 
       if (onSaved) onSaved();
     } catch (error) {
       alert(error.response?.data?.message || "Failed to create PDF");
     }
   };
+
   const formatDate = (value) => {
     if (!value) return "-";
 
