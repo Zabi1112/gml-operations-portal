@@ -15,24 +15,38 @@ function LoadReportView({ report, onClose }) {
     const element = document.querySelector(".dlr-report-print");
     if (!element) return;
 
-    element.style.height = "auto";
-    element.style.maxHeight = "none";
-    element.style.overflow = "visible";
+    const clone = element.cloneNode(true);
 
-    const fullWidth = element.scrollWidth;
-    const fullHeight = element.scrollHeight;
+    clone.style.position = "absolute";
+    clone.style.left = "0";
+    clone.style.top = "0";
+    clone.style.width = "1100px";
+    clone.style.maxWidth = "1100px";
+    clone.style.height = "auto";
+    clone.style.maxHeight = "none";
+    clone.style.overflow = "visible";
+    clone.style.boxShadow = "none";
+    clone.style.borderRadius = "0";
+    clone.style.background = "#ffffff";
+    clone.style.zIndex = "-1";
 
-    const canvas = await html2canvas(element, {
+    document.body.appendChild(clone);
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const canvas = await html2canvas(clone, {
       scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
-      width: fullWidth,
-      height: fullHeight,
-      windowWidth: fullWidth,
-      windowHeight: fullHeight,
+      width: clone.scrollWidth,
+      height: clone.scrollHeight,
+      windowWidth: clone.scrollWidth,
+      windowHeight: clone.scrollHeight,
       scrollX: 0,
       scrollY: 0
     });
+
+    document.body.removeChild(clone);
 
     const imgData = canvas.toDataURL("image/png");
 
@@ -48,6 +62,8 @@ function LoadReportView({ report, onClose }) {
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`load-report-${report.companyName || "report"}.pdf`);
   };
+
+  
   const saveToHistory = async () => {
     try {
       await axios.post(`${API}/load-reports`, report, auth);
