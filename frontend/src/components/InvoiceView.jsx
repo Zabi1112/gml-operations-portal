@@ -37,14 +37,21 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
       const element = document.querySelector(".invoice-print");
       if (!element) return;
 
+      element.style.height = "auto";
+      element.style.maxHeight = "none";
+      element.style.overflow = "visible";
+
+      const fullWidth = element.scrollWidth;
+      const fullHeight = element.scrollHeight;
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-        width: element.scrollWidth,
-        height: element.scrollHeight,
+        width: fullWidth,
+        height: fullHeight,
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
         scrollX: 0,
         scrollY: 0
       });
