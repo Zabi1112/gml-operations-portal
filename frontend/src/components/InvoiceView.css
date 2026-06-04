@@ -30,7 +30,9 @@
   margin: auto;
   background: white;
   border-radius: 10px;
-  overflow: hidden;
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
   color: #0b2545;
   box-shadow: 0 8px 32px rgba(11, 37, 69, 0.16);
 }
@@ -396,5 +398,24 @@
   .summary-table .net-row td {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+}
+
+.invoice-print {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.invoice-modal {
+  height: auto !important;
+  max-height: none !important;
+  overflow: auto !important;
+}
+
+@media print {
+  .invoice-print {
+    height: auto !important;
+    overflow: visible !important;
   }
 }

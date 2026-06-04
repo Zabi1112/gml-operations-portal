@@ -18,11 +18,18 @@ function LoadReportView({ report, onClose }) {
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
-      backgroundColor: "#ffffff"
+      backgroundColor: "#ffffff",
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight,
+      width: element.scrollWidth,
+      height: element.scrollHeight,
+      scrollX: 0,
+      scrollY: 0
     });
 
     const imgData = canvas.toDataURL("image/png");
-    const pdfWidth = 297;
+
+    const pdfWidth = 297; // landscape
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
     const pdf = new jsPDF({

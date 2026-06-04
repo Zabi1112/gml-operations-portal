@@ -40,12 +40,18 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        scrollX: 0,
+        scrollY: 0
       });
 
       const imgData = canvas.toDataURL("image/png");
 
-      const pdfWidth = 210; // A4 width in mm
+      const pdfWidth = 210;
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
       const pdf = new jsPDF({
@@ -66,7 +72,6 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
       alert(error.response?.data?.message || "Failed to create PDF");
     }
   };
-
   const formatDate = (value) => {
     if (!value) return "-";
 
