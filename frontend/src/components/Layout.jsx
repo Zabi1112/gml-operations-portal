@@ -32,7 +32,7 @@ function Layout({ title, children }) {
         {(user?.role === "ADMIN" || user?.role === "EDITOR") && (
           <button onClick={() => go("/daily-report")}>Daily Report</button>
         )}
-        {(user?.role === "ADMIN") && (
+        {(user?.role === "ADMIN" || user?.role === "EDITOR") && (
           <button onClick={() => go("/invoices")}>Invoices</button>
         )}
 
