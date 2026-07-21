@@ -35,6 +35,7 @@ function Invoices() {
     selectedDriverIds: [],
     truckNumbers: "",
     driverNames: "",
+    truckRates: {},
 
     invoiceNumber: "",
     invoiceStart: "",
@@ -125,6 +126,7 @@ function Invoices() {
       selectedDriverIds: [],
       truckNumbers: "",
       driverNames: "",
+      truckRates: {},
       loads: emptyForm.loads
     }));
   };
@@ -140,10 +142,26 @@ function Invoices() {
       selectedTruckIds.includes(t.id)
     );
 
+    const truckRates = { ...form.truckRates };
+
+    if (exists) {
+      delete truckRates[truck.id];
+    } else {
+      truckRates[truck.id] = form.fixedMonthlyRate;
+    }
+
     setForm({
       ...form,
       selectedTruckIds,
-      truckNumbers: selectedTrucks.map((t) => t.truckNumber).join(", ")
+      truckNumbers: selectedTrucks.map((t) => t.truckNumber).join(", "),
+      truckRates
+    });
+  };
+
+  const updateTruckRate = (truckId, value) => {
+    setForm({
+      ...form,
+      truckRates: { ...form.truckRates, [truckId]: value }
     });
   };
 
@@ -263,9 +281,22 @@ function Invoices() {
     0
   );
 
+  const selectedTrucksWithRates = companyTrucks.filter((t) =>
+    form.selectedTruckIds.includes(t.id)
+  );
+
   const fixedBillingAmount =
     form.billingType === "FIXED"
-      ? Number(form.fixedMonthlyRate || 0) * form.selectedTruckIds.length
+      ? selectedTrucksWithRates.reduce(
+          (sum, truck) =>
+            sum +
+            Number(
+              form.truckRates[truck.id] !== undefined
+                ? form.truckRates[truck.id]
+                : form.fixedMonthlyRate
+            ),
+          0
+        )
       : 0;
 
   const totalDispatchAmount =
@@ -322,6 +353,18 @@ function Invoices() {
       totalLoadAmount,
       totalDispatchAmount,
       fixedBillingAmount,
+      truckRateBreakdown:
+        form.billingType === "FIXED"
+          ? selectedTrucksWithRates.map((truck) => ({
+              truckId: truck.id,
+              truckNumber: truck.truckNumber,
+              rate: Number(
+                form.truckRates[truck.id] !== undefined
+                  ? form.truckRates[truck.id]
+                  : form.fixedMonthlyRate
+              )
+            }))
+          : [],
       grossAmount,
 
       discountAmount: Number(form.discountAmount || 0),
@@ -511,6 +554,32 @@ function Invoices() {
 
             {companyTrucks.length === 0 && <p>No trucks found for company.</p>}
           </div>
+
+          {form.billingType === "FIXED" && selectedTrucksWithRates.length > 0 && (
+            <div className="invoice-loads">
+              <h3>Truck Rates</h3>
+
+              {selectedTrucksWithRates.map((truck) => (
+                <div className="form-group" key={truck.id}>
+                  <label>
+                    {truck.truckNumber}
+                    {truck.trailerNumber ? ` / ${truck.trailerNumber}` : ""} Rate $
+                  </label>
+                  <input
+                    type="number"
+                    value={
+                      form.truckRates[truck.id] !== undefined
+                        ? form.truckRates[truck.id]
+                        : form.fixedMonthlyRate
+                    }
+                    onChange={(e) =>
+                      updateTruckRate(truck.id, e.target.value)
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="invoice-loads">
             <h3>Select Drivers</h3>

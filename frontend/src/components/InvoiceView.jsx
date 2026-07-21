@@ -256,22 +256,49 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
           <>
             <h3 className="section-title">Fixed Billing Details</h3>
 
-            <table className="invoice-table">
-              <tbody>
-                <tr>
-                  <td>Fixed Monthly Rate / Truck</td>
-                  <td>${Number(invoice.fixedMonthlyRate || 0).toFixed(2)}</td>
-                </tr>
-                <tr>
-                  <td>Selected Trucks</td>
-                  <td>{invoice.selectedTruckCount || 0}</td>
-                </tr>
-                <tr>
-                  <td>Fixed Billing Amount</td>
-                  <td>${Number(invoice.fixedBillingAmount || 0).toFixed(2)}</td>
-                </tr>
-              </tbody>
-            </table>
+            {invoice.truckRateBreakdown && invoice.truckRateBreakdown.length > 0 ? (
+              <table className="invoice-table">
+                <thead>
+                  <tr>
+                    <th>Truck</th>
+                    <th>Rate</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {invoice.truckRateBreakdown.map((truck, index) => (
+                    <tr key={index}>
+                      <td>{truck.truckNumber || "-"}</td>
+                      <td>${Number(truck.rate || 0).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+
+                <tfoot>
+                  <tr>
+                    <td>Fixed Billing Amount</td>
+                    <td>${Number(invoice.fixedBillingAmount || 0).toFixed(2)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            ) : (
+              <table className="invoice-table">
+                <tbody>
+                  <tr>
+                    <td>Fixed Monthly Rate / Truck</td>
+                    <td>${Number(invoice.fixedMonthlyRate || 0).toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td>Selected Trucks</td>
+                    <td>{invoice.selectedTruckCount || 0}</td>
+                  </tr>
+                  <tr>
+                    <td>Fixed Billing Amount</td>
+                    <td>${Number(invoice.fixedBillingAmount || 0).toFixed(2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            )}
           </>
         )}
 

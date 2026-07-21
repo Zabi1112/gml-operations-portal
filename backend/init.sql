@@ -112,6 +112,7 @@ CREATE TABLE "public"."Invoice" (
     "totalLoadAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "totalDispatchAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "fixedBillingAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "truckRateBreakdown" JSONB,
     "grossAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "discountAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "referralBonus" DOUBLE PRECISION NOT NULL DEFAULT 0,

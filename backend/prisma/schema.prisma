@@ -270,6 +270,7 @@ model Invoice {
   totalLoadAmount             Float       @default(0)
   totalDispatchAmount         Float       @default(0)
   fixedBillingAmount          Float       @default(0)
+  truckRateBreakdown          Json?
   grossAmount                 Float       @default(0)
 
   discountAmount              Float       @default(0)

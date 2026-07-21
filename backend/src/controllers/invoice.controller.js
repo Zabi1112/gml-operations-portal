@@ -20,6 +20,9 @@ const calculateInvoice = (data) => {
   const dispatchPercent = Number(data.dispatchPercent || 0);
   const fixedMonthlyRate = Number(data.fixedMonthlyRate || 0);
   const selectedTruckCount = Number(data.selectedTruckCount || 0);
+  const truckRateBreakdown = Array.isArray(data.truckRateBreakdown)
+    ? data.truckRateBreakdown
+    : [];
 
   const calculatedLoads = loads.map((load) => {
     const loadAmount = Number(load.loadAmount || 0);
@@ -43,7 +46,14 @@ const calculateInvoice = (data) => {
   });
 
   const fixedBillingAmount =
-    billingType === "FIXED" ? fixedMonthlyRate * selectedTruckCount : 0;
+    billingType === "FIXED"
+      ? truckRateBreakdown.length > 0
+        ? truckRateBreakdown.reduce(
+            (sum, truck) => sum + Number(truck.rate || 0),
+            0
+          )
+        : fixedMonthlyRate * selectedTruckCount
+      : 0;
 
   if (billingType === "FIXED") {
     totalDispatchAmount = fixedBillingAmount;
@@ -72,6 +82,7 @@ const calculateInvoice = (data) => {
     totalLoadAmount,
     totalDispatchAmount,
     fixedBillingAmount,
+    truckRateBreakdown,
     accountsFeeTotal,
     grossAmount,
     netPayable
@@ -134,6 +145,10 @@ const createInvoice = async (req, res) => {
         totalLoadAmount: calculated.totalLoadAmount,
         totalDispatchAmount: calculated.totalDispatchAmount,
         fixedBillingAmount: calculated.fixedBillingAmount,
+        truckRateBreakdown:
+          calculated.truckRateBreakdown.length > 0
+            ? calculated.truckRateBreakdown
+            : undefined,
         grossAmount: calculated.grossAmount,
 
         discountAmount: Number(req.body.discountAmount || 0),
