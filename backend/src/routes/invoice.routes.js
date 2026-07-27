@@ -15,7 +15,7 @@ const {
 router.use(protect);
 
 router.get("/", getInvoices);
-router.post("/", allowRoles("ADMIN", "EDITOR"), createInvoice);
+router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createInvoice);
 router.delete("/:id", allowRoles("ADMIN"), deleteInvoice);
 
 module.exports = router;

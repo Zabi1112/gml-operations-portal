@@ -20,29 +20,28 @@ const {
 } = require("../middleware/auth.middleware");
 
 router.use(protect);
-router.use(allowRoles("ADMIN"));
 
-// Finance Settings
-router.get("/settings/:branchId", getFinanceSettings);
-router.patch("/settings/:branchId", updateFinanceSettings);
+// Finance Settings — ADMIN only
+router.get("/settings/:branchId", allowRoles("ADMIN"), getFinanceSettings);
+router.patch("/settings/:branchId", allowRoles("ADMIN"), updateFinanceSettings);
 
-// Partners
-router.post("/partners", createPartner);
-router.delete("/partners/:id", deletePartner);
+// Partners — ADMIN only
+router.post("/partners", allowRoles("ADMIN"), createPartner);
+router.delete("/partners/:id", allowRoles("ADMIN"), deletePartner);
 
-// Settlements
-router.post("/clear-invoice/:invoiceId", clearInvoice);
-router.post("/manual-settlement", createManualSettlement);
-router.get("/settlements", getSettlements);
-router.delete("/settlements/:id", deleteSettlement);
+// Settlements — settle/clear/delete stay ADMIN only, list is viewable by MANAGER
+router.post("/clear-invoice/:invoiceId", allowRoles("ADMIN"), clearInvoice);
+router.post("/manual-settlement", allowRoles("ADMIN"), createManualSettlement);
+router.get("/settlements", allowRoles("ADMIN", "MANAGER"), getSettlements);
+router.delete("/settlements/:id", allowRoles("ADMIN"), deleteSettlement);
 
-// Partner Loans
-router.get("/loans", loanController.getLoans);
-router.post("/loans", loanController.createLoan);
-router.delete("/loans/:id", loanController.deleteLoan);
+// Partner Loans — ADMIN only
+router.get("/loans", allowRoles("ADMIN"), loanController.getLoans);
+router.post("/loans", allowRoles("ADMIN"), loanController.createLoan);
+router.delete("/loans/:id", allowRoles("ADMIN"), loanController.deleteLoan);
 
-// Loan Repayments
-router.post("/loans/repayment", loanController.addRepayment);
-router.delete("/loans/repayment/:id", loanController.deleteRepayment);
+// Loan Repayments — ADMIN only
+router.post("/loans/repayment", allowRoles("ADMIN"), loanController.addRepayment);
+router.delete("/loans/repayment/:id", allowRoles("ADMIN"), loanController.deleteRepayment);
 
 module.exports = router;

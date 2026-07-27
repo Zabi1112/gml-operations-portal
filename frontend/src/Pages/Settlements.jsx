@@ -7,6 +7,8 @@ import "./Settlements.css";
 const Settlements = () => {
   const { selectedBranch } = useContext(BranchContext);
   const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isAdmin = user?.role === "ADMIN";
   const auth = { headers: { Authorization: `Bearer ${token}` } };
 
   const emptyForm = {
@@ -59,8 +61,10 @@ const Settlements = () => {
   useEffect(() => {
     if (selectedBranch?.id) {
       fetchSettlements();
-      fetchPartners();
-      fetchLoans();
+      if (isAdmin) {
+        fetchPartners();
+        fetchLoans();
+      }
     } else {
       setSettlements([]);
       setPartners([]);
@@ -328,25 +332,29 @@ const Settlements = () => {
           >
             Settlements
           </button>
-          <button
-            className={`btn-primary ${activeSection === "loans" ? "active" : ""}`}
-            onClick={() => setActiveSection("loans")}
-          >
-            Partner Loans
-          </button>
+          {isAdmin && (
+            <button
+              className={`btn-primary ${activeSection === "loans" ? "active" : ""}`}
+              onClick={() => setActiveSection("loans")}
+            >
+              Partner Loans
+            </button>
+          )}
         </div>
       </div>
 
       {/* ── SETTLEMENTS SECTION ── */}
       {activeSection === "settlements" && (
         <>
-          <div style={{ marginBottom: "16px" }}>
-            <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-              {showForm ? "Cancel" : "Add Manual Settlement"}
-            </button>
-          </div>
+          {isAdmin && (
+            <div style={{ marginBottom: "16px" }}>
+              <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
+                {showForm ? "Cancel" : "Add Manual Settlement"}
+              </button>
+            </div>
+          )}
 
-          {showForm && (
+          {isAdmin && showForm && (
             <div className="settlement-form-card">
               <h2>Create Manual Settlement</h2>
               <form onSubmit={handleSubmit}>
@@ -592,7 +600,7 @@ const Settlements = () => {
       )}
 
       {/* ── LOANS SECTION ── */}
-      {activeSection === "loans" && (
+      {isAdmin && activeSection === "loans" && (
         <>
           {/* Partner Balance Summary */}
           <div className="loan-summary-cards">

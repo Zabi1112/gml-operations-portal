@@ -20,10 +20,10 @@ router.use(protect);
 
 router.get("/", getLoads);
 router.get("/reasons", getLoadReasons);
-router.post("/", allowRoles("ADMIN", "EDITOR"), createLoad);
-router.patch("/:id", allowRoles("ADMIN", "EDITOR"), updateLoad);
-router.post("/reasons", allowRoles("ADMIN", "EDITOR"), createLoadReason);
-router.delete("/reasons/:id", allowRoles("ADMIN", "EDITOR"), deleteLoadReason);
-router.delete("/:id", allowRoles("ADMIN", "EDITOR"), deleteLoad);
+router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createLoad);
+router.patch("/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), updateLoad);
+router.post("/reasons", allowRoles("ADMIN", "MANAGER", "EDITOR"), createLoadReason);
+router.delete("/reasons/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), deleteLoadReason);
+router.delete("/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), deleteLoad);
 
 module.exports = router;

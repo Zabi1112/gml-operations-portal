@@ -46,7 +46,11 @@ function App() {
 
         <Route
           path="/history"
-          element={token ? <History /> : <Navigate to="/login" />}
+          element={
+            token && (user?.role === "ADMIN" || user?.role === "MANAGER")
+              ? <History />
+              : <Navigate to="/dashboard" />
+          }
         />
 
         <Route
@@ -66,7 +70,11 @@ function App() {
 
         <Route
           path="/finance-settings"
-          element={token ? <FinanceSettings /> : <Navigate to="/login" />}
+          element={
+            token && user?.role === "ADMIN"
+              ? <FinanceSettings />
+              : <Navigate to="/dashboard" />
+          }
         />
 
         <Route
@@ -76,7 +84,11 @@ function App() {
 
         <Route
           path="/settlements"
-          element={token ? <Settlements /> : <Navigate to="/login" />}
+          element={
+            token && (user?.role === "ADMIN" || user?.role === "MANAGER")
+              ? <Settlements />
+              : <Navigate to="/dashboard" />
+          }
         />
 
         <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} />} />

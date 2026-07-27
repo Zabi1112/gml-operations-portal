@@ -17,8 +17,8 @@ router.use(protect);
 
 router.get("/", getEmployees);
 
-router.post("/", allowRoles("ADMIN", "EDITOR"), createEmployee);
-router.patch("/:id", allowRoles("ADMIN", "EDITOR"), updateEmployee);
+router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createEmployee);
+router.patch("/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), updateEmployee);
 router.delete("/:id", allowRoles("ADMIN"), deleteEmployee);
 
 module.exports = router;

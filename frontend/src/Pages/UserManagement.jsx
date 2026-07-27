@@ -115,6 +115,7 @@ function UserManagement() {
           }
         >
           <option value="ADMIN">ADMIN</option>
+          <option value="MANAGER">MANAGER</option>
           <option value="EDITOR">EDITOR</option>
           <option value="VIEWER">VIEWER</option>
         </select>

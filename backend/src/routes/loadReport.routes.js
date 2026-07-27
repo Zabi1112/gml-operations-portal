@@ -15,7 +15,7 @@ const {
 router.use(protect);
 
 router.get("/", getLoadReports);
-router.post("/", allowRoles("ADMIN", "EDITOR"), createLoadReport);
+router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createLoadReport);
 router.delete("/:id", allowRoles("ADMIN"), deleteLoadReport);
 
 module.exports = router;

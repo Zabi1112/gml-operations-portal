@@ -24,19 +24,19 @@ function Layout({ title, children }) {
         <img src="/logo.jpeg" className="sidebar-logo" />
 
         <button onClick={() => go("/dashboard")}>Dashboard</button>
-        {(user?.role === "ADMIN") && (
+        {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
           <button onClick={() => go("/salary-slips")}>Salary Slips</button>
         )}
-        
+
         <button onClick={() => go("/load-reports")}>Load Reports</button>
-        {(user?.role === "ADMIN" || user?.role === "EDITOR") && (
+        {(user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR") && (
           <button onClick={() => go("/daily-report")}>Daily Report</button>
         )}
-        {(user?.role === "ADMIN" || user?.role === "EDITOR") && (
+        {(user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR") && (
           <button onClick={() => go("/invoices")}>Invoices</button>
         )}
 
-        {(user?.role === "ADMIN") && (
+        {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
           <button onClick={() => go("/settlements")}>Settlements</button>
         )}
         
@@ -52,7 +52,7 @@ function Layout({ title, children }) {
           <button onClick={() => go("/finance-settings")}>Finance Settings</button>
         )}
 
-         {user?.role === "ADMIN" && (
+         {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
           <button onClick={() => go("/history")}>History</button>
         )}
       </aside>

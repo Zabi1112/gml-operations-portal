@@ -16,8 +16,8 @@ const {
 router.use(protect);
 
 router.get("/", getTrucks);
-router.post("/", allowRoles("ADMIN", "EDITOR"), createTruck);
-router.patch("/:id", allowRoles("ADMIN", "EDITOR"), updateTruck);
+router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createTruck);
+router.patch("/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), updateTruck);
 router.delete("/:id", allowRoles("ADMIN"), deleteTruck);
 
 module.exports = router;

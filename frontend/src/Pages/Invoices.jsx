@@ -15,7 +15,7 @@ function Invoices() {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const canEdit = user?.role === "ADMIN" || user?.role === "EDITOR";
+  const canEdit = user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR";
 
   const emptyForm = {
     companyId: "",

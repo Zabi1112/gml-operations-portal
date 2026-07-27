@@ -17,8 +17,8 @@ router.use(protect);
 
 router.get("/", getDrivers);
 
-router.post("/", allowRoles("ADMIN", "EDITOR"), createDriver);
-router.patch("/:id", allowRoles("ADMIN", "EDITOR"), updateDriver);
+router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createDriver);
+router.patch("/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), updateDriver);
 router.delete("/:id", allowRoles("ADMIN"), deleteDriver);
 
 module.exports = router;

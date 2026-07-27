@@ -18,8 +18,8 @@ router.use(protect);
 
 router.get("/", getCompanies);
 router.get("/:id", getCompany);
-router.post("/", allowRoles("ADMIN", "EDITOR"), createCompany);
-router.patch("/:id", allowRoles("ADMIN", "EDITOR"), updateCompany);
+router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createCompany);
+router.patch("/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), updateCompany);
 router.delete("/:id", allowRoles("ADMIN"), deleteCompany);
 
 module.exports = router;
