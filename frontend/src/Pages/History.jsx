@@ -20,7 +20,7 @@ function History() {
 
   const isAdmin = user?.role === "ADMIN";
 
-  const [activeTab, setActiveTab] = useState("salary");
+  const [activeTab, setActiveTab] = useState(isAdmin ? "salary" : "invoice");
 
   const [employees, setEmployees] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -34,6 +34,9 @@ function History() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [selectedLoadReport, setSelectedLoadReport] = useState(null);
   const [selectedSettlement, setSelectedSettlement] = useState(null);
+
+  const [editInvoiceData, setEditInvoiceData] = useState(null);
+  const [editForm, setEditForm] = useState(null);
 
   const [clearInvoiceData, setClearInvoiceData] = useState(null);
 
@@ -68,7 +71,7 @@ function History() {
   };
 
   const loadSalaryHistory = async () => {
-    if (!selectedBranch?.id) return setSalarySlips([]);
+    if (!selectedBranch?.id || !isAdmin) return setSalarySlips([]);
     const params = new URLSearchParams();
     params.append("branchId", selectedBranch.id);
     if (salaryFilters.employeeId) {
@@ -208,6 +211,114 @@ function History() {
     }
   };
 
+  const openEditInvoice = (invoice) => {
+    setEditInvoiceData(invoice);
+    setEditForm({
+      invoiceNumber: invoice.invoiceNumber || "",
+      invoiceStart: invoice.invoiceStart
+        ? String(invoice.invoiceStart).slice(0, 10)
+        : "",
+      invoiceEnd: invoice.invoiceEnd
+        ? String(invoice.invoiceEnd).slice(0, 10)
+        : "",
+      dueDate: invoice.dueDate ? String(invoice.dueDate).slice(0, 10) : "",
+      accountNumber: invoice.accountNumber || "",
+      accountTitle: invoice.accountTitle || "",
+      dispatchPercent: invoice.dispatchPercent || 0,
+      fixedMonthlyRate: invoice.fixedMonthlyRate || 0,
+      accountsFeeWeeks: invoice.accountsFeeWeeks || 0,
+      accountsFeeRate: invoice.accountsFeeRate || 0,
+      discountAmount: invoice.discountAmount || 0,
+      referralBonus: invoice.referralBonus || 0,
+      fineAmount: invoice.fineAmount || 0,
+      fineReason: invoice.fineReason || "",
+      previousInvoiceAmount: invoice.previousInvoiceAmount || 0,
+      includePreviousInvoiceInNet: !!invoice.includePreviousInvoiceInNet,
+      notes: invoice.notes || "",
+      loads: (invoice.loads || []).map((load) => ({
+        date: load.date ? String(load.date).slice(0, 10) : "",
+        pickup: load.pickup || "",
+        dropoff: load.dropoff || "",
+        loadAmount: load.loadAmount || 0
+      })),
+      truckRateBreakdown: (invoice.truckRateBreakdown || []).map((truck) => ({
+        ...truck
+      }))
+    });
+  };
+
+  const closeEditInvoice = () => {
+    setEditInvoiceData(null);
+    setEditForm(null);
+  };
+
+  const updateEditLoad = (index, key, value) => {
+    const updated = [...editForm.loads];
+    updated[index] = { ...updated[index], [key]: value };
+    setEditForm({ ...editForm, loads: updated });
+  };
+
+  const addEditLoad = () => {
+    setEditForm({
+      ...editForm,
+      loads: [
+        ...editForm.loads,
+        { date: "", pickup: "", dropoff: "", loadAmount: 0 }
+      ]
+    });
+  };
+
+  const removeEditLoad = (index) => {
+    setEditForm({
+      ...editForm,
+      loads: editForm.loads.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateEditTruckRate = (index, value) => {
+    const updated = [...editForm.truckRateBreakdown];
+    updated[index] = { ...updated[index], rate: value };
+    setEditForm({ ...editForm, truckRateBreakdown: updated });
+  };
+
+  const submitEditInvoice = async (e) => {
+    e.preventDefault();
+    if (!editInvoiceData || !editForm) return;
+
+    try {
+      const payload = {
+        ...editInvoiceData,
+        ...editForm,
+        dispatchPercent: Number(editForm.dispatchPercent || 0),
+        fixedMonthlyRate: Number(editForm.fixedMonthlyRate || 0),
+        accountsFeeWeeks: Number(editForm.accountsFeeWeeks || 0),
+        accountsFeeRate: Number(editForm.accountsFeeRate || 0),
+        discountAmount: Number(editForm.discountAmount || 0),
+        referralBonus: Number(editForm.referralBonus || 0),
+        fineAmount: Number(editForm.fineAmount || 0),
+        previousInvoiceAmount: Number(editForm.previousInvoiceAmount || 0),
+        loads: editForm.loads.filter(
+          (load) =>
+            load.date &&
+            load.pickup &&
+            load.dropoff &&
+            Number(load.loadAmount || 0) > 0
+        ),
+        truckRateBreakdown: editForm.truckRateBreakdown.map((truck) => ({
+          ...truck,
+          rate: Number(truck.rate || 0)
+        }))
+      };
+
+      await axios.put(`${API}/invoices/${editInvoiceData.id}`, payload, auth);
+      alert("Invoice updated successfully");
+      closeEditInvoice();
+      loadInvoiceHistory();
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to update invoice");
+    }
+  };
+
   const handleDeleteLoadReport = async (reportId) => {
     if (!window.confirm("Are you sure you want to delete this load report? This action cannot be undone.")) return;
     try {
@@ -264,12 +375,14 @@ function History() {
       {selectedBranch && (
         <>
           <div className="history-tabs">
-            <button
-              className={activeTab === "salary" ? "active" : ""}
-              onClick={() => setActiveTab("salary")}
-            >
-              Salary History
-            </button>
+            {isAdmin && (
+              <button
+                className={activeTab === "salary" ? "active" : ""}
+                onClick={() => setActiveTab("salary")}
+              >
+                Salary History
+              </button>
+            )}
 
             <button
               className={activeTab === "invoice" ? "active" : ""}
@@ -295,7 +408,7 @@ function History() {
             )}
           </div>
 
-          {activeTab === "salary" && (
+          {activeTab === "salary" && isAdmin && (
             <>
               <form
                 className="history-filters"
@@ -444,10 +557,15 @@ function History() {
                           <td>
                             {new Date(invoice.createdAt).toLocaleDateString()}
                           </td>
-                          <td>
+                          <td style={{ display: "flex", gap: "5px" }}>
                             <button onClick={() => setSelectedInvoice(invoice)}>
                               View
                             </button>
+                            {isAdmin && (
+                              <button onClick={() => openEditInvoice(invoice)}>
+                                Edit
+                              </button>
+                            )}
                           </td>
                           {isAdmin && (
                             <td>
@@ -807,6 +925,310 @@ function History() {
                   <div className="settlement-actions">
                     <button type="submit">Save Settlement</button>
                     <button type="button" onClick={closeClearInvoice}>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {editForm && editInvoiceData && (
+            <div className="settlement-modal">
+              <div className="settlement-box wide-box">
+                <h2>Edit Invoice</h2>
+
+                <p>
+                  <strong>Company:</strong>{" "}
+                  {editInvoiceData.companyName || "-"}
+                </p>
+
+                <form onSubmit={submitEditInvoice}>
+                  <div className="form-group">
+                    <label>Invoice Number</label>
+                    <input
+                      value={editForm.invoiceNumber}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, invoiceNumber: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Invoice Start</label>
+                    <input
+                      type="date"
+                      value={editForm.invoiceStart}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, invoiceStart: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Invoice End</label>
+                    <input
+                      type="date"
+                      value={editForm.invoiceEnd}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, invoiceEnd: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Due Date</label>
+                    <input
+                      type="date"
+                      value={editForm.dueDate}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, dueDate: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Account Number</label>
+                    <input
+                      value={editForm.accountNumber}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, accountNumber: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Account Title</label>
+                    <input
+                      value={editForm.accountTitle}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, accountTitle: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  {editInvoiceData.billingType === "PERCENTAGE" && (
+                    <>
+                      <div className="form-group">
+                        <label>Dispatch Percentage %</label>
+                        <input
+                          type="number"
+                          value={editForm.dispatchPercent}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              dispatchPercent: e.target.value
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="edit-loads-block">
+                        <label>Loads</label>
+
+                        {editForm.loads.map((load, index) => (
+                          <div className="edit-load-row" key={index}>
+                            <input
+                              type="date"
+                              value={load.date}
+                              onChange={(e) =>
+                                updateEditLoad(index, "date", e.target.value)
+                              }
+                            />
+                            <input
+                              placeholder="Pickup"
+                              value={load.pickup}
+                              onChange={(e) =>
+                                updateEditLoad(index, "pickup", e.target.value)
+                              }
+                            />
+                            <input
+                              placeholder="Drop-off"
+                              value={load.dropoff}
+                              onChange={(e) =>
+                                updateEditLoad(index, "dropoff", e.target.value)
+                              }
+                            />
+                            <input
+                              type="number"
+                              placeholder="Amount $"
+                              value={load.loadAmount}
+                              onChange={(e) =>
+                                updateEditLoad(index, "loadAmount", e.target.value)
+                              }
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeEditLoad(index)}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+
+                        <button type="button" onClick={addEditLoad}>
+                          Add Load
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {editInvoiceData.billingType === "FIXED" && (
+                    <>
+                      <div className="form-group">
+                        <label>Fixed Monthly Rate / Truck $</label>
+                        <input
+                          type="number"
+                          value={editForm.fixedMonthlyRate}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              fixedMonthlyRate: e.target.value
+                            })
+                          }
+                        />
+                      </div>
+
+                      {editForm.truckRateBreakdown.length > 0 && (
+                        <div className="edit-loads-block">
+                          <label>Truck Rates</label>
+
+                          {editForm.truckRateBreakdown.map((truck, index) => (
+                            <div className="edit-load-row" key={index}>
+                              <span>{truck.truckNumber || "-"}</span>
+                              <input
+                                type="number"
+                                value={truck.rate}
+                                onChange={(e) =>
+                                  updateEditTruckRate(index, e.target.value)
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <div className="form-group">
+                    <label>Accounts Fee Weeks</label>
+                    <input
+                      type="number"
+                      value={editForm.accountsFeeWeeks}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          accountsFeeWeeks: e.target.value
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Accounts Fee Rate / Week $</label>
+                    <input
+                      type="number"
+                      value={editForm.accountsFeeRate}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          accountsFeeRate: e.target.value
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Discount $</label>
+                    <input
+                      type="number"
+                      value={editForm.discountAmount}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          discountAmount: e.target.value
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Referral Bonus $</label>
+                    <input
+                      type="number"
+                      value={editForm.referralBonus}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, referralBonus: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Fine $</label>
+                    <input
+                      type="number"
+                      value={editForm.fineAmount}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, fineAmount: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Fine Reason</label>
+                    <input
+                      value={editForm.fineReason}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, fineReason: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Previous Invoice Amount $</label>
+                    <input
+                      type="number"
+                      value={editForm.previousInvoiceAmount}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          previousInvoiceAmount: e.target.value
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group checkbox-group">
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="checkbox"
+                        checked={editForm.includePreviousInvoiceInNet}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            includePreviousInvoiceInNet: e.target.checked
+                          })
+                        }
+                      />
+                      Add Previous Invoice To Net
+                    </label>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Notes</label>
+                    <input
+                      value={editForm.notes}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, notes: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="settlement-actions">
+                    <button type="submit">Save Changes</button>
+                    <button type="button" onClick={closeEditInvoice}>
                       Cancel
                     </button>
                   </div>

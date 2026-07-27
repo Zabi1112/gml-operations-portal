@@ -297,6 +297,104 @@ const getInvoicesByBranch = async (req, res) => {
   }
 };
 
+const updateInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existing = await prisma.invoice.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+
+    const calculated = calculateInvoice(req.body);
+
+    const invoice = await prisma.$transaction(async (tx) => {
+      await tx.invoiceLoad.deleteMany({ where: { invoiceId: Number(id) } });
+
+      return tx.invoice.update({
+        where: { id: Number(id) },
+        data: {
+          companyName: req.body.companyName ?? existing.companyName,
+          ownerName: req.body.ownerName ?? existing.ownerName,
+          mcNumber: req.body.mcNumber ?? existing.mcNumber,
+          dotNumber: req.body.dotNumber ?? existing.dotNumber,
+          address: req.body.address ?? existing.address,
+          contactNumber: req.body.contactNumber ?? existing.contactNumber,
+          email: req.body.email ?? existing.email,
+
+          billingType: req.body.billingType || existing.billingType,
+          dispatchPercent: Number(req.body.dispatchPercent ?? existing.dispatchPercent),
+          fixedMonthlyRate: Number(req.body.fixedMonthlyRate ?? existing.fixedMonthlyRate),
+
+          truckNumbers: req.body.truckNumbers ?? existing.truckNumbers,
+          driverNames: req.body.driverNames ?? existing.driverNames,
+
+          invoiceNumber: req.body.invoiceNumber ?? existing.invoiceNumber,
+          invoiceStart: req.body.invoiceStart
+            ? new Date(req.body.invoiceStart)
+            : existing.invoiceStart,
+          invoiceEnd: req.body.invoiceEnd
+            ? new Date(req.body.invoiceEnd)
+            : existing.invoiceEnd,
+          dueDate: req.body.dueDate ? new Date(req.body.dueDate) : existing.dueDate,
+
+          accountNumber: req.body.accountNumber ?? existing.accountNumber,
+          accountTitle: req.body.accountTitle ?? existing.accountTitle,
+
+          accountsFeeWeeks: Number(req.body.accountsFeeWeeks ?? existing.accountsFeeWeeks),
+          accountsFeeRate: Number(req.body.accountsFeeRate ?? existing.accountsFeeRate),
+          accountsFeeTotal: calculated.accountsFeeTotal,
+
+          totalLoadAmount: calculated.totalLoadAmount,
+          totalDispatchAmount: calculated.totalDispatchAmount,
+          fixedBillingAmount: calculated.fixedBillingAmount,
+          truckRateBreakdown:
+            calculated.truckRateBreakdown.length > 0
+              ? calculated.truckRateBreakdown
+              : existing.truckRateBreakdown,
+          grossAmount: calculated.grossAmount,
+
+          discountAmount: Number(req.body.discountAmount ?? existing.discountAmount),
+          referralBonus: Number(req.body.referralBonus ?? existing.referralBonus),
+          fineAmount: Number(req.body.fineAmount ?? existing.fineAmount),
+          fineReason: req.body.fineReason ?? existing.fineReason,
+
+          previousInvoiceAmount: Number(
+            req.body.previousInvoiceAmount ?? existing.previousInvoiceAmount
+          ),
+          includePreviousInvoiceInNet:
+            req.body.includePreviousInvoiceInNet !== undefined
+              ? Boolean(req.body.includePreviousInvoiceInNet)
+              : existing.includePreviousInvoiceInNet,
+
+          netPayable: calculated.netPayable,
+          notes: req.body.notes ?? existing.notes,
+
+          loads: {
+            create: calculated.calculatedLoads
+          }
+        },
+        include: {
+          loads: true
+        }
+      });
+    });
+
+    res.json({
+      message: "Invoice updated successfully",
+      invoice
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: error.message || "Server error"
+    });
+  }
+};
+
 const deleteInvoice = async (req, res) => {
   try {
     const { id } = req.params;
@@ -337,5 +435,6 @@ module.exports = {
   createInvoice,
   getInvoices,
   getInvoicesByBranch,
+  updateInvoice,
   deleteInvoice
 };

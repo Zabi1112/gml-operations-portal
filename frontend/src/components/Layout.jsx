@@ -24,7 +24,7 @@ function Layout({ title, children }) {
         <img src="/logo.jpeg" className="sidebar-logo" />
 
         <button onClick={() => go("/dashboard")}>Dashboard</button>
-        {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
+        {user?.role === "ADMIN" && (
           <button onClick={() => go("/salary-slips")}>Salary Slips</button>
         )}
 

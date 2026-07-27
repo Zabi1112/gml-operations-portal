@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   createInvoice,
   getInvoices,
+  updateInvoice,
   deleteInvoice
 } = require("../controllers/invoice.controller");
 
@@ -16,6 +17,7 @@ router.use(protect);
 
 router.get("/", getInvoices);
 router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createInvoice);
+router.put("/:id", allowRoles("ADMIN"), updateInvoice);
 router.delete("/:id", allowRoles("ADMIN"), deleteInvoice);
 
 module.exports = router;

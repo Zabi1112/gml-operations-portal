@@ -181,6 +181,54 @@
   background: #64748b;
 }
 
+.settlement-box.wide-box {
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.edit-loads-block {
+  margin-bottom: 14px;
+}
+
+.edit-loads-block > label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.edit-load-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.edit-load-row input {
+  padding: 9px;
+  border: 1px solid #c8d8ee;
+  border-radius: 8px;
+}
+
+.edit-load-row button {
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+}
+
+.edit-loads-block > button {
+  padding: 9px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #0b2545;
+  color: white;
+  cursor: pointer;
+}
+
 @media (max-width: 900px) {
   .history-filters {
     grid-template-columns: 1fr;

@@ -41,7 +41,11 @@ function App() {
 
         <Route
           path="/salary-slips"
-          element={token ? <SalarySlips /> : <Navigate to="/login" />}
+          element={
+            token && (user?.role === "ADMIN" || user?.role === "EDITOR")
+              ? <SalarySlips />
+              : <Navigate to="/dashboard" />
+          }
         />
 
         <Route

@@ -14,7 +14,7 @@ const {
 
 router.use(protect);
 
-router.get("/", getSalarySlips);
+router.get("/", allowRoles("ADMIN", "EDITOR"), getSalarySlips);
 router.post("/", allowRoles("ADMIN", "EDITOR"), createSalarySlip);
 router.delete("/:id", allowRoles("ADMIN"), deleteSalarySlip);
 
