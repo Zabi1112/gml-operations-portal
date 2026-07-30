@@ -46,10 +46,12 @@ router.delete("/settlements/:id", allowRoles("ADMIN"), deleteSettlement);
 // Partner Loans — ADMIN only
 router.get("/loans", allowRoles("ADMIN"), loanController.getLoans);
 router.post("/loans", allowRoles("ADMIN"), loanController.createLoan);
+router.patch("/loans/:id", allowRoles("ADMIN"), loanController.updateLoan);
 router.delete("/loans/:id", allowRoles("ADMIN"), loanController.deleteLoan);
 
 // Loan Repayments — ADMIN only
 router.post("/loans/repayment", allowRoles("ADMIN"), loanController.addRepayment);
+router.patch("/loans/repayment/:id", allowRoles("ADMIN"), loanController.updateRepayment);
 router.delete("/loans/repayment/:id", allowRoles("ADMIN"), loanController.deleteRepayment);
 
 module.exports = router;

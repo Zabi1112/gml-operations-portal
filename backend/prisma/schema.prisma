@@ -422,11 +422,13 @@ model PartnerLoan {
   branchId        Int
   branch          Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
-  lenderPartnerId Int
-  lenderName      String
+  lenderPartnerId  Int?
+  lenderName       String
+  lenderIsAccounts Boolean @default(false)
 
-  borrowerPartnerId Int
-  borrowerName      String
+  borrowerPartnerId  Int?
+  borrowerName       String
+  borrowerIsAccounts Boolean @default(false)
 
   amount          Float    @default(0)
   note            String?

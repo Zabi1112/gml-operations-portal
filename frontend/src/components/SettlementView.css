@@ -82,9 +82,10 @@
   color: white;
 }
 
-.net-row td {
+.settlement-net-row td {
   font-weight: bold;
   background: #eef6ff;
+  color: #0b2545;
 }
 
 .settlement-notes {

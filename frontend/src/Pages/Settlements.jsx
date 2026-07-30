@@ -55,6 +55,8 @@ const Settlements = () => {
   const [repaymentForm, setRepaymentForm] = useState(emptyRepaymentForm);
   const [selectedLoan, setSelectedLoan] = useState(null); // loan to add repayment to
   const [expandedLoan, setExpandedLoan] = useState(null); // loan to view repayments
+  const [editingLoanId, setEditingLoanId] = useState(null);
+  const [editingRepaymentId, setEditingRepaymentId] = useState(null);
 
   const [calculatedAmounts, setCalculatedAmounts] = useState({
     dispatcherAmount: 0,
@@ -221,41 +223,87 @@ const Settlements = () => {
     }
   };
 
+  const openEditLoan = (loan) => {
+    setLoanForm({
+      lenderPartnerId: loan.lenderIsAccounts ? "ACCOUNTS" : String(loan.lenderPartnerId),
+      borrowerPartnerId: loan.borrowerIsAccounts ? "ACCOUNTS" : String(loan.borrowerPartnerId),
+      amount: loan.amount,
+      note: loan.note || "",
+      loanDate: loan.loanDate ? String(loan.loanDate).slice(0, 10) : emptyLoanForm.loanDate
+    });
+    setEditingLoanId(loan.id);
+    setShowLoanForm(true);
+  };
+
+  const closeLoanForm = () => {
+    setLoanForm(emptyLoanForm);
+    setEditingLoanId(null);
+    setShowLoanForm(false);
+  };
+
   const handleAddLoan = async (e) => {
     e.preventDefault();
     if (!selectedBranch?.id) return alert("Please select a branch first.");
     if (!loanForm.lenderPartnerId || !loanForm.borrowerPartnerId)
       return alert("Please select both lender and borrower.");
     if (loanForm.lenderPartnerId === loanForm.borrowerPartnerId)
-      return alert("Lender and borrower cannot be the same partner.");
+      return alert("Lender and borrower cannot be the same.");
     if (!loanForm.amount || Number(loanForm.amount) <= 0)
       return alert("Please enter a valid loan amount.");
 
+    const lenderIsAccounts = loanForm.lenderPartnerId === "ACCOUNTS";
+    const borrowerIsAccounts = loanForm.borrowerPartnerId === "ACCOUNTS";
     const lender = partners.find((p) => p.id === Number(loanForm.lenderPartnerId));
     const borrower = partners.find((p) => p.id === Number(loanForm.borrowerPartnerId));
 
+    const payload = {
+      branchId: selectedBranch.id,
+      lenderPartnerId: lenderIsAccounts ? null : Number(loanForm.lenderPartnerId),
+      lenderIsAccounts,
+      lenderName: lenderIsAccounts ? "Accounts" : lender?.name || "",
+      borrowerPartnerId: borrowerIsAccounts ? null : Number(loanForm.borrowerPartnerId),
+      borrowerIsAccounts,
+      borrowerName: borrowerIsAccounts ? "Accounts" : borrower?.name || "",
+      amount: Number(loanForm.amount),
+      note: loanForm.note,
+      loanDate: loanForm.loanDate
+    };
+
     try {
-      await axios.post(
-        `${API}/finance/loans`,
-        {
-          branchId: selectedBranch.id,
-          lenderPartnerId: Number(loanForm.lenderPartnerId),
-          lenderName: lender?.name || "",
-          borrowerPartnerId: Number(loanForm.borrowerPartnerId),
-          borrowerName: borrower?.name || "",
-          amount: Number(loanForm.amount),
-          note: loanForm.note,
-          loanDate: loanForm.loanDate
-        },
-        auth
-      );
-      alert("Loan recorded successfully!");
-      setLoanForm(emptyLoanForm);
-      setShowLoanForm(false);
+      if (editingLoanId) {
+        await axios.patch(`${API}/finance/loans/${editingLoanId}`, payload, auth);
+        alert("Loan updated successfully!");
+      } else {
+        await axios.post(`${API}/finance/loans`, payload, auth);
+        alert("Loan recorded successfully!");
+      }
+      closeLoanForm();
       fetchLoans();
     } catch (error) {
-      alert(error.response?.data?.message || "Error recording loan");
+      alert(error.response?.data?.message || "Error saving loan");
     }
+  };
+
+  const openAddRepayment = (loan) => {
+    setSelectedLoan(loan);
+    setEditingRepaymentId(null);
+    setRepaymentForm(emptyRepaymentForm);
+  };
+
+  const openEditRepayment = (loan, repayment) => {
+    setSelectedLoan(loan);
+    setEditingRepaymentId(repayment.id);
+    setRepaymentForm({
+      amount: repayment.amount,
+      note: repayment.note || "",
+      paidDate: repayment.paidDate ? String(repayment.paidDate).slice(0, 10) : emptyRepaymentForm.paidDate
+    });
+  };
+
+  const closeRepaymentForm = () => {
+    setRepaymentForm(emptyRepaymentForm);
+    setSelectedLoan(null);
+    setEditingRepaymentId(null);
   };
 
   const handleAddRepayment = async (e) => {
@@ -264,22 +312,34 @@ const Settlements = () => {
       return alert("Please enter a valid repayment amount.");
 
     try {
-      await axios.post(
-        `${API}/finance/loans/repayment`,
-        {
-          loanId: selectedLoan.id,
-          amount: Number(repaymentForm.amount),
-          note: repaymentForm.note,
-          paidDate: repaymentForm.paidDate
-        },
-        auth
-      );
-      alert("Repayment recorded successfully!");
-      setRepaymentForm(emptyRepaymentForm);
-      setSelectedLoan(null);
+      if (editingRepaymentId) {
+        await axios.patch(
+          `${API}/finance/loans/repayment/${editingRepaymentId}`,
+          {
+            amount: Number(repaymentForm.amount),
+            note: repaymentForm.note,
+            paidDate: repaymentForm.paidDate
+          },
+          auth
+        );
+        alert("Repayment updated successfully!");
+      } else {
+        await axios.post(
+          `${API}/finance/loans/repayment`,
+          {
+            loanId: selectedLoan.id,
+            amount: Number(repaymentForm.amount),
+            note: repaymentForm.note,
+            paidDate: repaymentForm.paidDate
+          },
+          auth
+        );
+        alert("Repayment recorded successfully!");
+      }
+      closeRepaymentForm();
       fetchLoans();
     } catch (error) {
-      alert(error.response?.data?.message || "Error recording repayment");
+      alert(error.response?.data?.message || "Error saving repayment");
     }
   };
 
@@ -315,6 +375,20 @@ const Settlements = () => {
 
     return { ...partner, outstandingGiven: given, outstandingTaken: taken, net: given - taken };
   });
+
+  const accountsGiven = loans
+    .filter((l) => l.lenderIsAccounts)
+    .reduce((sum, l) => sum + Number(l.outstanding || 0), 0);
+  const accountsTaken = loans
+    .filter((l) => l.borrowerIsAccounts)
+    .reduce((sum, l) => sum + Number(l.outstanding || 0), 0);
+  const accountsLoanSummary = {
+    id: "accounts",
+    name: "Accounts",
+    outstandingGiven: accountsGiven,
+    outstandingTaken: accountsTaken,
+    net: accountsGiven - accountsTaken
+  };
 
   const formatCurrency = (value) =>
     new Intl.NumberFormat("en-PK", {
@@ -677,17 +751,42 @@ const Settlements = () => {
                 </div>
               </div>
             ))}
+
+            <div className="loan-summary-card">
+              <h4>{accountsLoanSummary.name}</h4>
+              <div className="loan-summary-row">
+                <span>Given (outstanding)</span>
+                <strong className="text-green">
+                  {formatCurrency(accountsLoanSummary.outstandingGiven)}
+                </strong>
+              </div>
+              <div className="loan-summary-row">
+                <span>Taken (outstanding)</span>
+                <strong className="text-red">
+                  {formatCurrency(accountsLoanSummary.outstandingTaken)}
+                </strong>
+              </div>
+              <div className="loan-summary-row net">
+                <span>Net Position</span>
+                <strong className={accountsLoanSummary.net >= 0 ? "text-green" : "text-red"}>
+                  {formatCurrency(accountsLoanSummary.net)}
+                </strong>
+              </div>
+            </div>
           </div>
 
           <div style={{ marginBottom: "16px" }}>
-            <button className="btn-primary" onClick={() => setShowLoanForm(!showLoanForm)}>
+            <button
+              className="btn-primary"
+              onClick={() => (showLoanForm ? closeLoanForm() : setShowLoanForm(true))}
+            >
               {showLoanForm ? "Cancel" : "Record New Loan"}
             </button>
           </div>
 
           {showLoanForm && (
             <div className="settlement-form-card">
-              <h2>Record Partner Loan</h2>
+              <h2>{editingLoanId ? "Edit Loan" : "Record Partner Loan"}</h2>
               <form onSubmit={handleAddLoan}>
                 <div className="form-row">
                   <div className="form-group">
@@ -699,7 +798,8 @@ const Settlements = () => {
                       }
                       required
                     >
-                      <option value="">Select Partner</option>
+                      <option value="">Select Lender</option>
+                      <option value="ACCOUNTS">Accounts</option>
                       {partners.map((p) => (
                         <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
@@ -715,7 +815,8 @@ const Settlements = () => {
                       }
                       required
                     >
-                      <option value="">Select Partner</option>
+                      <option value="">Select Borrower</option>
+                      <option value="ACCOUNTS">Accounts</option>
                       {partners.map((p) => (
                         <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
@@ -753,11 +854,13 @@ const Settlements = () => {
                 </div>
 
                 <div className="form-actions">
-                  <button type="submit" className="btn-success">Save Loan</button>
+                  <button type="submit" className="btn-success">
+                    {editingLoanId ? "Save Changes" : "Save Loan"}
+                  </button>
                   <button
                     type="button"
                     className="btn-secondary"
-                    onClick={() => setShowLoanForm(false)}
+                    onClick={closeLoanForm}
                   >
                     Cancel
                   </button>
@@ -770,7 +873,7 @@ const Settlements = () => {
           {selectedLoan && (
             <div className="settlement-modal">
               <div className="settlement-box">
-                <h2>Record Repayment</h2>
+                <h2>{editingRepaymentId ? "Edit Repayment" : "Record Repayment"}</h2>
                 <p>
                   <strong>{selectedLoan.borrowerName}</strong> repaying{" "}
                   <strong>{selectedLoan.lenderName}</strong>
@@ -788,7 +891,7 @@ const Settlements = () => {
                         setRepaymentForm({ ...repaymentForm, amount: e.target.value })
                       }
                       placeholder="Enter amount"
-                      max={selectedLoan.outstanding}
+                      max={editingRepaymentId ? undefined : selectedLoan.outstanding}
                       required
                     />
                   </div>
@@ -813,8 +916,10 @@ const Settlements = () => {
                     />
                   </div>
                   <div className="settlement-actions">
-                    <button type="submit">Save Repayment</button>
-                    <button type="button" onClick={() => setSelectedLoan(null)}>Cancel</button>
+                    <button type="submit">
+                      {editingRepaymentId ? "Save Changes" : "Save Repayment"}
+                    </button>
+                    <button type="button" onClick={closeRepaymentForm}>Cancel</button>
                   </div>
                 </form>
               </div>
@@ -865,14 +970,12 @@ const Settlements = () => {
                           {loan.outstanding > 0 && (
                             <button
                               className="btn-primary"
-                              onClick={() => {
-                                setSelectedLoan(loan);
-                                setRepaymentForm(emptyRepaymentForm);
-                              }}
+                              onClick={() => openAddRepayment(loan)}
                             >
                               Repay
                             </button>
                           )}
+                          <button onClick={() => openEditLoan(loan)}>Edit</button>
                           <button
                             onClick={() =>
                               setExpandedLoan(expandedLoan === loan.id ? null : loan.id)
@@ -912,7 +1015,10 @@ const Settlements = () => {
                                       <td>{new Date(r.paidDate).toLocaleDateString()}</td>
                                       <td>{formatCurrency(r.amount)}</td>
                                       <td>{r.note || "-"}</td>
-                                      <td>
+                                      <td style={{ display: "flex", gap: "5px" }}>
+                                        <button onClick={() => openEditRepayment(loan, r)}>
+                                          Edit
+                                        </button>
                                         <button
                                           className="delete-btn"
                                           onClick={() => handleDeleteRepayment(r.id)}

@@ -121,7 +121,7 @@ function SettlementView({ settlement, onClose }) {
               <td>{accountsAmountPKR.toLocaleString()}</td>
             </tr>
 
-            <tr className="net-row">
+            <tr className="settlement-net-row">
               <td>Partner Profit</td>
               <td>{partnerProfitPKR.toLocaleString()}</td>
             </tr>
