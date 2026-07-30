@@ -21,10 +21,17 @@ function FinanceSettings() {
   });
 
   const [partners, setPartners] = useState([]);
+  const [dispatchers, setDispatchers] = useState([]);
 
   const [partnerForm, setPartnerForm] = useState({
     name: "",
     percent: "",
+    phone: "",
+    notes: ""
+  });
+
+  const [dispatcherForm, setDispatcherForm] = useState({
+    name: "",
     phone: "",
     notes: ""
   });
@@ -43,6 +50,7 @@ function FinanceSettings() {
     });
 
     setPartners(res.data.partners || []);
+    setDispatchers(res.data.dispatchers || []);
   };
 
   useEffect(() => {
@@ -86,6 +94,35 @@ function FinanceSettings() {
     if (!confirm("Delete partner?")) return;
 
     await axios.delete(`${API}/finance/partners/${id}`, auth);
+
+    loadSettings();
+  };
+
+  const addDispatcher = async (e) => {
+    e.preventDefault();
+
+    await axios.post(
+      `${API}/finance/dispatchers`,
+      {
+        branchId: selectedBranch.id,
+        ...dispatcherForm
+      },
+      auth
+    );
+
+    setDispatcherForm({
+      name: "",
+      phone: "",
+      notes: ""
+    });
+
+    loadSettings();
+  };
+
+  const deleteDispatcher = async (id) => {
+    if (!confirm("Delete dispatcher?")) return;
+
+    await axios.delete(`${API}/finance/dispatchers/${id}`, auth);
 
     loadSettings();
   };
@@ -224,6 +261,112 @@ function FinanceSettings() {
                   Add Partner
                 </button>
               </form>
+            </div>
+
+            <div className="finance-card">
+              <h3>Add Dispatcher</h3>
+              <p className="finance-muted">
+                Dispatchers you can assign amounts to when settling.
+              </p>
+
+              <form className="partner-form" onSubmit={addDispatcher}>
+                <div className="finance-form-group">
+                  <label>Dispatcher Name</label>
+                  <input
+                    placeholder="Enter dispatcher name"
+                    value={dispatcherForm.name}
+                    onChange={(e) =>
+                      setDispatcherForm({
+                        ...dispatcherForm,
+                        name: e.target.value
+                      })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="finance-form-group">
+                  <label>Phone</label>
+                  <input
+                    placeholder="Phone number"
+                    value={dispatcherForm.phone}
+                    onChange={(e) =>
+                      setDispatcherForm({
+                        ...dispatcherForm,
+                        phone: e.target.value
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="finance-form-group">
+                  <label>Notes</label>
+                  <input
+                    placeholder="Optional notes"
+                    value={dispatcherForm.notes}
+                    onChange={(e) =>
+                      setDispatcherForm({
+                        ...dispatcherForm,
+                        notes: e.target.value
+                      })
+                    }
+                  />
+                </div>
+
+                <button className="primary-btn" type="submit">
+                  Add Dispatcher
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div className="finance-card partners-card">
+            <div className="partners-title">
+              <div>
+                <h3>Dispatchers</h3>
+                <p className="finance-muted">
+                  Used to split the dispatcher amount across people in Settlements.
+                </p>
+              </div>
+            </div>
+
+            <div className="finance-table-wrap">
+              <table className="finance-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Notes</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {dispatchers.map((dispatcher) => (
+                    <tr key={dispatcher.id}>
+                      <td>{dispatcher.name}</td>
+                      <td>{dispatcher.phone || "-"}</td>
+                      <td>{dispatcher.notes || "-"}</td>
+                      <td>
+                        <button
+                          className="danger-btn"
+                          onClick={() => deleteDispatcher(dispatcher.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {dispatchers.length === 0 && (
+                    <tr>
+                      <td colSpan="4" className="empty-row">
+                        No dispatchers added yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 

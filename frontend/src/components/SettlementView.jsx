@@ -9,6 +9,10 @@ function SettlementView({ settlement, onClose }) {
     ? settlement.partnerSplits
     : [];
 
+  const dispatcherSplits = Array.isArray(settlement.dispatcherSplits)
+    ? settlement.dispatcherSplits
+    : [];
+
   const totalAmountPKR = Number(settlement.totalAmountPKR ?? 0);
   const invoiceAmountUSD = Number(settlement.invoiceAmountUSD ?? 0);
   const usdRate = Number(settlement.usdRate ?? 0);
@@ -22,6 +26,11 @@ function SettlementView({ settlement, onClose }) {
     settlement.accountsType === "ABSOLUTE"
       ? `Accounts (Fixed PKR)`
       : `Accounts (${accountsValue}%)`;
+
+  const dispatcherLabel =
+    settlement.dispatcherType === "ABSOLUTE"
+      ? `Dispatcher (Fixed PKR)`
+      : `Dispatcher (${dispatcherValue}%)`;
 
   const printSettlement = async () => {
     const element = document.querySelector(".settlement-print");
@@ -103,7 +112,7 @@ function SettlementView({ settlement, onClose }) {
             </tr>
 
             <tr>
-              <td>Dispatcher ({dispatcherValue}%)</td>
+              <td>{dispatcherLabel}</td>
               <td>{dispatcherAmountPKR.toLocaleString()}</td>
             </tr>
 
@@ -118,6 +127,30 @@ function SettlementView({ settlement, onClose }) {
             </tr>
           </tbody>
         </table>
+
+        {dispatcherSplits.length > 0 && (
+          <>
+            <h3>Dispatcher Split</h3>
+
+            <table className="settlement-table">
+              <thead>
+                <tr>
+                  <th>Dispatcher</th>
+                  <th>Amount PKR</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {dispatcherSplits.map((dispatcher, index) => (
+                  <tr key={index}>
+                    <td>{dispatcher.name}</td>
+                    <td>{Number(dispatcher.amountPKR || 0).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
 
         <h3>Partner Split</h3>
 

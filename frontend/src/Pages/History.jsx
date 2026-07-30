@@ -6,6 +6,8 @@ import SalarySlipView from "../components/SalarySlipView.jsx";
 import InvoiceView from "../components/InvoiceView.jsx";
 import LoadReportView from "../components/LoadReportView.jsx";
 import SettlementView from "../components/SettlementView.jsx";
+import DispatcherSplitEditor from "../components/DispatcherSplitEditor.jsx";
+import SettlementEditModal from "../components/SettlementEditModal.jsx";
 import { BranchContext } from "../context/BranchContext.jsx";
 import "./History.css";
 
@@ -29,11 +31,14 @@ function History() {
   const [invoices, setInvoices] = useState([]);
   const [loadReports, setLoadReports] = useState([]);
   const [settlements, setSettlements] = useState([]);
+  const [partners, setPartners] = useState([]);
+  const [dispatchers, setDispatchers] = useState([]);
 
   const [selectedSlip, setSelectedSlip] = useState(null);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [selectedLoadReport, setSelectedLoadReport] = useState(null);
   const [selectedSettlement, setSelectedSettlement] = useState(null);
+  const [editingSettlement, setEditingSettlement] = useState(null);
 
   const [editInvoiceData, setEditInvoiceData] = useState(null);
   const [editForm, setEditForm] = useState(null);
@@ -43,6 +48,8 @@ function History() {
   const [settlementForm, setSettlementForm] = useState({
     usdRate: "",
     dispatcherPercent: "",
+    dispatcherType: "PERCENTAGE",
+    dispatcherSplits: [],
     accountsValue: "",
     accountsType: "PERCENTAGE",
     notes: ""
@@ -123,6 +130,20 @@ function History() {
     setSettlements(res.data);
   };
 
+  const loadFinanceSettings = async () => {
+    if (!selectedBranch?.id || !isAdmin) {
+      setPartners([]);
+      setDispatchers([]);
+      return;
+    }
+    const res = await axios.get(
+      `${API}/finance/settings/${selectedBranch.id}`,
+      auth
+    );
+    setPartners(res.data?.partners || []);
+    setDispatchers(res.data?.dispatchers || []);
+  };
+
   useEffect(() => {
     loadEmployees();
     loadCompanies();
@@ -130,6 +151,7 @@ function History() {
     loadInvoiceHistory();
     loadLoadReportHistory();
     loadSettlements();
+    loadFinanceSettings();
   }, [selectedBranch]);
 
   const openLoadReport = (item) => {
@@ -141,6 +163,8 @@ function History() {
     setSettlementForm({
       usdRate: "",
       dispatcherPercent: selectedBranch?.dispatcherPercent || 25,
+      dispatcherType: "PERCENTAGE",
+      dispatcherSplits: [],
       accountsValue: selectedBranch?.accountsPercent || 10,
       accountsType: "PERCENTAGE",
       notes: ""
@@ -152,6 +176,8 @@ function History() {
     setSettlementForm({
       usdRate: "",
       dispatcherPercent: "",
+      dispatcherType: "PERCENTAGE",
+      dispatcherSplits: [],
       accountsValue: "",
       accountsType: "PERCENTAGE",
       notes: ""
@@ -162,6 +188,14 @@ function History() {
     e.preventDefault();
     if (!clearInvoiceData) return;
 
+    const splitsTotal = settlementForm.dispatcherSplits.reduce(
+      (sum, s) => sum + (Number(s.amount) || 0),
+      0
+    );
+    if (splitsTotal > dispatcherAmountPKR + 1) {
+      return alert("Dispatcher split amounts cannot exceed the total dispatcher amount");
+    }
+
     try {
       const res = await axios.post(
         `${API}/finance/clear-invoice/${clearInvoiceData.id}`,
@@ -169,6 +203,8 @@ function History() {
           invoiceAmountUSD: Number(clearInvoiceData.netPayable || 0),
           usdRate: Number(settlementForm.usdRate || 0),
           dispatcherValue: Number(settlementForm.dispatcherPercent || 0),
+          dispatcherType: settlementForm.dispatcherType,
+          dispatcherSplits: settlementForm.dispatcherSplits,
           accountsValue: Number(settlementForm.accountsValue || 0),
           accountsType: settlementForm.accountsType,
           notes: settlementForm.notes
@@ -353,7 +389,10 @@ function History() {
   const invoiceAmountPKR = invoiceAmountUSD * usdRate;
   const dispatcherPercent = Number(settlementForm.dispatcherPercent || 0);
   const accountsValue = Number(settlementForm.accountsValue || 0);
-  const dispatcherAmountPKR = (invoiceAmountPKR * dispatcherPercent) / 100;
+  const dispatcherAmountPKR =
+    settlementForm.dispatcherType === "ABSOLUTE"
+      ? dispatcherPercent
+      : (invoiceAmountPKR * dispatcherPercent) / 100;
 
   let accountsAmountPKR = 0;
   if (settlementForm.accountsType === "PERCENTAGE") {
@@ -761,6 +800,9 @@ function History() {
                         <button onClick={() => setSelectedSettlement(settlement)}>
                           View / Print
                         </button>
+                        <button onClick={() => setEditingSettlement(settlement)}>
+                          Edit
+                        </button>
                         <button
                           className="delete-btn"
                           onClick={() => handleDeleteSettlement(settlement.id)}
@@ -815,17 +857,23 @@ function History() {
                   </div>
 
                   <div className="form-group">
-                    <label>Dispatcher %</label>
-                    <input
-                      type="number"
-                      value={settlementForm.dispatcherPercent}
-                      onChange={(e) =>
-                        setSettlementForm({
-                          ...settlementForm,
-                          dispatcherPercent: e.target.value
-                        })
+                    <label>Dispatcher Payment Type</label>
+                    <DispatcherSplitEditor
+                      dispatchers={dispatchers}
+                      dispatcherType={settlementForm.dispatcherType}
+                      dispatcherValue={settlementForm.dispatcherPercent}
+                      onDispatcherTypeChange={(type) =>
+                        setSettlementForm({ ...settlementForm, dispatcherType: type })
                       }
-                      required
+                      onDispatcherValueChange={(value) =>
+                        setSettlementForm({ ...settlementForm, dispatcherPercent: value })
+                      }
+                      dispatcherAmount={dispatcherAmountPKR}
+                      splits={settlementForm.dispatcherSplits}
+                      onSplitsChange={(splits) =>
+                        setSettlementForm({ ...settlementForm, dispatcherSplits: splits })
+                      }
+                      formatCurrency={(v) => Number(v || 0).toLocaleString()}
                     />
                   </div>
 
@@ -1262,6 +1310,20 @@ function History() {
             <SettlementView
               settlement={selectedSettlement}
               onClose={() => setSelectedSettlement(null)}
+            />
+          )}
+
+          {editingSettlement && (
+            <SettlementEditModal
+              settlement={editingSettlement}
+              dispatchers={dispatchers}
+              partners={partners}
+              auth={auth}
+              onClose={() => setEditingSettlement(null)}
+              onSaved={() => {
+                setEditingSettlement(null);
+                loadSettlements();
+              }}
             />
           )}
         </>

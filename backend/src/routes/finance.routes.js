@@ -6,9 +6,12 @@ const {
   updateFinanceSettings,
   createPartner,
   deletePartner,
+  createDispatcher,
+  deleteDispatcher,
   clearInvoice,
   createManualSettlement,
   getSettlements,
+  updateSettlement,
   deleteSettlement
 } = require("../controllers/finance.controller");
 
@@ -29,10 +32,15 @@ router.patch("/settings/:branchId", allowRoles("ADMIN"), updateFinanceSettings);
 router.post("/partners", allowRoles("ADMIN"), createPartner);
 router.delete("/partners/:id", allowRoles("ADMIN"), deletePartner);
 
-// Settlements — settle/clear/delete stay ADMIN only, list is viewable by MANAGER
+// Dispatchers — ADMIN only
+router.post("/dispatchers", allowRoles("ADMIN"), createDispatcher);
+router.delete("/dispatchers/:id", allowRoles("ADMIN"), deleteDispatcher);
+
+// Settlements — settle/clear/edit/delete stay ADMIN only, list is viewable by MANAGER
 router.post("/clear-invoice/:invoiceId", allowRoles("ADMIN"), clearInvoice);
 router.post("/manual-settlement", allowRoles("ADMIN"), createManualSettlement);
 router.get("/settlements", allowRoles("ADMIN", "MANAGER"), getSettlements);
+router.patch("/settlements/:id", allowRoles("ADMIN"), updateSettlement);
 router.delete("/settlements/:id", allowRoles("ADMIN"), deleteSettlement);
 
 // Partner Loans — ADMIN only

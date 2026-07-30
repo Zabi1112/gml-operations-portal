@@ -58,6 +58,7 @@ model Branch {
   loadReports LoadReport[]
   loadReportReasons LoadReportReason[]
   partners           BranchPartner[]
+  dispatchers        BranchDispatcher[]
   settlements        InvoiceSettlement[]
   loans       PartnerLoan[]
 
@@ -73,6 +74,20 @@ model BranchPartner {
 
   name      String
   percent   Float    @default(0)
+  phone     String?
+  notes     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BranchDispatcher {
+  id        Int      @id @default(autoincrement())
+
+  branchId  Int
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  name      String
   phone     String?
   notes     String?
 
@@ -96,9 +111,12 @@ model InvoiceSettlement {
 
   amountType             AmountType  @default(PERCENTAGE)
 
+  dispatcherType         AmountType  @default(PERCENTAGE)
   dispatcherValue        Float       @default(25)
   dispatcherAmountPKR    Float       @default(0)
+  dispatcherSplits       Json?
 
+  accountsType           AmountType  @default(PERCENTAGE)
   accountsValue          Float       @default(10)
   accountsAmountPKR      Float       @default(0)
 

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { BranchContext } from "../context/BranchContext";
 import { API } from "../api";
+import DispatcherSplitEditor from "../components/DispatcherSplitEditor";
+import SettlementEditModal from "../components/SettlementEditModal";
 import "./Settlements.css";
 
 const Settlements = () => {
@@ -17,6 +19,7 @@ const Settlements = () => {
     dollarRate: "",
     dispatcherValue: "",
     dispatcherType: "PERCENTAGE",
+    dispatcherSplits: [],
     accountsValue: "",
     accountsType: "PERCENTAGE",
     companyName: "",
@@ -41,9 +44,11 @@ const Settlements = () => {
   const [activeSection, setActiveSection] = useState("settlements");
   const [settlements, setSettlements] = useState([]);
   const [partners, setPartners] = useState([]);
+  const [dispatchers, setDispatchers] = useState([]);
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [editingSettlement, setEditingSettlement] = useState(null);
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
   const [loanForm, setLoanForm] = useState(emptyLoanForm);
@@ -98,6 +103,7 @@ const Settlements = () => {
         auth
       );
       setPartners(response.data?.partners || []);
+      setDispatchers(response.data?.dispatchers || []);
     } catch (error) {
       console.error("Error fetching partners:", error);
     }
@@ -119,7 +125,13 @@ const Settlements = () => {
     const totalAmount = Number(formData.totalAmountPKR) || 0;
     const dispatcherValue = Number(formData.dispatcherValue) || 0;
     const accountsValue = Number(formData.accountsValue) || 0;
-    const dispatcherAmount = (totalAmount * dispatcherValue) / 100;
+
+    let dispatcherAmount = 0;
+    if (formData.dispatcherType === "PERCENTAGE") {
+      dispatcherAmount = (totalAmount * dispatcherValue) / 100;
+    } else {
+      dispatcherAmount = dispatcherValue;
+    }
 
     let accountsAmount = 0;
     if (formData.accountsType === "PERCENTAGE") {
@@ -170,8 +182,16 @@ const Settlements = () => {
     if (!selectedBranch?.id) return alert("Please select a branch first.");
     if (!formData.totalAmountPKR || Number(formData.totalAmountPKR) <= 0)
       return alert("Please enter a valid total amount");
-    if (formData.dispatcherValue === "") return alert("Please enter dispatcher percentage");
+    if (formData.dispatcherValue === "") return alert("Please enter dispatcher amount");
     if (formData.accountsValue === "") return alert("Please enter accounts value");
+
+    const splitsTotal = formData.dispatcherSplits.reduce(
+      (sum, s) => sum + (Number(s.amount) || 0),
+      0
+    );
+    if (splitsTotal > calculatedAmounts.dispatcherAmount + 1) {
+      return alert("Dispatcher split amounts cannot exceed the total dispatcher amount");
+    }
 
     try {
       await axios.post(
@@ -182,7 +202,8 @@ const Settlements = () => {
           totalAmountUSD: Number(formData.totalAmountUSD || 0),
           dollarRate: Number(formData.dollarRate || 0),
           dispatcherValue: Number(formData.dispatcherValue),
-          dispatcherType: "PERCENTAGE",
+          dispatcherType: formData.dispatcherType,
+          dispatcherSplits: formData.dispatcherSplits,
           accountsValue: Number(formData.accountsValue),
           accountsType: formData.accountsType,
           companyName: formData.companyName || "Manual Settlement",
@@ -436,22 +457,29 @@ const Settlements = () => {
                 </div>
 
                 <div className="form-section">
+                  <h3>Dispatcher Amount</h3>
+                  <DispatcherSplitEditor
+                    dispatchers={dispatchers}
+                    dispatcherType={formData.dispatcherType}
+                    dispatcherValue={formData.dispatcherValue}
+                    onDispatcherTypeChange={(type) =>
+                      setFormData((prev) => ({ ...prev, dispatcherType: type }))
+                    }
+                    onDispatcherValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, dispatcherValue: value }))
+                    }
+                    dispatcherAmount={calculatedAmounts.dispatcherAmount}
+                    splits={formData.dispatcherSplits}
+                    onSplitsChange={(splits) =>
+                      setFormData((prev) => ({ ...prev, dispatcherSplits: splits }))
+                    }
+                    formatCurrency={formatCurrency}
+                  />
+                </div>
+
+                <div className="form-section">
                   <h3>Settlement Amounts</h3>
                   <div className="form-row">
-                    <div className="form-group">
-                      <label>Dispatcher (%) *</label>
-                      <input
-                        type="number"
-                        name="dispatcherValue"
-                        value={formData.dispatcherValue}
-                        onChange={handleInputChange}
-                        placeholder="Enter percentage"
-                        step="0.01"
-                      />
-                      <div className="amount-preview">
-                        Calculated: {formatCurrency(calculatedAmounts.dispatcherAmount)}
-                      </div>
-                    </div>
                     <div className="form-group">
                       <label>Accounts Payment Type *</label>
                       <div className="amount-type-selector-accounts">
@@ -569,6 +597,7 @@ const Settlements = () => {
                     <th>Accounts</th>
                     <th>Partner Profit</th>
                     <th>Cleared By</th>
+                    {isAdmin && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -590,6 +619,13 @@ const Settlements = () => {
                       <td>{formatCurrency(settlement.accountsAmountPKR)}</td>
                       <td>{formatCurrency(settlement.partnerProfitPKR)}</td>
                       <td>{settlement.clearedBy || "-"}</td>
+                      {isAdmin && (
+                        <td>
+                          <button className="btn-secondary" onClick={() => setEditingSettlement(settlement)}>
+                            Edit
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -597,6 +633,20 @@ const Settlements = () => {
             )}
           </div>
         </>
+      )}
+
+      {editingSettlement && (
+        <SettlementEditModal
+          settlement={editingSettlement}
+          dispatchers={dispatchers}
+          partners={partners}
+          auth={auth}
+          onClose={() => setEditingSettlement(null)}
+          onSaved={() => {
+            setEditingSettlement(null);
+            fetchSettlements();
+          }}
+        />
       )}
 
       {/* ── LOANS SECTION ── */}
