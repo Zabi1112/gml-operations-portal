@@ -14,7 +14,9 @@ const {
   allowRoles
 } = require("../middleware/auth.middleware");
 
-router.use(protect);
+const { branchWriteGuard } = require("../middleware/branchWriteGuard");
+
+router.use(protect, branchWriteGuard);
 
 router.get("/", getBranches);
 router.get("/:id", getBranch);

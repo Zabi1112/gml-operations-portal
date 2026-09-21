@@ -19,7 +19,7 @@
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  background: #0b2545;
+  background: #b84316;
   color: white;
   cursor: pointer;
 }
@@ -30,13 +30,13 @@
   background: white;
   border-radius: 8px;
    overflow: visible !important;
-  border-top: 5px solid #0b2545;
-  box-shadow: 0 8px 32px rgba(11, 37, 69, 0.14);
-  color: #0b2545;
+  border-top: 5px solid #b84316;
+  box-shadow: 0 8px 32px rgba(184, 67, 22, 0.14);
+  color: #b84316;
 }
 
 .dlr-header {
-  background: #0b2545;
+  background: #b84316;
   padding: 22px 32px;
   display: grid;
   grid-template-columns: 130px 1fr 170px;
@@ -92,12 +92,12 @@
 }
 
 .dlr-info {
-  background: #eef3fa;
+  background: #fff1e6;
   padding: 14px 32px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
-  border-bottom: 1px solid #c8d8ee;
+  border-bottom: 1px solid #ead6c8;
 }
 
 .dlr-info span {
@@ -105,7 +105,7 @@
   font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #5a7295;
+  color: #786253;
   font-weight: 700;
 }
 
@@ -129,7 +129,7 @@
 }
 
 .dlr-grid-head div {
-  background: #0b2545;
+  background: #b84316;
   color: white;
   padding: 10px 8px;
   font-size: 8.5px;
@@ -141,14 +141,14 @@
 .dlr-grid-row div {
   padding: 9px 8px;
   min-height: 36px;
-  border-bottom: 1px solid #edf2f9;
+  border-bottom: 1px solid #fff8f3;
   font-size: 11px;
-  color: #0b2545;
+  color: #b84316;
   word-break: break-word;
 }
 
 .dlr-grid-row:nth-child(odd) div {
-  background: #fafbfd;
+  background: #fffcfa;
 }
 
 .dlr-grid-row .num {
@@ -157,7 +157,7 @@
 }
 
 .reason-row div {
-  color: #5a7295;
+  color: #786253;
   font-style: italic;
 }
 
@@ -191,12 +191,12 @@
 }
 
 .badge-custom {
-  background: #eef3fa;
-  color: #1b3f6e;
+  background: #fff1e6;
+  color: #963510;
 }
 
 .total-row div {
-  background: #0b2545 !important;
+  background: #b84316 !important;
   color: white !important;
   font-weight: 800;
   border-bottom: none;
@@ -219,15 +219,15 @@
 }
 
 .sum-card {
-  background: #f7f9fc;
-  border: 1px solid #c8d8ee;
+  background: #fffaf6;
+  border: 1px solid #ead6c8;
   border-radius: 8px;
   padding: 14px 16px;
-  border-top: 3px solid #0b2545;
+  border-top: 3px solid #b84316;
 }
 
 .sum-card.accent {
-  border-top-color: #1a56db;
+  border-top-color: #c44b18;
 }
 
 .sum-card.green {
@@ -243,32 +243,32 @@
   font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #5a7295;
+  color: #786253;
   font-weight: 700;
 }
 
 .sum-card strong {
   display: block;
   font-size: 20px;
-  color: #0b2545;
+  color: #b84316;
   margin-top: 4px;
 }
 
 .sum-card small {
   display: block;
   font-size: 10px;
-  color: #5a7295;
+  color: #786253;
   margin-top: 2px;
 }
 
 .dlr-footer {
-  background: #eef3fa;
-  border-top: 1px solid #c8d8ee;
+  background: #fff1e6;
+  border-top: 1px solid #ead6c8;
   padding: 12px 32px;
   display: flex;
   justify-content: space-between;
   font-size: 9px;
-  color: #5a7295;
+  color: #786253;
 }
 
 @media print {

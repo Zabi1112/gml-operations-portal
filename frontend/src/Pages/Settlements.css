@@ -9,7 +9,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #b84316 0%, #963510 100%);
   color: white;
   padding: 20px;
   border-radius: 8px;
@@ -24,7 +24,7 @@
 
 .btn-primary {
   background: white;
-  color: #667eea;
+  color: #b84316;
   border: none;
   padding: 10px 20px;
   border-radius: 4px;
@@ -44,7 +44,7 @@
   padding: 25px;
   margin-bottom: 30px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #b84316;
 }
 
 .settlement-form-card h2 {
@@ -59,7 +59,7 @@
 }
 
 .form-section h3 {
-  color: #667eea;
+  color: #b84316;
   font-size: 16px;
   margin: 0 0 15px 0;
   padding-bottom: 10px;
@@ -98,8 +98,8 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #b84316;
+  box-shadow: 0 0 0 3px rgba(184, 67, 22, 0.1);
 }
 
 .amount-type-selector {
@@ -143,7 +143,7 @@
 
 .amount-preview {
   font-size: 12px;
-  color: #667eea;
+  color: #b84316;
   margin-top: 5px;
   font-weight: 600;
 }
@@ -191,11 +191,11 @@
 
 .summary-row.total {
   border-bottom: none;
-  border-top: 2px solid #667eea;
+  border-top: 2px solid #b84316;
   padding-top: 15px;
   margin-top: 10px;
   font-weight: 600;
-  color: #667eea;
+  color: #b84316;
 }
 
 .partner-breakdown {
@@ -337,7 +337,7 @@
 .loading {
   text-align: center;
   padding: 40px 20px;
-  color: #667eea;
+  color: #b84316;
   font-size: 16px;
 }
 
@@ -431,3 +431,8 @@
   border-radius: 4px;
   font-size: 12px;
 }
+
+.settlements-container .btn-primary { background: #b84316; color: #fff; border: 1px solid #b84316; }
+.settlements-container .btn-primary:hover:not(:disabled) { background: #963510; }
+.settlements-header .btn-primary { background: #fff; color: #963510; border-color: #fff; }
+.settlements-header .btn-primary.active { background: #78350f; color: #fff; }

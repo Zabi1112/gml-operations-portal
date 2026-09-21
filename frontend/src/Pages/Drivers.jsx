@@ -14,8 +14,8 @@ function Drivers() {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const canEdit = user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR";
-  const canDelete = user?.role === "ADMIN";
+  const canEdit = selectedBranch?.isActive !== false && (user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR");
+  const canDelete = selectedBranch?.isActive !== false && user?.role === "ADMIN";
 
   const emptyForm = {
     companyId: "",
@@ -107,7 +107,7 @@ function Drivers() {
     <Layout title="Driver Management">
       {!selectedBranch && (
         <div className="warning-message">
-          Please select a GML branch from Dashboard first.
+          Please select a branch from Dashboard first.
         </div>
       )}
 

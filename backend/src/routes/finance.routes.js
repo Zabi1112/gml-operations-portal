@@ -22,7 +22,9 @@ const {
   allowRoles
 } = require("../middleware/auth.middleware");
 
-router.use(protect);
+const { branchWriteGuard } = require("../middleware/branchWriteGuard");
+
+router.use(protect, branchWriteGuard);
 
 // Finance Settings — ADMIN only
 router.get("/settings/:branchId", allowRoles("ADMIN"), getFinanceSettings);

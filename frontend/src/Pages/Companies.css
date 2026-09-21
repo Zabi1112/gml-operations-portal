@@ -19,14 +19,14 @@
 .mini-form select,
 .company-browser select {
   padding: 11px;
-  border: 1px solid #c8d8ee;
+  border: 1px solid #ead6c8;
   border-radius: 8px;
 }
 
 .company-form button,
 .mini-form button,
 .company-card button {
-  background: #0b2545;
+  background: #b84316;
   color: white;
   border: none;
   border-radius: 8px;
@@ -63,17 +63,17 @@
 
 .company-card {
   margin-top: 20px;
-  border: 1px solid #dbe5f2;
+  border: 1px solid #efdfd3;
   border-radius: 12px;
   padding: 18px;
-  background: #f7f9fc;
+  background: #fffaf6;
 }
 
 .company-card-head {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  border-bottom: 1px solid #dbe5f2;
+  border-bottom: 1px solid #efdfd3;
   padding-bottom: 15px;
   margin-bottom: 15px;
 }
@@ -99,7 +99,7 @@
 
 .nested-item {
   background: white;
-  border: 1px solid #dbe5f2;
+  border: 1px solid #efdfd3;
   border-radius: 8px;
   padding: 12px;
   display: flex;

@@ -12,5 +12,7 @@ body,
 }
 
 body {
-  background: #edf2f9;
+  background: #fff8f3;
 }
+:focus-visible { outline: 2px solid #b84316; outline-offset: 3px; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }

@@ -1,0 +1,12 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { resolveBranchSelection } from "../src/context/branchSelection.js";
+const current = { id: 2, isActive: true, branchName: "EWL Haji Pura" };
+const previous = { id: 1, isActive: false, branchName: "GML Haji Pura" };
+const branches = [previous,current];
+test("fresh login defaults to current operation", () => assert.equal(resolveBranchSelection(branches,null),current));
+test("stale pre-transition selection moves to current operation", () => assert.equal(resolveBranchSelection(branches,{id:1,isActive:true}),current));
+test("explicit historical selection survives navigation", () => assert.equal(resolveBranchSelection(branches,{id:1,isActive:false}),previous));
+test("stored metadata is refreshed", () => assert.equal(resolveBranchSelection(branches,{id:2,isActive:true,branchName:"stale"}),current));
+test("deleted selection falls back to current operation", () => assert.equal(resolveBranchSelection(branches,{id:99}),current));
+test("no branches leaves selection empty", () => assert.equal(resolveBranchSelection([],null),null));

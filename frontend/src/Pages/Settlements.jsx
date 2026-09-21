@@ -5,6 +5,7 @@ import { API } from "../api";
 import DispatcherSplitEditor from "../components/DispatcherSplitEditor";
 import SettlementEditModal from "../components/SettlementEditModal";
 import "./Settlements.css";
+import Layout from "../components/Layout.jsx";
 
 const Settlements = () => {
   const { selectedBranch } = useContext(BranchContext);
@@ -406,18 +407,16 @@ const Settlements = () => {
 
   if (!selectedBranch) {
     return (
-      <div className="settlements-container">
-        <div className="warning-message">Please select a branch first.</div>
-      </div>
+      <Layout title="Settlements"><div className="warning-message">Please select a branch first.</div></Layout>
     );
   }
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return <Layout title="Settlements"><div className="loading">Loading...</div></Layout>;
   }
 
   return (
-    <div className="settlements-container">
+    <Layout title="Settlements"><div className="settlements-container">
       <div className="settlements-header">
         <h1>Settlement Management</h1>
         <div style={{ display: "flex", gap: "10px" }}>
@@ -443,7 +442,7 @@ const Settlements = () => {
         <>
           {isAdmin && (
             <div style={{ marginBottom: "16px" }}>
-              <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
+              <button className="btn-primary" disabled={selectedBranch?.isActive === false} onClick={() => setShowForm(!showForm)}>
                 {showForm ? "Cancel" : "Add Manual Settlement"}
               </button>
             </div>
@@ -695,7 +694,7 @@ const Settlements = () => {
                       <td>{settlement.clearedBy || "-"}</td>
                       {isAdmin && (
                         <td>
-                          <button className="btn-secondary" onClick={() => setEditingSettlement(settlement)}>
+                          <button className="btn-secondary" disabled={selectedBranch?.isActive === false} onClick={() => setEditingSettlement(settlement)}>
                             Edit
                           </button>
                         </td>
@@ -778,7 +777,7 @@ const Settlements = () => {
           <div style={{ marginBottom: "16px" }}>
             <button
               className="btn-primary"
-              onClick={() => (showLoanForm ? closeLoanForm() : setShowLoanForm(true))}
+              disabled={selectedBranch?.isActive === false} onClick={() => (showLoanForm ? closeLoanForm() : setShowLoanForm(true))}
             >
               {showLoanForm ? "Cancel" : "Record New Loan"}
             </button>
@@ -970,12 +969,12 @@ const Settlements = () => {
                           {loan.outstanding > 0 && (
                             <button
                               className="btn-primary"
-                              onClick={() => openAddRepayment(loan)}
+                              disabled={selectedBranch?.isActive === false} onClick={() => openAddRepayment(loan)}
                             >
                               Repay
                             </button>
                           )}
-                          <button onClick={() => openEditLoan(loan)}>Edit</button>
+                          <button disabled={selectedBranch?.isActive === false} onClick={() => openEditLoan(loan)}>Edit</button>
                           <button
                             onClick={() =>
                               setExpandedLoan(expandedLoan === loan.id ? null : loan.id)
@@ -985,7 +984,7 @@ const Settlements = () => {
                           </button>
                           <button
                             className="delete-btn"
-                            onClick={() => handleDeleteLoan(loan.id)}
+                            disabled={selectedBranch?.isActive === false} onClick={() => handleDeleteLoan(loan.id)}
                           >
                             Delete
                           </button>
@@ -1016,12 +1015,12 @@ const Settlements = () => {
                                       <td>{formatCurrency(r.amount)}</td>
                                       <td>{r.note || "-"}</td>
                                       <td style={{ display: "flex", gap: "5px" }}>
-                                        <button onClick={() => openEditRepayment(loan, r)}>
+                                        <button disabled={selectedBranch?.isActive === false} onClick={() => openEditRepayment(loan, r)}>
                                           Edit
                                         </button>
                                         <button
                                           className="delete-btn"
-                                          onClick={() => handleDeleteRepayment(r.id)}
+                                          disabled={selectedBranch?.isActive === false} onClick={() => handleDeleteRepayment(r.id)}
                                         >
                                           Delete
                                         </button>
@@ -1042,7 +1041,7 @@ const Settlements = () => {
           </div>
         </>
       )}
-    </div>
+    </div></Layout>
   );
 };
 

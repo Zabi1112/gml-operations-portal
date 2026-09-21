@@ -65,10 +65,10 @@ function SettlementView({ settlement, onClose }) {
 
       <div className="settlement-print">
         <div className="settlement-header">
-          <img src="/logo.jpeg" alt="GML Logo" />
+          <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC logo" />
           <div>
             <h1>Invoice Settlement</h1>
-            <p>Get Moving Logistics</p>
+            <p>EAST WEST LOGISTICS LLC</p>
           </div>
         </div>
 

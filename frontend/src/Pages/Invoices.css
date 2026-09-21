@@ -11,12 +11,12 @@
 .invoice-form input,
 .invoice-form select {
   padding: 11px;
-  border: 1px solid #c8d8ee;
+  border: 1px solid #ead6c8;
   border-radius: 8px;
 }
 
 .invoice-form button {
-  background: #0b2545;
+  background: #b84316;
   color: white;
   border: none;
   border-radius: 8px;
@@ -26,7 +26,7 @@
 
 .invoice-loads {
   grid-column: 1 / -1;
-  background: #edf2f9;
+  background: #fff8f3;
   padding: 15px;
   border-radius: 12px;
 }
@@ -43,7 +43,7 @@
 }
 
 .invoice-preview-box {
-  background: #edf2f9;
+  background: #fff8f3;
   padding: 14px;
   border-radius: 10px;
   font-size: 14px;
@@ -71,7 +71,7 @@
 
 .check-grid label {
   background: white;
-  border: 1px solid #c8d8ee;
+  border: 1px solid #ead6c8;
   padding: 10px;
   border-radius: 8px;
   display: flex;
@@ -97,7 +97,7 @@
 
 .loads-header button {
   border: none;
-  background: #0b2545;
+  background: #b84316;
   color: white;
   padding: 10px 14px;
   border-radius: 8px;
@@ -106,5 +106,5 @@
 }
 
 .loads-header button:hover {
-  background: #123d6b;
+  background: #963510;
 }

@@ -14,8 +14,8 @@ function Companies() {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const canEdit = user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR";
-  const canDelete = user?.role === "ADMIN";
+  const canEdit = selectedBranch?.isActive !== false && (user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR");
+  const canDelete = selectedBranch?.isActive !== false && user?.role === "ADMIN";
 
   const emptyCompany = {
     companyName: "",
@@ -183,7 +183,7 @@ function Companies() {
     <Layout title="Client Companies">
       {!selectedBranch && (
         <div className="warning-message">
-          Please select a GML branch from Dashboard first.
+          Please select a branch from Dashboard first.
         </div>
       )}
 
@@ -196,7 +196,7 @@ function Companies() {
               </h3>
 
               <div className="form-group">
-                <label>Active GML Branch</label>
+                <label>Active Branch</label>
                 <input value={selectedBranch.branchName} readOnly />
               </div>
 

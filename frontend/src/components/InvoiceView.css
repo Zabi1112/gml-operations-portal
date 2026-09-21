@@ -19,7 +19,7 @@
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  background: #0b2545;
+  background: #b84316;
   color: white;
   cursor: pointer;
   font-weight: 700;
@@ -33,12 +33,12 @@
   overflow: visible !important;
   height: auto !important;
   max-height: none !important;
-  color: #0b2545;
-  box-shadow: 0 8px 32px rgba(11, 37, 69, 0.16);
+  color: #b84316;
+  box-shadow: 0 8px 32px rgba(184, 67, 22, 0.16);
 }
 
 .invoice-brand-header {
-  background: #0b2545;
+  background: #b84316;
   color: white;
   padding: 22px 32px;
   display: grid;
@@ -97,20 +97,20 @@
   grid-template-columns: 1fr 1fr;
   gap: 18px;
   padding: 24px 32px;
-  background: #f8fafc;
-  border-bottom: 1px solid #dbe5f2;
+  background: #fffaf6;
+  border-bottom: 1px solid #efdfd3;
 }
 
 .company-block {
   background: white;
-  border: 1px solid #e5edf7;
+  border: 1px solid #f3e5da;
   border-radius: 12px;
   padding: 16px;
 }
 
 .company-block h3 {
   margin: 0 0 10px;
-  color: #0b2545;
+  color: #b84316;
 }
 
 .company-block p {
@@ -131,15 +131,15 @@
 }
 
 .invoice-info-grid div {
-  background: #eef3fa;
-  border: 1px solid #c8d8ee;
+  background: #fff1e6;
+  border: 1px solid #ead6c8;
   border-radius: 10px;
   padding: 12px;
 }
 
 .invoice-info-grid span {
   display: block;
-  color: #5a7295;
+  color: #786253;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -154,7 +154,7 @@
 
 .section-title {
   margin: 10px 32px 12px;
-  color: #0b2545;
+  color: #b84316;
 }
 
 .invoice-table,
@@ -167,7 +167,7 @@
 }
 
 .invoice-table th {
-  background: #0b2545;
+  background: #b84316;
   color: white;
   font-size: 11px;
   text-transform: uppercase;
@@ -177,13 +177,13 @@
 .invoice-table th,
 .invoice-table td,
 .summary-table td {
-  border: 1px solid #dbe5f2;
+  border: 1px solid #efdfd3;
   padding: 10px;
   font-size: 12px;
 }
 
 .invoice-table tbody tr:nth-child(even) td {
-  background: #fafbfd;
+  background: #fffcfa;
 }
 
 .invoice-table td:nth-child(4),
@@ -195,7 +195,7 @@
 }
 
 .invoice-table tfoot td {
-  background: #eef3fa;
+  background: #fff1e6;
   font-weight: 800;
 }
 
@@ -207,15 +207,15 @@
 }
 
 .summary-card {
-  background: #f7f9fc;
-  border: 1px solid #c8d8ee;
+  background: #fffaf6;
+  border: 1px solid #ead6c8;
   border-radius: 12px;
   padding: 14px;
 }
 
 .summary-card span {
   display: block;
-  color: #5a7295;
+  color: #786253;
   font-size: 10px;
   text-transform: uppercase;
   font-weight: 800;
@@ -226,12 +226,12 @@
   display: block;
   margin-top: 8px;
   font-size: 18px;
-  color: #0b2545;
+  color: #b84316;
 }
 
 .summary-card.accent {
-  background: #0b2545;
-  border-color: #0b2545;
+  background: #b84316;
+  border-color: #b84316;
 }
 
 .summary-card.accent span,
@@ -240,7 +240,7 @@
 }
 
 .summary-table .net-row td {
-  background: #0b2545;
+  background: #b84316;
   color: white;
   font-weight: 900;
   font-size: 15px;
@@ -253,8 +253,8 @@
   padding: 16px;
   border-radius: 12px;
   border: 1.5px solid transparent;
-  background: linear-gradient(135deg, #dbeafe 0%, #f0f9ff 100%);
-  border-color: #7dd3fc;
+  background: linear-gradient(135deg, #ffedd5 0%, #fff7ed 100%);
+  border-color: #fdba74;
 }
 
 .payment-details-block .payment-icon {
@@ -265,14 +265,14 @@
 
 .payment-details-block .payment-details h3 {
   margin: 0 0 10px;
-  color: #0c4a6e;
+  color: #9a3412;
   font-size: 14px;
   font-weight: 700;
 }
 
 .payment-details-block .payment-details p {
   margin: 6px 0;
-  color: #0c4a6e;
+  color: #9a3412;
   font-size: 12px;
   line-height: 1.5;
 }
@@ -310,8 +310,8 @@
 
 .invoice-notes {
   margin: 0 32px 24px;
-  background: #eef6ff;
-  border: 1px solid #bfdbfe;
+  background: #fff1e6;
+  border: 1px solid #fed7aa;
   padding: 14px;
   border-radius: 10px;
 }
@@ -329,12 +329,12 @@
 }
 
 .signature-line {
-  border-bottom: 1px solid #0b2545;
+  border-bottom: 1px solid #b84316;
   margin-top: 45px;
 }
 
 .invoice-footer {
-  background: #0b2545;
+  background: #b84316;
   color: white;
   padding: 12px 32px;
   display: flex;

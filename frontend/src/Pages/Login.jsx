@@ -35,10 +35,10 @@ function Login() {
     <div className="login-screen">
       <form className="login-card" onSubmit={handleLogin}>
 
-        <img src="/logo.jpeg" alt="Get Moving Logistics" className="login-logo" />
+        <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC" className="login-logo" />
 
         
-        <h1>GML Portal</h1>
+        <h1>EAST WEST LOGISTICS LLC Portal</h1>
         <p>Login to continue</p>
 
         {error && <div className="login-error">{error}</div>}

@@ -40,7 +40,7 @@ function SalarySlips() {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const canEdit = user?.role === "ADMIN" || user?.role === "EDITOR";
+  const canEdit = selectedBranch?.isActive !== false && (user?.role === "ADMIN" || user?.role === "EDITOR");
 
   const loadEmployees = async () => {
     if (!selectedBranch?.id) {
@@ -142,14 +142,14 @@ function SalarySlips() {
     <Layout title="Salary Slips">
       {!selectedBranch && (
         <div className="warning-message">
-          Please select a GML branch from Dashboard first.
+          Please select a branch from Dashboard first.
         </div>
       )}
 
       {selectedBranch && canEdit && (
         <form className="salary-form" onSubmit={previewSalarySlip}>
           <div className="form-group">
-            <label>Active GML Branch</label>
+            <label>Active Branch</label>
             <input value={selectedBranch.branchName} readOnly />
           </div>
 

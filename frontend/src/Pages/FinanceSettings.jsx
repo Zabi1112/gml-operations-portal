@@ -45,8 +45,8 @@ function FinanceSettings() {
     );
 
     setSettings({
-      dispatcherPercent: res.data.dispatcherPercent || 25,
-      accountsPercent: res.data.accountsPercent || 10
+      dispatcherPercent: res.data.dispatcherPercent ?? 25,
+      accountsPercent: res.data.accountsPercent ?? 10
     });
 
     setPartners(res.data.partners || []);
@@ -186,7 +186,7 @@ function FinanceSettings() {
                 />
               </div>
 
-              <button className="primary-btn" onClick={saveSettings}>
+              <button disabled={selectedBranch?.isActive === false} className="primary-btn" onClick={saveSettings}>
                 Save Settings
               </button>
             </div>
@@ -257,7 +257,7 @@ function FinanceSettings() {
                   />
                 </div>
 
-                <button className="primary-btn" type="submit">
+                <button disabled={selectedBranch?.isActive === false} className="primary-btn" type="submit">
                   Add Partner
                 </button>
               </form>
@@ -313,7 +313,7 @@ function FinanceSettings() {
                   />
                 </div>
 
-                <button className="primary-btn" type="submit">
+                <button disabled={selectedBranch?.isActive === false} className="primary-btn" type="submit">
                   Add Dispatcher
                 </button>
               </form>
@@ -348,7 +348,7 @@ function FinanceSettings() {
                       <td>{dispatcher.phone || "-"}</td>
                       <td>{dispatcher.notes || "-"}</td>
                       <td>
-                        <button
+                        <button disabled={selectedBranch?.isActive === false}
                           className="danger-btn"
                           onClick={() => deleteDispatcher(dispatcher.id)}
                         >
@@ -412,7 +412,7 @@ function FinanceSettings() {
                       <td>{partner.phone || "-"}</td>
                       <td>{partner.notes || "-"}</td>
                       <td>
-                        <button
+                        <button disabled={selectedBranch?.isActive === false}
                           className="danger-btn"
                           onClick={() => deletePartner(partner.id)}
                         >

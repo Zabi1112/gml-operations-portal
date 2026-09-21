@@ -19,7 +19,7 @@
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  background: #0b2545;
+  background: #b84316;
   color: white;
   cursor: pointer;
 }
@@ -37,7 +37,7 @@
   display: flex;
   align-items: center;
   gap: 18px;
-  border-bottom: 2px solid #0b2545;
+  border-bottom: 2px solid #b84316;
   padding-bottom: 18px;
   margin-bottom: 22px;
 }
@@ -48,7 +48,7 @@
 
 .settlement-header h1 {
   margin: 0;
-  color: #0b2545;
+  color: #b84316;
 }
 
 .settlement-info {
@@ -59,7 +59,7 @@
 }
 
 .settlement-info div {
-  background: #f8fafc;
+  background: #fffaf6;
   padding: 12px;
   border-radius: 8px;
 }
@@ -78,14 +78,14 @@
 }
 
 .settlement-table th {
-  background: #0b2545;
+  background: #b84316;
   color: white;
 }
 
 .settlement-net-row td {
   font-weight: bold;
-  background: #eef6ff;
-  color: #0b2545;
+  background: #fff1e6;
+  color: #b84316;
 }
 
 .settlement-notes {

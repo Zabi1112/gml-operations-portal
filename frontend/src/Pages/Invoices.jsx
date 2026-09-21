@@ -15,7 +15,7 @@ function Invoices() {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const canEdit = user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR";
+  const canEdit = selectedBranch?.isActive !== false && (user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR");
 
   const emptyForm = {
     companyId: "",
@@ -400,14 +400,14 @@ function Invoices() {
     <Layout title="Invoice Generator">
       {!selectedBranch && (
         <div className="warning-message">
-          Please select a GML branch from Dashboard first.
+          Please select a branch from Dashboard first.
         </div>
       )}
 
       {selectedBranch && canEdit && (
         <form className="invoice-form" onSubmit={preview}>
           <div className="form-group">
-            <label>Active GML Branch</label>
+            <label>Active Branch</label>
             <input value={selectedBranch.branchName} readOnly />
           </div>
 

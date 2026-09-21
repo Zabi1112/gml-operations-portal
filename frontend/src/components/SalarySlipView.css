@@ -19,7 +19,7 @@
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  background: #0b2545;
+  background: #b84316;
   color: white;
   cursor: pointer;
 }
@@ -30,14 +30,14 @@
   background: white;
   padding: 34px;
   border-radius: 12px;
-  color: #0b2545;
+  color: #b84316;
 }
 
 .slip-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 3px solid #0b2545;
+  border-bottom: 3px solid #b84316;
   padding-bottom: 18px;
 }
 
@@ -55,7 +55,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  background: #edf2f9;
+  background: #fff8f3;
   padding: 16px;
   border-radius: 10px;
 }
@@ -67,7 +67,7 @@
 
 .slip-table td {
   padding: 13px;
-  border-bottom: 1px solid #dbe5f2;
+  border-bottom: 1px solid #efdfd3;
 }
 
 .slip-table td:last-child {
@@ -76,14 +76,14 @@
 }
 
 .net-row td {
-  background: #0b2545;
+  background: #b84316;
   color: white;
   font-size: 18px;
 }
 
 .slip-notes {
   margin-top: 20px;
-  background: #f7f9fc;
+  background: #fffaf6;
   padding: 14px;
   border-radius: 8px;
 }
@@ -93,7 +93,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #5a7295;
+  color: #786253;
 }
 
 @media print {

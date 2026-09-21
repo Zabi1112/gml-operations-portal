@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import OperationNotice from "./OperationNotice.jsx";
 import { BranchContext } from "../context/BranchContext.jsx";
 import "../Pages/Dashboard.css";
 
@@ -21,7 +22,7 @@ function Layout({ title, children }) {
   return (
     <div className="dashboard">
       <aside className="sidebar">
-        <img src="/logo.jpeg" className="sidebar-logo" />
+        <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC" className="sidebar-logo" />
 
         <button onClick={() => go("/dashboard")}>Dashboard</button>
         {user?.role === "ADMIN" && (
@@ -60,6 +61,7 @@ function Layout({ title, children }) {
       <main className="content">
         <div className="topbar">
           <div>
+            <p className="company-name">EAST WEST LOGISTICS LLC</p>
             <h2>{title}</h2>
             <p>
               Welcome, {user?.name} — {user?.role}
@@ -73,6 +75,8 @@ function Layout({ title, children }) {
 
           <button className="logout" onClick={logout}>Logout</button>
         </div>
+
+        <OperationNotice />
 
         {!selectedBranch && title !== "Dashboard" ? (
           <div className="warning-message">

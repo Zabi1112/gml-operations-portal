@@ -330,7 +330,7 @@ function LoadReports() {
     <Layout title="Load Reports">
       {!selectedBranch && (
         <div className="warning-message">
-          Please select a GML branch from Dashboard first.
+          Please select a branch from Dashboard first.
         </div>
       )}
 
@@ -338,7 +338,7 @@ function LoadReports() {
         <>
           <form className="load-config" onSubmit={fetchReportData}>
             <div className="form-group">
-              <label>Active GML Branch</label>
+              <label>Active Branch</label>
               <input value={selectedBranch.branchName} readOnly />
             </div>
 
@@ -511,7 +511,7 @@ function LoadReports() {
                 />
               </div>
 
-              <button>Add Load</button>
+              <button disabled={selectedBranch?.isActive === false}>Add Load</button>
             </form>
 
             <form className="load-mini-form" onSubmit={saveReason}>
@@ -563,7 +563,7 @@ function LoadReports() {
                 />
               </div>
 
-              <button>Add Reason</button>
+              <button disabled={selectedBranch?.isActive === false}>Add Reason</button>
             </form>
           </div>
 
@@ -679,10 +679,10 @@ function LoadReports() {
                     <td>{load.source}</td>
 
                     <td>
-                      <button type="button" onClick={() => saveEditedLoad(load)}>
+                      <button type="button" disabled={selectedBranch?.isActive === false} onClick={() => saveEditedLoad(load)}>
                         Save
                       </button>
-                      <button type="button" onClick={() => deleteLoad(load.id)}>
+                      <button type="button" disabled={selectedBranch?.isActive === false} onClick={() => deleteLoad(load.id)}>
                         Delete
                       </button>
                     </td>
@@ -718,7 +718,7 @@ function LoadReports() {
                     <td>
                       <button
                         type="button"
-                        onClick={() => deleteReason(reason.id)}
+                        disabled={selectedBranch?.isActive === false} onClick={() => deleteReason(reason.id)}
                       >
                         Delete
                       </button>

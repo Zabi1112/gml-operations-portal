@@ -162,10 +162,10 @@ function History() {
     setClearInvoiceData(invoice);
     setSettlementForm({
       usdRate: "",
-      dispatcherPercent: selectedBranch?.dispatcherPercent || 25,
+      dispatcherPercent: selectedBranch?.dispatcherPercent ?? 25,
       dispatcherType: "PERCENTAGE",
       dispatcherSplits: [],
-      accountsValue: selectedBranch?.accountsPercent || 10,
+      accountsValue: selectedBranch?.accountsPercent ?? 10,
       accountsType: "PERCENTAGE",
       notes: ""
     });
@@ -407,7 +407,7 @@ function History() {
     <Layout title="History">
       {!selectedBranch && (
         <div className="warning-message">
-          Please select a GML branch from Dashboard first.
+          Please select a branch from Dashboard first.
         </div>
       )}
 
@@ -506,7 +506,7 @@ function History() {
                           </button>
                           {isAdmin && (
                             <button
-                              className="delete-btn"
+                              disabled={selectedBranch?.isActive === false} className="delete-btn"
                               onClick={() => handleDeleteSalarySlip(slip.id)}
                             >
                               Delete
@@ -601,7 +601,7 @@ function History() {
                               View
                             </button>
                             {isAdmin && (
-                              <button onClick={() => openEditInvoice(invoice)}>
+                              <button disabled={selectedBranch?.isActive === false} onClick={() => openEditInvoice(invoice)}>
                                 Edit
                               </button>
                             )}
@@ -629,7 +629,7 @@ function History() {
                             <td>
                               <button
                                 className={invoice.isCleared ? "disabled-btn" : ""}
-                                disabled={invoice.isCleared}
+                                disabled={invoice.isCleared || selectedBranch?.isActive === false}
                                 onClick={() => openClearInvoice(invoice)}
                               >
                                 {invoice.isCleared ? "Cleared" : "Clear"}
@@ -639,7 +639,7 @@ function History() {
                           {isAdmin && (
                             <td>
                               <button
-                                className="delete-btn"
+                                disabled={selectedBranch?.isActive === false} className="delete-btn"
                                 onClick={() => handleDeleteInvoice(invoice.id)}
                               >
                                 Delete
@@ -723,7 +723,7 @@ function History() {
                           </button>
                           {isAdmin && (
                             <button
-                              className="delete-btn"
+                              disabled={selectedBranch?.isActive === false} className="delete-btn"
                               onClick={() => handleDeleteLoadReport(item.id)}
                             >
                               Delete
@@ -800,11 +800,11 @@ function History() {
                         <button onClick={() => setSelectedSettlement(settlement)}>
                           View / Print
                         </button>
-                        <button onClick={() => setEditingSettlement(settlement)}>
+                        <button disabled={selectedBranch?.isActive === false} onClick={() => setEditingSettlement(settlement)}>
                           Edit
                         </button>
                         <button
-                          className="delete-btn"
+                          disabled={selectedBranch?.isActive === false} className="delete-btn"
                           onClick={() => handleDeleteSettlement(settlement.id)}
                         >
                           Delete

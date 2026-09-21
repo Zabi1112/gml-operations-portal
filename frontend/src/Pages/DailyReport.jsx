@@ -16,7 +16,7 @@ function DailyReport() {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const canEdit = user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR";
+  const canEdit = selectedBranch?.isActive !== false && (user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR");
 
   const emptyRow = {
     companyId: "",
@@ -285,7 +285,7 @@ function DailyReport() {
 
           <div className="daily-print-area">
             <div className="daily-print-header">
-              <img src="/logo.jpeg" alt="GML Logo" />
+              <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC logo" />
 
               <div>
                 <h1>Daily Load Report</h1>

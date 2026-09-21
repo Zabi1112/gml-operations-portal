@@ -83,8 +83,8 @@ const updateFinanceSettings = async (req, res) => {
     const branch = await prisma.branch.update({
       where: { id: Number(req.params.branchId) },
       data: {
-        dispatcherPercent: Number(req.body.dispatcherPercent || 25),
-        accountsPercent: Number(req.body.accountsPercent || 10)
+        dispatcherPercent: Number(req.body.dispatcherPercent ?? 25),
+        accountsPercent: Number(req.body.accountsPercent ?? 10)
       },
       include: { partners: true, dispatchers: true }
     });

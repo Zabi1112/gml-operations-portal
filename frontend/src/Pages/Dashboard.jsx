@@ -9,11 +9,12 @@ function Dashboard() {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
-  const { branches, setBranches, selectedBranch, selectBranch } =
+  const { branches, selectedBranch, selectBranch, refreshBranches } =
     useContext(BranchContext);
 
   const [showForm, setShowForm] = useState(false);
-  const [settlements, setSettlements] = useState([]);
+  const [settlementData, setSettlementData] = useState({ branchId: null, rows: [] });
+  const settlements = settlementData.branchId === selectedBranch?.id ? settlementData.rows : [];
 
   const [branchForm, setBranchForm] = useState({
     branchName: "",
@@ -28,48 +29,20 @@ function Dashboard() {
 
   const canEdit = user?.role === "ADMIN";
 
-  const loadBranches = async () => {
-    try {
-      const res = await axios.get(`${API}/branches`, auth);
-      setBranches(res.data);
-
-      const savedId = localStorage.getItem("branchId");
-      if (savedId && !selectedBranch) {
-        const found = res.data.find((b) => b.id === Number(savedId));
-        if (found) selectBranch(found);
-      }
-    } catch (error) {
-      console.log(error);
-      alert("Failed to load branches");
-    }
-  };
-
-  const loadSettlements = async () => {
-    if (!canEdit || !selectedBranch?.id) {
-      setSettlements([]);
-      return;
-    }
-
-    try {
-      const res = await axios.get(
-        `${API}/finance/settlements?branchId=${selectedBranch.id}`,
-        auth
-      );
-
-      setSettlements(res.data || []);
-    } catch (error) {
-      console.log(error);
-      setSettlements([]);
-    }
-  };
-
   useEffect(() => {
-    loadBranches();
-  }, []);
-
-  useEffect(() => {
-    loadSettlements();
-  }, [selectedBranch]);
+    if (!canEdit || !selectedBranch?.id) return;
+    const branchId = selectedBranch.id;
+    const controller = new AbortController();
+    axios.get(API + "/finance/settlements?branchId=" + branchId, {
+      headers: { Authorization: "Bearer " + token },
+      signal: controller.signal
+    }).then(({ data }) => {
+      setSettlementData({ branchId, rows: data || [] });
+    }).catch(error => {
+      if (!axios.isCancel(error)) setSettlementData({ branchId, rows: [] });
+    });
+    return () => controller.abort();
+  }, [canEdit, selectedBranch?.id, token]);
 
   const createBranch = async (e) => {
     e.preventDefault();
@@ -85,7 +58,7 @@ function Dashboard() {
       });
 
       setShowForm(false);
-      await loadBranches();
+      await refreshBranches();
       selectBranch(res.data.branch);
     } catch (error) {
       console.log(error);
@@ -109,7 +82,7 @@ function Dashboard() {
         selectBranch(null);
       }
 
-      loadBranches();
+      refreshBranches();
     } catch (error) {
       console.log(error);
       alert(error.response?.data?.message || "Failed to delete branch");
@@ -155,10 +128,9 @@ function Dashboard() {
         <div className="branch-section">
           <div className="branch-header">
             <div>
-              <h2>GML Branch Management</h2>
+              <h2>Branch Management</h2>
               <p>
-                Select your office branch before managing staff, companies,
-                invoices, and reports.
+                Keep new work in Current operation. Switch to Previous operation to view the old partnership records.
               </p>
             </div>
 
@@ -235,9 +207,20 @@ function Dashboard() {
           )}
 
           <div className="branch-select-box">
-            <label>Current Branch</label>
+            <div className="operation-switch" aria-label="Operation">
+              <button type="button" aria-pressed={selectedBranch?.isActive !== false}
+                onClick={() => selectBranch(branches.find(branch => branch.isActive) || null)}>
+                Current operation
+              </button>
+              <button type="button" aria-pressed={selectedBranch?.isActive === false}
+                disabled={!branches.some(branch => !branch.isActive)}
+                onClick={() => selectBranch(branches.find(branch => !branch.isActive) || null)}>
+                Previous operation
+              </button>
+            </div>
+            <label htmlFor="branch-select">{selectedBranch?.isActive === false ? "Previous branch" : "Current branch"}</label>
 
-            <select
+            <select id="branch-select"
               value={selectedBranch?.id || ""}
               onChange={(e) => {
                 const branch = branches.find(
@@ -247,7 +230,7 @@ function Dashboard() {
               }}
             >
               <option value="">Select Branch</option>
-              {branches.map((branch) => (
+              {branches.filter(branch => branch.isActive === (selectedBranch?.isActive !== false)).map((branch) => (
                 <option key={branch.id} value={branch.id}>
                   {branch.branchName}
                 </option>
@@ -258,7 +241,7 @@ function Dashboard() {
           {selectedBranch ? (
             <>
               <div className="branch-info">
-                <h3>Active Branch: {selectedBranch.branchName}</h3>
+                <h3>{selectedBranch.isActive ? "Current operation" : "Previous operation"}: {selectedBranch.branchName}</h3>
 
                 <div className="info-grid">
                   <div>
@@ -276,11 +259,11 @@ function Dashboard() {
 
                   <div>
                     <strong>Status:</strong>{" "}
-                    {selectedBranch.isActive ? "Active" : "Inactive"}
+                    {selectedBranch.isActive ? "Active" : "Archived - Read-only"}
                   </div>
                 </div>
 
-                {canEdit && (
+                {canEdit && selectedBranch.isActive && (
                   <button
                     className="danger"
                     onClick={() => deleteBranch(selectedBranch.id)}

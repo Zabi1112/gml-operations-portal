@@ -13,7 +13,9 @@ const {
   allowRoles
 } = require("../middleware/auth.middleware");
 
-router.use(protect);
+const { branchWriteGuard } = require("../middleware/branchWriteGuard");
+
+router.use(protect, branchWriteGuard);
 
 router.get("/", getInvoices);
 router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createInvoice);
