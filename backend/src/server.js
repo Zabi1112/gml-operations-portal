@@ -20,8 +20,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.json({ message: "GML Portal Backend Running" });
+app.get(["/", "/api"], (req, res) => {
+  res.json({ message: "EAST WEST LOGISTICS LLC Portal Backend Running" });
 });
 
 console.log("ROUTES CHECK", {
