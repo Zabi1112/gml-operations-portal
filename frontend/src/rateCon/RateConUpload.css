@@ -1,0 +1,19 @@
+.rate-con-file { display: none; }
+.rate-con-button { white-space: nowrap; }
+.rate-con-backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 20px; background: rgb(15 23 42 / 55%); }
+.rate-con-dialog { width: min(760px, 100%); max-height: min(720px, 92vh); overflow: auto; padding: 24px; background: #fff; color: #172033; border-radius: 8px; box-shadow: 0 20px 60px rgb(15 23 42 / 25%); }
+.rate-con-dialog-head, .rate-con-actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.rate-con-dialog h2 { margin: 0; font-size: 1.35rem; }
+.rate-con-dialog-head p { margin: 5px 0 0; color: #637083; font-size: .9rem; overflow-wrap: anywhere; }
+.rate-con-close { padding: 6px 10px; }
+.rate-con-status, .rate-con-error, .rate-con-warnings { margin: 18px 0; padding: 12px; border-radius: 5px; }
+.rate-con-status { background: #eef5ff; color: #1d4f91; }
+.rate-con-error { background: #fff0f0; color: #a32121; }
+.rate-con-warnings { background: #fff8e6; color: #765400; }
+.rate-con-warnings p { margin: 5px 0 0; }
+.rate-con-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 18px 0 24px; }
+.rate-con-fields label { display: grid; gap: 5px; font-size: .88rem; font-weight: 600; }
+.rate-con-fields input { width: 100%; box-sizing: border-box; }
+.rate-con-actions { justify-content: flex-end; }
+.rate-con-secondary { background: transparent; color: inherit; }
+@media (max-width: 620px) { .rate-con-fields { grid-template-columns: 1fr; } .rate-con-dialog { padding: 18px; } }

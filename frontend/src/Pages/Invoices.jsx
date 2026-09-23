@@ -4,6 +4,7 @@ import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import InvoiceView from "../components/InvoiceView.jsx";
 import { BranchContext } from "../context/BranchContext.jsx";
+import RateConUpload from "../rateCon/RateConUpload.jsx";
 import "./Invoices.css";
 
 function Invoices() {
@@ -259,6 +260,13 @@ function Invoices() {
         }
       ]
     });
+  };
+
+  const applyRateCon = (values) => {
+    setForm((previous) => ({
+      ...previous,
+      loads: [...previous.loads, { date: values.date || "", pickup: values.pickup || "", dropoff: values.dropoff || "", loadAmount: values.loadAmount || 0 }]
+    }));
   };
 
   const removeLoad = (index) => {
@@ -608,9 +616,10 @@ function Invoices() {
               <div className="loads-header">
                 <h3>Loads</h3>
 
-                <button type="button" onClick={fetchSavedLoads}>
-                  Fetch Loads
-                </button>
+                <div>
+                  <button type="button" onClick={fetchSavedLoads}>Fetch Loads</button>
+                  <RateConUpload context="invoice" onApply={applyRateCon} />
+                </div>
               </div>
 
               {form.loads.map((load, index) => (

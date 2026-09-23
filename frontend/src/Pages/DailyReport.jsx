@@ -6,6 +6,7 @@ import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import { BranchContext } from "../context/BranchContext.jsx";
 import "./DailyReport.css";
+import RateConUpload from "../rateCon/RateConUpload.jsx";
 
 function DailyReport() {
   const token = localStorage.getItem("token");
@@ -120,6 +121,10 @@ function DailyReport() {
   const removeRow = (index) => {
     const updated = rows.filter((_, i) => i !== index);
     setRows(updated.length ? updated : [{ ...emptyRow }]);
+  };
+
+  const applyRateCon = (index, values) => {
+    setRows((previous) => previous.map((row, rowIndex) => rowIndex === index ? { ...row, ...values } : row));
   };
 
   const saveLoads = async () => {
@@ -306,7 +311,7 @@ function DailyReport() {
                 return (
                   <div className="daily-load-card" key={index}>
                     <div className="daily-card-top">
-                      <h3>Load #{index + 1}</h3>
+                      <div className="daily-card-title"><h3>Load #{index + 1}</h3><RateConUpload context="daily" onApply={values => applyRateCon(index, values)} /></div>
 
                       <button
                         type="button"

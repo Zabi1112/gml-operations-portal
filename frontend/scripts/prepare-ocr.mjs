@@ -1,0 +1,18 @@
+import fs from "node:fs";
+import path from "node:path";
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+const require = createRequire(import.meta.url);
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const out = path.join(root, "public/ocr");
+fs.mkdirSync(out, { recursive: true });
+const packageRoot = name => path.dirname(require.resolve(name + "/package.json"));
+const tesseract = packageRoot("tesseract.js");
+fs.copyFileSync(path.join(tesseract, "dist/worker.min.js"), path.join(out, "worker.min.js"));
+const core = packageRoot("tesseract.js-core");
+fs.mkdirSync(path.join(out, "core"), { recursive: true });
+for (const name of fs.readdirSync(core).filter(name => /\.wasm(?:\.js)?$/.test(name))) fs.copyFileSync(path.join(core, name), path.join(out, "core", name));
+fs.copyFileSync(path.join(packageRoot("@tesseract.js-data/eng"), "4.0.0/eng.traineddata.gz"), path.join(out, "eng.traineddata.gz"));
+const pdf = packageRoot("pdfjs-dist");
+for (const [from, to] of [["standard_fonts", "pdf-fonts"], ["cmaps", "pdf-cmaps"], ["wasm", "pdf-wasm"]]) fs.cpSync(path.join(pdf, from), path.join(out, to), { recursive: true });
+console.log("Prepared self-hosted OCR and PDF assets.");

@@ -42,3 +42,5 @@ Thumbs.db
 # cache
 .cache/
 .parcel-cache/
+# generated self-hosted OCR assets
+frontend/public/ocr/

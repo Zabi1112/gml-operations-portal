@@ -3,6 +3,7 @@ import axios from "axios";
 import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import LoadReportView from "../components/LoadReportView.jsx";
+import RateConUpload from "../rateCon/RateConUpload.jsx";
 import { BranchContext } from "../context/BranchContext.jsx";
 import "./LoadReports.css";
 
@@ -232,6 +233,10 @@ function LoadReports() {
     fetchReportData();
   };
 
+  const applyRateCon = (values) => {
+    setManualLoad((previous) => ({ ...previous, ...values }));
+  };
+
   const deleteLoad = async (id) => {
     if (!confirm("Delete this load?")) return;
     await axios.delete(`${API}/loads/${id}`, auth);
@@ -414,7 +419,7 @@ function LoadReports() {
 
           <div className="load-sections">
             <form className="load-mini-form" onSubmit={saveManualLoad}>
-              <h3>Add Manual Load</h3>
+              <div className="load-mini-form-heading"><h3>Add Manual Load</h3><RateConUpload context="report" onApply={applyRateCon} /></div>
 
               <div className="form-group">
                 <label>Pickup Date</label>

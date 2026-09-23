@@ -5,6 +5,7 @@ import { BranchContext } from "../context/BranchContext";
 import { API } from "../api";
 import PayStatementView from "../paychecks/PayStatementView";
 import { defaultDeductions, emptyLoad, emptyStatement, money, readCompanyLogo } from "../paychecks/payDefaults";
+import RateConUpload from "../rateCon/RateConUpload";
 import "../paychecks/paychecks.css";
 const auth = () => ({ headers: { Authorization: "Bearer " + localStorage.getItem("token") } });
 const errorMessage = e => e.response?.data?.message || e.message || "Unable to connect. Please try again.";
@@ -60,6 +61,9 @@ function BranchPaychecks({ branch }) {
     setNotice("Default percentage and deductions loaded for this pay type. Every amount can be changed.");
   }
   function changeRow(group, index, key, value) { patch({ [group]: form[group].map((row, i) => i === index ? { ...row, [key]: value } : row) }); }
+  function applyRateCon(index, values) {
+    patch({ loads: form.loads.map((row, i) => i === index ? { ...row, ...values } : row) });
+  }
   async function uploadLogo(e) {
     const file = e.target.files?.[0]; if (!file) return;
     setBusy(true); setError("");
@@ -130,7 +134,7 @@ function BranchPaychecks({ branch }) {
       </div>
       <p className="pay-muted">Weekly charges use the weeks entered above. The date range does not change this value automatically. All amounts are USD.</p>
       <section><div className="pay-actions"><h3>Load earnings</h3><button type="button" className="pay-secondary" disabled={!form.companyId || (!form.driverId && !form.truckId) || !form.periodStart || !form.periodEnd} onClick={importLoads}>Import recorded loads</button></div><p className="pay-muted">Enter loads below, or select a company and driver/truck to import their recorded loads for this period.</p>
-        {form.loads.map((row, i) => <div className="pay-load" key={i}><div className="pay-actions"><strong>Load {i + 1}</strong><button type="button" className="pay-secondary" disabled={form.loads.length === 1} onClick={() => patch({ loads: form.loads.filter((_, index) => index !== i) })}>Remove load</button></div><div className="pay-grid pay-load-grid">
+        {form.loads.map((row, i) => <div className="pay-load" key={i}><div className="pay-actions"><strong>Load {i + 1}</strong><div className="pay-actions"><RateConUpload context="paycheck" onApply={values => applyRateCon(i, values)} /><button type="button" className="pay-secondary" disabled={form.loads.length === 1} onClick={() => patch({ loads: form.loads.filter((_, index) => index !== i) })}>Remove load</button></div></div><div className="pay-grid pay-load-grid">
           {[['Pickup date','pickupDate','date'],['Delivery date','deliveryDate','date'],['Origin','origin','text'],['Destination','destination','text'],['Load reference','reference','text'],['Miles','miles','number'],['Load gross ($)','gross','number']].map(([label, key, type]) => <label key={key}>{label}<input type={type} value={row[key]} required={key !== "reference"} maxLength={key === "reference" ? 80 : 200} {...(type === "number" ? { min: 0, max: 1000000, step: "0.01" } : {})} onChange={e => changeRow("loads", i, key, e.target.value)} /></label>)}
         </div></div>)}
         <button type="button" className="pay-secondary" disabled={form.loads.length >= 100} onClick={() => patch({ loads: [...form.loads, emptyLoad()] })}>Add load</button>
