@@ -1,0 +1,43 @@
+.contracts-page, .public-agreement { color: #283447; }
+.contracts-page { max-width: 1250px; }
+.contract-card, .agreement-document { background: #fff; border: 1px solid #eaded6; border-radius: 14px; padding: 24px; margin: 20px 0; box-shadow: 0 3px 15px #40200b06; }
+.contracts-page h3, .public-agreement h1, .public-agreement h2 { color: #8e3415; margin-top: 0; }
+.contracts-page p, .public-agreement p { line-height: 1.6; }
+.contract-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.contracts-page label, .public-agreement label { display: block; font-weight: 600; font-size: 14px; }
+.contracts-page input, .contracts-page select, .public-agreement input { display: block; box-sizing: border-box; width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cdbcb0; border-radius: 8px; background: #fff; color: #253245; font: inherit; }
+.contracts-page button, .public-agreement button { width: auto; background: #b84316; color: white; border: 1px solid #b84316; border-radius: 8px; padding: 11px 17px; font-weight: 600; cursor: pointer; }
+.contracts-page button:hover, .public-agreement button:hover { background: #963510; }
+.contracts-page button:disabled, .public-agreement button:disabled { opacity: .55; cursor: not-allowed; }
+.contracts-page .contract-secondary, .public-agreement .contract-secondary { background: white; color: #923310; }
+.contracts-page :focus-visible, .public-agreement :focus-visible { outline: 3px solid #e68446; outline-offset: 3px; }
+.contract-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0; }
+.contract-actions h3 { margin: 0 auto 0 0; }
+.contract-status { display: inline-block; padding: 6px 10px; font-size: 12px; font-weight: 700; border-radius: 30px; background: #fff0e6; color: #8e3415; }
+.status-signed { background: #e4f4e8; color: #216138; }
+.status-rejected, .status-cancelled { background: #f3e9e8; color: #86362d; }
+.contract-error, .contract-notice, .contract-success { padding: 16px 20px; border-radius: 10px; overflow-wrap: anywhere; }
+.contract-error { color: #922b26; background: #fff0ee; border: 1px solid #efc2bd; }
+.contract-notice { background: #fff1e5; color: #7e3419; }
+.contract-success { background: #e9f6ec; color: #215d35; }
+.contract-success h1 { color: #215d35; }
+.contract-muted, .contract-fingerprint { color: #687180; font-size: 13px; }
+.contract-fingerprint { overflow-wrap: anywhere; margin-top: 30px; }
+.contract-table-wrap { overflow-x: auto; }
+.contracts-page table { width: 100%; border-collapse: collapse; text-align: left; }
+.contracts-page th, .contracts-page td { padding: 14px 10px; border-bottom: 1px solid #eee5df; }
+.contracts-page th { background: #fff7f0; }
+.public-agreement { min-height: 100vh; background: #fff7f1; padding: 40px 20px; box-sizing: border-box; }
+.public-agreement-inner { max-width: 880px; margin: auto; }
+.public-agreement footer { text-align: center; font-size: 13px; line-height: 1.8; padding: 24px 0; }
+.public-agreement a { color: #943611; }
+.contract-eyebrow { letter-spacing: 2px; font-size: 12px; font-weight: bold; color: #a73f19; }
+.agreement-brand { display: flex; align-items: center; gap: 20px; border-bottom: 1px solid #eee5df; padding-bottom: 20px; }
+.agreement-brand img { width: 110px; height: 100px; object-fit: contain; }
+.agreement-brand p { margin: 6px 0 0; }
+.agreement-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; font-size: 15px; }
+.signature-receipt { border-top: 1px solid #e5d9cf; margin-top: 26px; padding-top: 20px; }
+.typed-signature { font-family: Georgia, serif; font-style: italic; font-size: 28px; overflow-wrap: anywhere; }
+.public-agreement .contract-consent { display: flex; align-items: flex-start; gap: 12px; margin: 20px 0; line-height: 1.6; font-weight: normal; }
+.public-agreement .contract-consent input { width: 20px; height: 20px; flex: 0 0 20px; accent-color: #b84316; margin-top: 2px; }
+@media (max-width: 600px) { .contract-grid { grid-template-columns: 1fr; } .contract-card, .agreement-document { padding: 18px; } .public-agreement { padding: 22px 12px; } .agreement-brand { gap: 12px; } .agreement-brand img { width: 80px; height: 80px; } .public-agreement h1 { font-size: 26px; } }

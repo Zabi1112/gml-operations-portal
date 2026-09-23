@@ -14,6 +14,9 @@ import FinanceSettings from "./Pages/FinanceSettings.jsx";
 import DailyReport from "./Pages/DailyReport.jsx";
 import Settlements from "./Pages/Settlements.jsx";
 
+import Contracts from "./Pages/Contracts.jsx";
+import PublicAgreement from "./Pages/PublicAgreement.jsx";
+
 function App() {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
@@ -21,6 +24,8 @@ function App() {
   return (
     <BranchProvider>
       <Routes>
+        <Route path="/agreement/:token" element={<PublicAgreement />} />
+        <Route path="/contracts" element={token && ["ADMIN", "MANAGER", "EDITOR"].includes(user?.role) ? <Contracts /> : <Navigate to="/login" />} />
         <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login />} />
         <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
 

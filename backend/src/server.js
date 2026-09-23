@@ -15,6 +15,8 @@ const loadRoutes = require("./routes/load.routes");
 const loadReportRoutes = require("./routes/loadReport.routes");
 const financeRoutes = require("./routes/finance.routes");
 
+const contractRoutes = require("./routes/contract.routes");
+
 const app = express();
 
 app.use(cors());
@@ -40,6 +42,7 @@ console.log("ROUTES CHECK", {
 });
 
 const registerRoutes = (prefix = "") => {
+  app.use(`${prefix}/contracts`, contractRoutes);
   app.use(`${prefix}/auth`, authRoutes);
   app.use(`${prefix}/users`, userRoutes);
   app.use(`${prefix}/employees`, employeeRoutes);

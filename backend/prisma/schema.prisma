@@ -48,6 +48,7 @@ model Branch {
   dispatcherPercent Float @default(25)
   accountsPercent   Float @default(10)
 
+  contracts   DispatchContract[]
   employees   Employee[]
   companies   Company[]
   trucks      Truck[]
@@ -452,4 +453,29 @@ model PartnerLoanRepayment {
 
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
+}
+model DispatchContract {
+  id              Int      @id @default(autoincrement())
+  branchId        Int
+  branch          Branch   @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  companyId       Int?
+  companyName     String
+  companyMC       String
+  ratePercent     Float
+  seats           Int
+  effectiveDate   String
+  token           String   @unique
+  status          String   @default("PENDING")
+  termsText       String
+  documentHash    String
+  templateVersion String   @default("ewl-1")
+  createdBy       Int
+  signerName      String?
+  consentText     String?
+  signedAt        DateTime?
+  respondedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([branchId, createdAt])
 }
