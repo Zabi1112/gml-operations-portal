@@ -48,6 +48,7 @@ model Branch {
   dispatcherPercent Float @default(25)
   accountsPercent   Float @default(10)
 
+  payStatements PayStatement[]
   contracts   DispatchContract[]
   employees   Employee[]
   companies   Company[]
@@ -476,6 +477,30 @@ model DispatchContract {
   respondedAt     DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([branchId, createdAt])
+}
+
+// Client paperwork only. No relation to salary, invoice settlements or account balances.
+model PayStatement {
+  id            Int      @id @default(autoincrement())
+  branchId      Int
+  branch        Branch   @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  companyId     Int?
+  driverId      Int?
+  truckId       Int?
+  companyName   String
+  recipientName String
+  recipientType String
+  periodStart   String
+  periodEnd     String
+  netCents      Int
+  snapshot      Json
+  revision      Int      @default(1)
+  createdBy     Int
+  updatedBy     Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([branchId, createdAt])
 }

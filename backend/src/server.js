@@ -17,9 +17,12 @@ const financeRoutes = require("./routes/finance.routes");
 
 const contractRoutes = require("./routes/contract.routes");
 
+const payStatementRoutes = require("./routes/payStatement.routes");
+
 const app = express();
 
 app.use(cors());
+app.use(["/pay-statements", "/api/pay-statements"], express.json({ limit: "256kb" }));
 app.use(express.json());
 
 app.get(["/", "/api"], (req, res) => {
@@ -42,6 +45,7 @@ console.log("ROUTES CHECK", {
 });
 
 const registerRoutes = (prefix = "") => {
+  app.use(`${prefix}/pay-statements`, payStatementRoutes);
   app.use(`${prefix}/contracts`, contractRoutes);
   app.use(`${prefix}/auth`, authRoutes);
   app.use(`${prefix}/users`, userRoutes);
