@@ -1,4 +1,5 @@
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { createPayPdf } from "../src/paychecks/payPdf.js";
@@ -16,4 +17,18 @@ test("long statements paginate and retain final totals and notes",()=>{
   const input = body();input.loads=Array.from({length:100},(_,i)=>({...input.loads[0],reference:"LOAD-"+i,gross:89}));input.notes="Final note after all loads";
   const pdf=createPayPdf(calculateStatement(input));const text=pdf.output();
   assert.ok(pdf.getNumberOfPages()>3);assert.match(text,/LOAD-99/);assert.match(text,/Final note after all loads/);assert.match(text,/5,880.00/);assert.match(text,/DRAFT PREVIEW/);
+});
+
+test("unsaved preview with an explicit null record downloads without a logo",()=>{
+ const pdf=createPayPdf(calculateStatement(body()),null);
+ assert.match(pdf.output(),/DRAFT PREVIEW/);assert.match(pdf.output(),/5,880.00/);
+});
+test("valid logo is embedded, while damaged or unavailable logos never block a PDF",()=>{
+ const base=calculateStatement(body());
+ const valid="data:image/png;base64," + readFileSync(new URL("../public/east-west-logo.png", import.meta.url)).toString("base64");
+ for(const companyLogo of [valid,"data:image/png;base64,broken","https://invalid.example/logo.png",""]){
+  const snapshot={...base,form:{...base.form,companyLogo}};
+  const text=createPayPdf(snapshot,null).output();assert.match(text,/ABC TRANSPORT LLC/);assert.match(text,/5,880.00/);
+  if(companyLogo===valid)assert.match(text,/\/Subtype \/Image/);
+ }
 });

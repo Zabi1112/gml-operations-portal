@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { money } from "./payDefaults.js";
 export function createPayPdf(snapshot, record = {}) {
+  record = record || {};
   const { form: f, loads, totals: t } = snapshot;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const width = doc.internal.pageSize.getWidth(); const margin = 40; const usable = width - 80;
@@ -11,8 +12,14 @@ export function createPayPdf(snapshot, record = {}) {
   const ensure = height => { if (y + height > 780) newPage(); };
   let companyX = margin;
   if (f.companyLogo) {
-    const props = doc.getImageProperties(f.companyLogo); const scale = Math.min(65 / props.width, 65 / props.height);
-    doc.addImage(f.companyLogo, "PNG", margin, y - 8, props.width * scale, props.height * scale); companyX += 78;
+    try {
+      const props = doc.getImageProperties(f.companyLogo);
+      if (Number.isFinite(props.width) && Number.isFinite(props.height) && props.width > 0 && props.height > 0) {
+        const scale = Math.min(65 / props.width, 65 / props.height);
+        doc.addImage(f.companyLogo, props.fileType, margin, y - 8, props.width * scale, props.height * scale);
+        companyX += 78;
+      }
+    } catch { /* Branding is optional: continue with the company name when the image cannot be decoded. */ }
   }
   normal(16); doc.setFont("helvetica", "bold");
   const companyLines = doc.splitTextToSize(f.companyName, 285 - (companyX - margin));

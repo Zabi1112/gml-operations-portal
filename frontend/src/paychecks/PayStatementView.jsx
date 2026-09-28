@@ -4,9 +4,10 @@ import { createPayPdf } from "./payPdf";
 export default function PayStatementView({ snapshot, record }) {
   const [error, setError] = useState("");
   const { form: f, loads, totals: t } = snapshot;
-  function download() {
-    try { createPayPdf(snapshot, record).save("Pay-Statement-" + (record?.id || "Draft") + ".pdf"); }
-    catch { setError("Unable to generate the PDF. Please check the company logo and try again."); }
+  async function download() {
+    setError("");
+    try { await createPayPdf(snapshot, record).save("Pay-Statement-" + (record?.id || "Draft") + ".pdf", { returnPromise: true }); }
+    catch { setError("Unable to download the PDF. Please try again or use another browser."); }
   }
   return <section className="pay-preview">
     <div className="pay-actions"><strong>{record?.id ? "Saved statement PS-" + record.id + " / Revision " + record.revision : "Draft preview"}</strong><button type="button" onClick={download}>Download PDF</button></div>
