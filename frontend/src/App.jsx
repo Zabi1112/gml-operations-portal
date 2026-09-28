@@ -14,6 +14,8 @@ import FinanceSettings from "./Pages/FinanceSettings.jsx";
 import DailyReport from "./Pages/DailyReport.jsx";
 import Settlements from "./Pages/Settlements.jsx";
 
+import Interviews from "./Pages/Interviews.jsx";
+import InterviewCandidate from "./Pages/InterviewCandidate.jsx";
 import Paychecks from "./Pages/Paychecks.jsx";
 import Contracts from "./Pages/Contracts.jsx";
 import PublicAgreement from "./Pages/PublicAgreement.jsx";
@@ -25,6 +27,10 @@ function App() {
   return (
     <BranchProvider>
       <Routes>
+        <Route path="/interview/:token" element={<InterviewCandidate />} />
+        <Route path="/interviews" element={token && ["ADMIN", "MANAGER"].includes(user?.role) ? <Interviews /> : <Navigate to={token ? "/dashboard" : "/login"} />} />
+        <Route path="/interview-review" element={<Navigate to="/interviews" replace />} />
+        <Route path="/interview-preview" element={<Navigate to="/interviews" replace />} />
         <Route path="/paychecks" element={token && ["ADMIN", "MANAGER", "EDITOR"].includes(user?.role) ? <Paychecks /> : <Navigate to="/login" />} />
         <Route path="/agreement/:token" element={<PublicAgreement />} />
         <Route path="/contracts" element={token && ["ADMIN", "MANAGER", "EDITOR"].includes(user?.role) ? <Contracts /> : <Navigate to="/login" />} />

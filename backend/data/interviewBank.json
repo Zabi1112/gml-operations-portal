@@ -1,0 +1,2139 @@
+{
+  "version": "ewl-communication-1",
+  "english": [
+    {
+      "id": "E001",
+      "title": "Introduce yourself",
+      "prompt": "Introduce yourself and explain why you want a communication role.",
+      "referenceAnswer": "I enjoy helping people solve problems. I listen carefully and confirm details, so I would like a role where clear communication matters.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E002",
+      "title": "Morning routine",
+      "prompt": "Describe your morning routine in order.",
+      "referenceAnswer": "First I prepare for the day and check my schedule. Then I leave enough travel time. At work I review urgent messages before planned tasks.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E003",
+      "title": "Learn a skill",
+      "prompt": "Describe a skill you learned and how you practiced.",
+      "referenceAnswer": "I learned to use a spreadsheet by practicing small examples. Formulas were difficult at first, so I checked the results and asked for help.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E004",
+      "title": "Your hometown",
+      "prompt": "Describe your hometown and recommend a place to visit.",
+      "referenceAnswer": "My hometown has busy markets and quiet neighborhoods. I recommend the central park because it is a pleasant place to walk and meet people.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E005",
+      "title": "A helpful person",
+      "prompt": "Describe someone who helped you and what you learned.",
+      "referenceAnswer": "A colleague listened to my practice presentation and suggested clearer examples. I learned that asking for feedback can improve both the work and my confidence.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E006",
+      "title": "Office directions",
+      "prompt": "Give a visitor simple directions from reception to a meeting room.",
+      "referenceAnswer": "Walk past reception, turn right, and take the second door on your left. If you reach the kitchen, you have gone too far.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E007",
+      "title": "Reschedule a meeting",
+      "prompt": "Ask to move a morning meeting to the afternoon and explain why.",
+      "referenceAnswer": "Could we move our meeting to the afternoon? I have an urgent appointment in the morning. Please let me know a time that works for you.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E008",
+      "title": "Ask for repetition",
+      "prompt": "You missed a detail on a call. Ask the caller to repeat it.",
+      "referenceAnswer": "Sorry, the line broke up when you mentioned the time. Could you repeat it slowly? Let me read it back to confirm I understood correctly.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E009",
+      "title": "Clarify a deadline",
+      "prompt": "A manager calls a task urgent but gives no deadline. What would you ask?",
+      "referenceAnswer": "What time do you need the task completed? Should I pause my current work? I can confirm a realistic completion time once the priority is clear.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E010",
+      "title": "Wrong attachment",
+      "prompt": "Explain that you sent the wrong attachment and how you will fix it.",
+      "referenceAnswer": "I apologize for attaching the earlier version. Please disregard that file. I am sending the corrected copy now and will check the attachment before sending it.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E011",
+      "title": "A busy day",
+      "prompt": "Explain how you organize several urgent tasks.",
+      "referenceAnswer": "I list the tasks and check their deadlines and impact. If priorities conflict, I confirm them with my manager and keep people updated about progress.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E012",
+      "title": "A favorite activity",
+      "prompt": "Describe an activity you enjoy and why you do it.",
+      "referenceAnswer": "I enjoy walking in the evening because it helps me relax. I often walk with a friend, which gives us time to talk after a busy day.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E013",
+      "title": "Receive feedback",
+      "prompt": "Explain how you respond to constructive feedback.",
+      "referenceAnswer": "I listen carefully and ask for a specific example. Then I agree on an improvement, practice it, and follow up to check whether my work has improved.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E014",
+      "title": "Teamwork",
+      "prompt": "Explain what makes a good team and how you contribute.",
+      "referenceAnswer": "A good team shares useful information and keeps commitments. I contribute by leaving clear notes, offering help, and asking questions before a misunderstanding grows.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E015",
+      "title": "Independent work",
+      "prompt": "Explain how you stay productive without close supervision.",
+      "referenceAnswer": "I follow a task list and track completed work. I check instructions when uncertain, ask for support when necessary, and send a concise progress update.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E016",
+      "title": "Introduce a colleague",
+      "prompt": "Introduce a new team member to a client.",
+      "referenceAnswer": "This is Alex, our new support colleague. Alex will help with routine updates. I will remain available during the handover so your service continues smoothly.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E017",
+      "title": "Delayed reply",
+      "prompt": "Apologize for replying late and explain the next step.",
+      "referenceAnswer": "I apologize for the delayed reply. I was checking the details so I could give an accurate answer. I will send the confirmed information shortly.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E018",
+      "title": "An angry caller",
+      "prompt": "Explain how you respond calmly to an angry caller.",
+      "referenceAnswer": "I let the caller explain, acknowledge the concern, and keep my voice steady. Then I ask focused questions and explain what I can do next.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E019",
+      "title": "Progress update",
+      "prompt": "Tell a manager that work is partly complete and one item is pending.",
+      "referenceAnswer": "The first section is complete and checked. I still need one document to finish the rest. I will update you when it arrives or if it affects the deadline.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E020",
+      "title": "Ask for help",
+      "prompt": "Ask a colleague for help with one part of a task.",
+      "referenceAnswer": "Could you help me check this section when you have a moment? I have completed the main work but need clarification on one detail before finishing.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E021",
+      "title": "Take a message",
+      "prompt": "Explain how to take a useful telephone message.",
+      "referenceAnswer": "I record the caller's name, contact number, reason for calling, and any deadline. I read important details back and send the message to the correct person promptly.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E022",
+      "title": "Phone or email",
+      "prompt": "Compare when to use a phone call and when to use email.",
+      "referenceAnswer": "A call helps with urgent discussion, while email provides a written record. After an important call, I send a short summary of the confirmed decisions.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E023",
+      "title": "A future goal",
+      "prompt": "Describe a goal and the steps you will take toward it.",
+      "referenceAnswer": "I want to improve my spoken English. I will practice regularly, listen carefully, and request feedback. Recording short answers will help me notice progress.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E024",
+      "title": "Your workspace",
+      "prompt": "Describe a workspace that helps you concentrate.",
+      "referenceAnswer": "I prefer a tidy desk with good lighting and few interruptions. I keep useful documents nearby and silence unnecessary notifications while working on detailed tasks.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E025",
+      "title": "Unexpected change",
+      "prompt": "Explain how you handle a schedule change at short notice.",
+      "referenceAnswer": "I check what changed and which commitments are affected. Then I rearrange tasks, inform the people involved, and confirm the new plan in writing.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E026",
+      "title": "Recommend an improvement",
+      "prompt": "Recommend a simple improvement to team communication.",
+      "referenceAnswer": "A short shift update would help. Everyone can mention priorities and pending issues, followed by a written handover so the next team knows the required actions.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E027",
+      "title": "Politely disagree",
+      "prompt": "Disagree respectfully with a colleague's plan.",
+      "referenceAnswer": "I understand why you prefer that approach. My concern is the limited checking time. Could we complete a smaller first step and review it before proceeding?",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E028",
+      "title": "Confirm an appointment",
+      "prompt": "Call to confirm an appointment with a client.",
+      "referenceAnswer": "I am calling to confirm our appointment on Tuesday at ten in the morning at your main office. Is that correct, and should I bring anything?",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E029",
+      "title": "An uncertain delay",
+      "prompt": "Explain a document delay without promising an unsupported completion time.",
+      "referenceAnswer": "The document is awaiting a final check. I cannot confirm completion yet, but I will update you this afternoon even if it is still pending.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E030",
+      "title": "A useful tool",
+      "prompt": "Describe a tool that helps you work.",
+      "referenceAnswer": "A calendar helps me organize appointments and deadlines. I add reminders and check the next day's schedule before finishing work so I can notice conflicts early.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E031",
+      "title": "Interruptions",
+      "prompt": "Explain how you manage interruptions during an important task.",
+      "referenceAnswer": "I check whether the interruption is urgent. If it can wait, I agree on a response time. Before switching tasks, I note where I stopped.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E032",
+      "title": "A journey",
+      "prompt": "Describe a memorable journey and one challenge.",
+      "referenceAnswer": "I traveled by bus to another city and encountered a delay. I called ahead with an updated arrival time and learned to allow more time for travel.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E033",
+      "title": "Missed deadline",
+      "prompt": "Explain a missed deadline and propose a recovery plan.",
+      "referenceAnswer": "I underestimated the checking stage and missed the deadline. I take responsibility. I can finish tomorrow morning and will send a progress update today.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E034",
+      "title": "Understand a problem",
+      "prompt": "A customer says something is wrong. Ask useful questions.",
+      "referenceAnswer": "Could you describe what happened and when you noticed it? What result did you expect? Those details will help me check the correct information.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E035",
+      "title": "Summarize a meeting",
+      "prompt": "Summarize these decisions: draft today, review tomorrow, final version Friday.",
+      "referenceAnswer": "I will prepare the draft today. The team will review it tomorrow and send comments. After making changes, I will share the final version on Friday.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E036",
+      "title": "Explain availability",
+      "prompt": "Offer a colleague two possible times for a call.",
+      "referenceAnswer": "I am available after lunch. We could speak at two or four for fifteen minutes. Please tell me which time suits you so I can reserve it.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E037",
+      "title": "Outside your role",
+      "prompt": "Respond to a customer whose request belongs to another team.",
+      "referenceAnswer": "I do not handle that directly, but I can connect you with the right team. May I confirm your request first so you do not need to repeat everything?",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E038",
+      "title": "Balanced feedback",
+      "prompt": "Give feedback on a presentation with praise and a practical suggestion.",
+      "referenceAnswer": "Your examples made the topic clear. Slowing down in the final section would help listeners follow it. A short closing summary would also be useful.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E039",
+      "title": "Explain priorities",
+      "prompt": "Explain why one important task must come before another.",
+      "referenceAnswer": "Both matter, but the first has an earlier deadline and affects another team's work. I will finish it first and then begin the second task.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E040",
+      "title": "Good service",
+      "prompt": "Describe a good customer service experience.",
+      "referenceAnswer": "A support worker listened carefully, explained the next step, and updated me when promised. I appreciated the clear communication and not having to chase for information.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E041",
+      "title": "Learn a system",
+      "prompt": "Explain how you would learn unfamiliar software.",
+      "referenceAnswer": "I would read the basic guide and practice common tasks in a training area. I would take notes and ask before changing important information.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E042",
+      "title": "Unknown answer",
+      "prompt": "Respond when you do not know an answer during a call.",
+      "referenceAnswer": "I do not want to give incorrect information. Let me check with the relevant team. May I call you back once I have a confirmed answer?",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E043",
+      "title": "Overcome a challenge",
+      "prompt": "Describe a challenge and how you overcame it.",
+      "referenceAnswer": "I found group speaking difficult. Practicing short talks and preparing key points helped me improve. I became more confident by focusing on the message.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E044",
+      "title": "Correct a document",
+      "prompt": "Politely request a correction to a name on a document.",
+      "referenceAnswer": "Thank you for the document. Could you correct the surname in the first section to match my email? Please send the revised copy when ready.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E045",
+      "title": "Welcome a visitor",
+      "prompt": "Welcome a visitor who has arrived early.",
+      "referenceAnswer": "Welcome. Your host is finishing another meeting, and I have let them know you are here. Please take a seat, and I will update you shortly.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E046",
+      "title": "Unavailable colleague",
+      "prompt": "Tell a caller their requested colleague is unavailable.",
+      "referenceAnswer": "Alex is unavailable at the moment. I can take a message or ask another team member to help with something urgent. What number should we call back?",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E047",
+      "title": "Learning preference",
+      "prompt": "Explain whether you prefer written instructions or a demonstration.",
+      "referenceAnswer": "I prefer a demonstration followed by written steps. Seeing the task helps me understand the process, and notes help me remember details when working alone.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E048",
+      "title": "Repeated error",
+      "prompt": "Explain how to prevent a repeated team mistake.",
+      "referenceAnswer": "I would look for the cause, clarify the instructions, and add a useful check. Then I would see whether the change reduces errors rather than simply blaming someone.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E049",
+      "title": "Leave voicemail",
+      "prompt": "Leave a professional voicemail asking for a callback about a meeting.",
+      "referenceAnswer": "Hello, this is Sam calling about our scheduled meeting. Please return my call so we can confirm the details. My contact number is in my earlier message.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E050",
+      "title": "Handover a task",
+      "prompt": "Explain what a colleague needs to take over your unfinished task.",
+      "referenceAnswer": "The main work is done, but one confirmation is pending. My notes show the contact, deadline, and next action. Please update the record when confirmation arrives.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E051",
+      "title": "Avoid errors",
+      "prompt": "Describe a habit that helps you avoid errors and give an example.",
+      "referenceAnswer": "I read back important details before acting. Repeating a date and time at the end of a call lets the other person correct a misunderstanding.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E052",
+      "title": "Request more time",
+      "prompt": "Ask for more time to finish a task and offer an alternative.",
+      "referenceAnswer": "Could I have until tomorrow morning to verify two missing entries? I can send the completed section today if that helps you begin the review.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E053",
+      "title": "Punctuality",
+      "prompt": "Explain why punctuality matters and what you do if running late.",
+      "referenceAnswer": "Being on time respects other people's schedules. If I expect a delay, I inform them early and give a realistic updated arrival time.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E054",
+      "title": "Join a meeting",
+      "prompt": "Explain how to join an online meeting to a beginner.",
+      "referenceAnswer": "Open the invitation and select the meeting link. Check your microphone and speaker, enter your name if requested, and wait for the host to admit you.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E055",
+      "title": "Different interpretations",
+      "prompt": "You and a colleague understood a task differently. Explain how to resolve it.",
+      "referenceAnswer": "We should compare our understanding with the original request, confirm the intended outcome with the requester, and agree on the correct steps before continuing.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E056",
+      "title": "A personal strength",
+      "prompt": "Describe a communication strength with an example.",
+      "referenceAnswer": "I am patient when someone needs an explanation. I help new teammates by breaking instructions into small steps and checking understanding rather than rushing them.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E057",
+      "title": "An improvement area",
+      "prompt": "Describe a communication skill you want to improve.",
+      "referenceAnswer": "I want to give shorter, clearer updates. I will prepare three key points before important calls and ask a colleague whether my message was easy to follow.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E058",
+      "title": "Choose a solution",
+      "prompt": "Explain how you choose between two reasonable solutions.",
+      "referenceAnswer": "I compare the deadline, resources, and likely impact. I ask for input if others are affected, then explain the chosen option and review its outcome.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E059",
+      "title": "Offer an alternative",
+      "prompt": "A requested meeting time is unavailable. Offer another option.",
+      "referenceAnswer": "That time is already booked, but I can offer an earlier call or tomorrow morning. Would either work? If not, please suggest another suitable time.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E060",
+      "title": "Polite reminder",
+      "prompt": "Remind a colleague that a document is due today.",
+      "referenceAnswer": "This is a quick reminder that we need the document today for the next step. Please let me know if you expect a delay or need information from me.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E061",
+      "title": "Private information",
+      "prompt": "Explain how you would handle a private document sent to you by mistake.",
+      "referenceAnswer": "I would avoid sharing it and tell the sender it reached the wrong person. I would follow the organization's handling instructions and not use the information for another purpose.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E062",
+      "title": "First day",
+      "prompt": "Describe what you would do on your first day at a new job.",
+      "referenceAnswer": "I would introduce myself, learn the team's expectations, and take notes on basic processes. I would ask questions and confirm who to contact for support.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E063",
+      "title": "Overlapping meetings",
+      "prompt": "Explain what to do when two meetings overlap.",
+      "referenceAnswer": "I would check where my participation is most needed and contact both organizers early. I would request a change or arrange to receive notes rather than simply not attend.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E064",
+      "title": "Restate a message",
+      "prompt": "Restate this message: Hold the draft until the client confirms the figures.",
+      "referenceAnswer": "We should not send the draft yet. We must wait for the client to verify the numbers before continuing with the next step.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E065",
+      "title": "Quiet or shared office",
+      "prompt": "Compare a quiet office with a busy shared office.",
+      "referenceAnswer": "A quiet office supports concentration, while a shared office can make teamwork quicker. Clear boundaries help in busy spaces. The best setting depends on the task.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E066",
+      "title": "Dropped call",
+      "prompt": "Explain your response when an urgent call disconnects.",
+      "referenceAnswer": "I would call back promptly. If I could not reconnect, I would send a brief message with the last confirmed point and avoid assuming we had reached agreement.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E067",
+      "title": "Confirm receipt",
+      "prompt": "Ask a client to confirm that an attachment arrived and opens correctly.",
+      "referenceAnswer": "I have emailed the document. Could you confirm you received it and can open it? If there is a problem, I can send another suitable format.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E068",
+      "title": "End-of-day routine",
+      "prompt": "Describe how you prepare for the next workday.",
+      "referenceAnswer": "I check completed tasks, list pending items and next actions, and review tomorrow's appointments. I leave clear handover notes before finishing work.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E069",
+      "title": "Speed and accuracy",
+      "prompt": "Describe how you handle a task that must be quick but also accurate.",
+      "referenceAnswer": "I focus on the essential checks and explain any uncertainty early. If a figure looks wrong, I verify it rather than send a fast but unreliable answer.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E070",
+      "title": "Changing a contact",
+      "prompt": "Explain to a client that their regular contact person is changing.",
+      "referenceAnswer": "Your contact will change next week. I will introduce the new colleague and share the relevant background. You can still reach our team through the usual details.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E071",
+      "title": "Polite refusal",
+      "prompt": "Decline a request you cannot complete and offer a useful next step.",
+      "referenceAnswer": "I cannot finish the whole task today without affecting another commitment. I can help with the urgent section now or agree on a suitable time for the rest.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E072",
+      "title": "Active listening",
+      "prompt": "Explain what active listening means at work.",
+      "referenceAnswer": "I give the speaker attention, avoid interruptions, and ask relevant questions. I summarize important points in my own words to check that I understood correctly.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E073",
+      "title": "Vague email",
+      "prompt": "Explain how you respond to an email with unclear requests.",
+      "referenceAnswer": "I identify the unclear points and send focused questions. I confirm the expected outcome and deadline before starting work that may otherwise need to be repeated.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E074",
+      "title": "Room change",
+      "prompt": "Announce that a meeting moved to another room but keeps the same time.",
+      "referenceAnswer": "Today's team meeting will be in the larger room instead of the usual one. The start time is unchanged. Please share this update with anyone who has not seen it.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E075",
+      "title": "A work sample",
+      "prompt": "Describe a completed task, your approach, and its result.",
+      "referenceAnswer": "I organized records that were hard to search. I grouped them clearly, checked missing information, and documented the system. The team could then find records faster.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E076",
+      "title": "Repeated complaint",
+      "prompt": "Respond to a customer tired of explaining the same problem.",
+      "referenceAnswer": "I am sorry you have had to repeat the details. I will review the notes and summarize my understanding. Please correct anything missing, then I will explain the next step.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E077",
+      "title": "Confirm instructions",
+      "prompt": "Someone gives several instructions quickly. Explain how you check them.",
+      "referenceAnswer": "Let me confirm the order: first I prepare the draft, then send it for review, and share it only after approval. Is that correct?",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E078",
+      "title": "Reliability",
+      "prompt": "Explain what reliability at work means beyond punctuality.",
+      "referenceAnswer": "Reliability includes keeping commitments, checking work, and warning others early about problems. If I cannot meet an agreement, I explain why and propose a realistic next step.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E079",
+      "title": "Unexpected absence",
+      "prompt": "Explain what you communicate when unexpectedly unable to attend work.",
+      "referenceAnswer": "I notify the appropriate person promptly and explain my availability. I identify urgent tasks and share the handover details so the team can cover them.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E080",
+      "title": "Ask for an example",
+      "prompt": "A trainer uses an unfamiliar phrase. Ask for clarification.",
+      "referenceAnswer": "Could you give an example of what that phrase means? I want to apply the instruction correctly. Seeing it used in a normal task would help.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E081",
+      "title": "Organize notes",
+      "prompt": "Explain how you turn messy notes into a useful summary.",
+      "referenceAnswer": "I group related details, separate confirmed facts from open questions, and identify the main topic. I finish with actions, responsible people, and deadlines.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E082",
+      "title": "A positive change",
+      "prompt": "Describe a small change that improved your work or daily life.",
+      "referenceAnswer": "Preparing a short task list each evening helped me start the next day clearly and remember smaller tasks. I still adjust the list when priorities change.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E083",
+      "title": "Follow up a call",
+      "prompt": "Explain what you include in an important call's follow-up email.",
+      "referenceAnswer": "I summarize confirmed decisions and list the next actions and deadlines. I ask the other person to correct anything that does not match their understanding.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E084",
+      "title": "Background noise",
+      "prompt": "Respond when background noise makes a caller difficult to hear.",
+      "referenceAnswer": "I am having trouble hearing clearly. Could we move somewhere quieter or reconnect in a moment? I do not want to miss an important detail.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E085",
+      "title": "Shared calendar",
+      "prompt": "Explain how a shared calendar helps a team and how to maintain it.",
+      "referenceAnswer": "It helps everyone see availability and avoid conflicts. Clear titles and correct times matter, and changes should be updated promptly so the information remains useful.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E086",
+      "title": "Worried customer",
+      "prompt": "Reassure a worried customer without guaranteeing an outcome.",
+      "referenceAnswer": "I understand your concern. I will check the information and explain the available next steps. I cannot promise the final outcome yet, but I will keep you informed.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E087",
+      "title": "A good mentor",
+      "prompt": "Describe qualities you value in a mentor.",
+      "referenceAnswer": "I value patience, honesty, and clear explanations. Specific feedback helps me improve, while guidance that encourages independent problem-solving helps me develop confidence.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E088",
+      "title": "Visitor check-in",
+      "prompt": "Politely explain that a visitor must check in before entering.",
+      "referenceAnswer": "Welcome. Please check in at reception first so we can inform your host. It only takes a moment, and I can show you where to go.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E089",
+      "title": "Two callers",
+      "prompt": "Explain how you handle a second call while helping someone.",
+      "referenceAnswer": "I follow the team's call procedure and do not abandon the first caller. If appropriate, I request permission to put them briefly on hold and arrange a callback for the second.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E090",
+      "title": "Summarize a concern",
+      "prompt": "A teammate has too much work and unclear deadlines. Summarize and suggest a step.",
+      "referenceAnswer": "Your workload sounds high, and the priorities are unclear. Let's list the tasks and ask the manager to confirm the deadlines before taking on more work.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E091",
+      "title": "Describe an object",
+      "prompt": "Describe a reusable water bottle to someone who cannot see it.",
+      "referenceAnswer": "It is a container with a lid that you can fill and carry. The lid prevents spills. You clean and refill it instead of using a new disposable bottle each time.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E092",
+      "title": "Improve handovers",
+      "prompt": "Suggest how to make handover notes easier for a new employee.",
+      "referenceAnswer": "Use consistent headings for completed work, pending items, and next actions. Explain abbreviations and include relevant contacts. A sample note will help everyone follow the format.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E093",
+      "title": "Show patience",
+      "prompt": "Describe a situation where patience matters and how you show it.",
+      "referenceAnswer": "Patience matters when teaching a new task. I explain one step at a time, allow practice, and answer questions calmly instead of expecting immediate understanding.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E094",
+      "title": "A small success",
+      "prompt": "Describe a small success and what helped you achieve it.",
+      "referenceAnswer": "I handled a call I had been nervous about. Preparing key details and listening carefully helped me respond clearly. It showed that practice makes a difference.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E095",
+      "title": "Follow-up questions",
+      "prompt": "Someone says the plan changed. Ask questions before acting.",
+      "referenceAnswer": "Which part changed, and when does the change take effect? Who needs to know? I will update my tasks after the new instructions are confirmed.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E096",
+      "title": "An effective supervisor",
+      "prompt": "Describe how a supervisor supports good team communication.",
+      "referenceAnswer": "A supervisor sets clear expectations, explains priorities, and makes time for questions. Specific feedback and relevant updates help everyone know what to do and when to ask for help.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E097",
+      "title": "Missing information",
+      "prompt": "Explain why you cannot finish a form and ask for the missing detail.",
+      "referenceAnswer": "The available sections are complete, but I still need the contact number before submitting. Could you confirm it? I will finish the form once it is available.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E098",
+      "title": "First client call",
+      "prompt": "Introduce yourself to a new contact and explain why you are calling.",
+      "referenceAnswer": "Hello, I am Sam from the operations team. I am calling to confirm the arrangements in yesterday's message. Is this a convenient time for a short conversation?",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E099",
+      "title": "Clear language",
+      "prompt": "Explain why simple language helps people from different backgrounds.",
+      "referenceAnswer": "Simple language reduces misunderstandings. I use short sentences, explain unfamiliar terms, and check key details. If someone is unsure, I explain the point differently.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "E100",
+      "title": "Close a call",
+      "prompt": "End a work call by confirming the agreement and next step.",
+      "referenceAnswer": "We agreed that I will send the update today and you will review it tomorrow. I will contact you if anything changes. Please tell me if I missed anything.",
+      "tag": "General English",
+      "seconds": 60,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    }
+  ],
+  "trucking": [
+    {
+      "id": "T001",
+      "title": "Traffic delay",
+      "prompt": "Tell a broker that traffic may make the driver two hours late and ask what to do next.",
+      "referenceAnswer": "Our driver expects to arrive about two hours after the appointment because of traffic. Could you confirm whether the receiver can accept that arrival or needs a new appointment?",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T002",
+      "title": "Pickup check-in",
+      "prompt": "A driver reached the warehouse but cannot find check-in. Explain your response.",
+      "referenceAnswer": "Please wait in a safe permitted area while I confirm the correct entrance, office, and reference number. I will send the verified instructions to you.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T003",
+      "title": "Address mismatch",
+      "prompt": "The rate confirmation and a broker's message show different addresses. What would you say?",
+      "referenceAnswer": "I have two different addresses. Could you confirm the correct one in writing and provide updated paperwork if needed? I want to avoid sending the driver to the wrong location.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T004",
+      "title": "Delivery tomorrow",
+      "prompt": "The receiver can only unload tomorrow. What must you check before agreeing?",
+      "referenceAnswer": "I will check driver availability and the impact on the next appointment. Please confirm the proposed time and any agreed additional charges in writing before we change the plan.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T005",
+      "title": "Dock wait",
+      "prompt": "A driver has waited at a dock without updates. Contact the broker.",
+      "referenceAnswer": "The driver has checked in and is waiting for a dock update. Could you check the expected loading time? We are recording the arrival and waiting details for follow-up.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T006",
+      "title": "Missing pickup number",
+      "prompt": "The warehouse cannot find the load using the supplied number. Ask for help.",
+      "referenceAnswer": "The shipping office cannot locate the load using our pickup number. Please verify the reference and shipment details with them so I can provide the corrected information to the driver.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T007",
+      "title": "Delivery paperwork",
+      "prompt": "Explain what you need from a driver after unloading.",
+      "referenceAnswer": "Please collect the required delivery paperwork, check that it is complete and legible, and send a clear copy to dispatch. Tell us if anything is missing or an issue is noted.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T008",
+      "title": "Blurry receipt",
+      "prompt": "Ask a driver to replace an unreadable document photo.",
+      "referenceAnswer": "Thank you for the photo. It is too blurry to read. Please retake it in good light with the full page visible and check the image before sending it.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T009",
+      "title": "Confirm appointment",
+      "prompt": "Confirm a delivery appointment without assuming its time zone.",
+      "referenceAnswer": "Could you confirm the appointment date, time, time zone, and check-in location for this shipment? I will share the details with the driver and update our record.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T010",
+      "title": "Driver not answering",
+      "prompt": "Explain what you do when the driver does not answer an update call.",
+      "referenceAnswer": "I send a message asking for an update when safe, check the last confirmed information, and follow the company's escalation process if needed. I do not invent a current location.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T011",
+      "title": "Rate discrepancy",
+      "prompt": "The confirmation shows a different rate from the agreed amount. Respond.",
+      "referenceAnswer": "The rate on this confirmation differs from the amount discussed. Could you review the agreement and send corrected paperwork if appropriate? Both sides should confirm the same terms.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T012",
+      "title": "Changed destination",
+      "prompt": "A broker changes the destination after pickup. What would you clarify?",
+      "referenceAnswer": "Please provide the new destination and instructions in writing. I will check the schedule impact and confirm any agreed rate or appointment changes before accepting the revised plan.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T013",
+      "title": "Equipment match",
+      "prompt": "Ask questions to confirm that a load fits the available equipment.",
+      "referenceAnswer": "Please confirm the trailer type, dimensions, weight, and special requirements. I will compare those details with our available equipment before confirming whether the load is suitable.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T014",
+      "title": "Early arrival",
+      "prompt": "Ask whether a receiver can accept the driver before the appointment.",
+      "referenceAnswer": "Our driver may arrive early. Can the facility accept an early check-in, or should the driver wait elsewhere? Please confirm the appropriate instructions.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T015",
+      "title": "Loading complete",
+      "prompt": "Give a concise update after loading is complete.",
+      "referenceAnswer": "The driver has completed loading. We are checking the paperwork and next appointment details. I will update you promptly if the estimated arrival changes.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T016",
+      "title": "Unloading complete",
+      "prompt": "Report unloading completion while delivery paperwork is still pending.",
+      "referenceAnswer": "The driver reports that unloading is complete. We are still waiting for a clear copy of the delivery paperwork and will send it once received and checked.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T017",
+      "title": "Truck breakdown",
+      "prompt": "Tell a broker about a breakdown when repair timing is unknown.",
+      "referenceAnswer": "The driver has reported a breakdown and is arranging assistance. There is no confirmed repair time yet. I will update you when reliable information is available and discuss the delivery impact.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T018",
+      "title": "Bad weather",
+      "prompt": "Respond when a driver says severe weather is affecting travel.",
+      "referenceAnswer": "Please prioritize safe travel and follow company safety guidance. Update me when safe. I will inform the broker about the potential delay and revise the arrival estimate when reliable information is available.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T019",
+      "title": "Missing signature",
+      "prompt": "Explain how you handle a delivery receipt missing a required signature.",
+      "referenceAnswer": "I would confirm with the driver what paperwork was provided and contact the receiver if necessary. I would report the missing signature instead of marking the paperwork complete.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T020",
+      "title": "Additional stop",
+      "prompt": "A broker requests an extra stop. What information do you need?",
+      "referenceAnswer": "Please confirm the address, appointment, and handling instructions. I will check the route and schedule impact. Any agreed additional charge should be confirmed in writing before changing the plan.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T021",
+      "title": "Arrival estimate",
+      "prompt": "Respond to a request for an exact arrival time you cannot guarantee.",
+      "referenceAnswer": "The current estimate is late this afternoon, but traffic may change it. I will share a more precise estimate after the next driver update rather than promise an unsupported time.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T022",
+      "title": "Existing commitments",
+      "prompt": "A new load may conflict with a driver's current schedule. Respond.",
+      "referenceAnswer": "I need to check the driver's availability and existing appointments before accepting. Please send the pickup and delivery requirements so I can confirm whether the schedule is workable.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T023",
+      "title": "Shift handover",
+      "prompt": "Explain how to hand an active load to the next dispatcher.",
+      "referenceAnswer": "I provide the load reference, locations, appointments, last driver update, and pending issues. I identify who needs a reply and when the next update is due.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T024",
+      "title": "Charge approval",
+      "prompt": "The driver asks if an extra charge is approved, but you have no confirmation.",
+      "referenceAnswer": "I have requested confirmation, but approval has not arrived in writing yet. I will follow up. Please keep the supporting details and receipts while we wait.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T025",
+      "title": "Expense receipt",
+      "prompt": "Ask for supporting paperwork for a load-related expense.",
+      "referenceAnswer": "Please send a readable receipt with the date, amount, and reason for the expense. Include the load reference so we can match it and check the agreed arrangements.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T026",
+      "title": "Wrong phone number",
+      "prompt": "Ask for a working facility contact after the listed number fails.",
+      "referenceAnswer": "The number on the load sheet is not connecting. Could you provide a current number and the correct department? We need to verify arrival instructions before the truck reaches the site.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T027",
+      "title": "Closed receiver",
+      "prompt": "A driver arrives and finds the receiver closed. Explain your communication.",
+      "referenceAnswer": "Please remain in a safe permitted place while I verify the appointment and contact the broker. I will report the closure, request instructions, and document the arrival and response.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T028",
+      "title": "Freight not ready",
+      "prompt": "Update the broker when the shipper says the freight is not ready.",
+      "referenceAnswer": "The shipper says the freight is not ready. Could you confirm the expected ready time and whether the appointment will change? I will check the impact on the driver's schedule.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T029",
+      "title": "Wrong trailer number",
+      "prompt": "Explain how to correct a trailer number mismatch.",
+      "referenceAnswer": "I would verify the actual trailer number with the driver, compare it with the paperwork, and ask the issuing party to correct the document. Our record should match the confirmed details.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T030",
+      "title": "Read back a reference",
+      "prompt": "Explain why repeating a load reference during a call helps.",
+      "referenceAnswer": "Similar references can be confused. Reading the number back confirms that both people mean the same shipment. I also compare it with the written confirmation before updating the record.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T031",
+      "title": "Conflicting updates",
+      "prompt": "The driver says loaded, but the broker says not arrived. Respond.",
+      "referenceAnswer": "I will verify the load reference and driver's check-in details because the updates conflict. Then I will share the confirmed information instead of assuming either message is correct.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T032",
+      "title": "Late paperwork",
+      "prompt": "Explain to a client that delivery is reported complete but the document is missing.",
+      "referenceAnswer": "Delivery is reported complete, but the paperwork is still pending. I have followed up with the driver and will send a clear copy once received. I will keep you updated.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T033",
+      "title": "Unverified directions",
+      "prompt": "Respond when a driver asks for directions you have not verified.",
+      "referenceAnswer": "I will check the facility's entrance instructions rather than give unverified directions. Please use a suitable route for your vehicle and stop safely before reviewing messages.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T034",
+      "title": "New load offer",
+      "prompt": "Ask useful questions before accepting a load offer.",
+      "referenceAnswer": "Please confirm locations, appointments, equipment needs, shipment details, and the offered rate. I will check driver availability and the paperwork before accepting.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T035",
+      "title": "Load cancellation",
+      "prompt": "Explain what to confirm after a broker cancels before pickup.",
+      "referenceAnswer": "Please confirm the cancellation in writing and clarify any agreed charges or next steps. I will notify the driver, check travel or check-in status, and update the record.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T036",
+      "title": "Written changes",
+      "prompt": "Ask for written confirmation of changed phone instructions.",
+      "referenceAnswer": "Could you send the revised instructions with the load reference and changed details? I will read them back now and confirm the plan with the driver.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T037",
+      "title": "Unknown waiting time",
+      "prompt": "Give an update when the warehouse cannot estimate loading completion.",
+      "referenceAnswer": "The truck is still waiting and the warehouse has no reliable completion estimate. I am following up and will send another update at the agreed time even if nothing changes.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T038",
+      "title": "Driver readiness",
+      "prompt": "Explain what you ask before assigning a new load.",
+      "referenceAnswer": "I confirm the driver's location, equipment, availability, and whether the proposed schedule is workable. I share the requirements and ask about concerns before committing.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T039",
+      "title": "Appointment versus estimate",
+      "prompt": "Explain the difference between an appointment and an estimated arrival.",
+      "referenceAnswer": "An appointment is an agreed facility time. An arrival estimate predicts when the truck will reach it. If the estimate changes, we communicate that rather than silently changing the appointment.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T040",
+      "title": "Pending status check",
+      "prompt": "Respond to a client while still verifying the latest load status.",
+      "referenceAnswer": "I am checking with the driver now. The last confirmed update was that the truck was heading to delivery. I will return with a verified update as soon as possible.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T041",
+      "title": "Missing site instructions",
+      "prompt": "Explain what to do when check-in instructions are missing.",
+      "referenceAnswer": "I ask the broker or facility to confirm the entrance, reference number, appointment, and site requirements. I send the verified instructions to the driver and record them.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T042",
+      "title": "Reported damage",
+      "prompt": "Communicate a driver's report of possible freight damage without assigning blame.",
+      "referenceAnswer": "I ask the driver to follow the reporting process and record observations. I notify the responsible contact and request instructions without making unverified claims about the cause.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T043",
+      "title": "Unclear temperature",
+      "prompt": "Explain what you do when temperature instructions are unclear.",
+      "referenceAnswer": "I request clear written instructions and confirm them with the driver. I do not guess a setting. If instructions conflict, I ask for clarification before proceeding.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T044",
+      "title": "Overlapping loads",
+      "prompt": "Explain how to resolve overlapping load appointments.",
+      "referenceAnswer": "I verify both appointment times and the driver's availability. I contact the relevant parties to agree on a workable plan and update records after changes are confirmed.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T045",
+      "title": "Frustrated driver",
+      "prompt": "Respond to a driver frustrated by repeated waiting.",
+      "referenceAnswer": "I understand the waiting is frustrating. I am asking the facility for a reliable update and checking the agreed arrangements. Please retain the arrival details; I will share the confirmed next step.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T046",
+      "title": "Frustrated broker",
+      "prompt": "Respond to a broker upset about a lack of updates.",
+      "referenceAnswer": "I apologize for the communication gap. Here is the latest confirmed information and what is still being checked. Let's agree on the next update time, and I will follow through.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T047",
+      "title": "Preferred contact",
+      "prompt": "Ask how a broker wants routine and urgent updates.",
+      "referenceAnswer": "How would you prefer routine updates on this load? Which number should we use for urgent issues? I will record the details so the team contacts you correctly.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T048",
+      "title": "Daily report",
+      "prompt": "Explain what makes a daily load report useful.",
+      "referenceAnswer": "It should show each load reference, confirmed status, appointments, and issues requiring attention. It separates facts from estimates and identifies the next action clearly.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T049",
+      "title": "Unachievable arrival",
+      "prompt": "Respond when pressured to promise an arrival the driver cannot safely achieve.",
+      "referenceAnswer": "I cannot promise an arrival that is not safely achievable. I will give the realistic estimate and discuss an alternative appointment, then confirm the revised plan with the driver.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    },
+    {
+      "id": "T050",
+      "title": "Close a load call",
+      "prompt": "Finish a delay call by confirming each person's next action.",
+      "referenceAnswer": "I will check the driver's revised arrival estimate and send it to you. You will check appointment availability with the receiver. We will confirm the new plan when both details are known.",
+      "tag": "Dispatch communication",
+      "seconds": 90,
+      "points": [
+        "Address the question directly",
+        "Give relevant details or an example",
+        "Speak clearly and organize your response"
+      ]
+    }
+  ],
+  "listening": [
+    {
+      "id": "L001",
+      "title": "Warehouse wait",
+      "text": "The driver has arrived at the warehouse, but the loading dock is still occupied. Please ask the driver to wait in the parking area and keep the phone available. The shipping team will call when the dock is ready. Let the broker know about the delay before the appointment time passes.",
+      "audioUrl": "/interview-audio/L001.wav"
+    },
+    {
+      "id": "L002",
+      "title": "Delivery paperwork",
+      "text": "Before the truck leaves the yard, check that the delivery address matches the paperwork. The receiver requires the driver to check in at the front office and wear a safety vest. After unloading, collect the signed delivery receipt and send a clear copy to the dispatch team.",
+      "audioUrl": "/interview-audio/L002.wav"
+    },
+    {
+      "id": "L003",
+      "title": "Morning handover",
+      "text": "The morning team should review the overnight messages before making new calls. One driver is waiting for a pickup number, and another has completed delivery. Please update the shared report with the latest confirmed information. Leave a clear note for any issue that still needs a response.",
+      "audioUrl": "/interview-audio/L003.wav"
+    },
+    {
+      "id": "L004",
+      "title": "Changed meeting",
+      "text": "Our team meeting has moved to the larger room near reception. The meeting will begin at the usual time, so please arrive a few minutes early. Bring your notes about the current projects. If you cannot attend, send your update to the team leader before the meeting starts.",
+      "audioUrl": "/interview-audio/L004.wav"
+    },
+    {
+      "id": "L005",
+      "title": "Traffic update",
+      "text": "The driver called to report slow traffic outside the city. The current arrival estimate may change, so do not promise an exact delivery time yet. Contact the broker with the information we have confirmed. Send another update after the driver reaches a safe place and checks the route.",
+      "audioUrl": "/interview-audio/L005.wav"
+    },
+    {
+      "id": "L006",
+      "title": "Document check",
+      "text": "A customer has requested a copy of the latest report. Before sending it, check the company name and reporting period at the top of the page. Make sure the attachment is the final version. Ask the customer to confirm that the file arrived and can be opened clearly.",
+      "audioUrl": "/interview-audio/L006.wav"
+    },
+    {
+      "id": "L007",
+      "title": "Visitor arrival",
+      "text": "A visitor is expected at the office this afternoon. Please ask them to sign in at reception and wait while their host is contacted. The meeting room is at the end of the hallway. If the visitor arrives early, offer them a seat and explain the expected waiting time.",
+      "audioUrl": "/interview-audio/L007.wav"
+    },
+    {
+      "id": "L008",
+      "title": "Missing reference",
+      "text": "The shipping office cannot find the shipment using the number on the load sheet. Please contact the broker to verify the pickup reference. Do not send the driver to a different warehouse without confirmation. Once the correct information arrives, update the record and read the details back to the driver.",
+      "audioUrl": "/interview-audio/L008.wav"
+    },
+    {
+      "id": "L009",
+      "title": "Shift coverage",
+      "text": "One member of the evening team will be absent today. The supervisor will divide the urgent work among the available staff. Check your assigned tasks before the shift begins. If a deadline conflicts with another commitment, explain the problem early so the team can agree on a workable plan.",
+      "audioUrl": "/interview-audio/L009.wav"
+    },
+    {
+      "id": "L010",
+      "title": "Clear photograph",
+      "text": "The photo of the delivery receipt is too dark to read. Please ask the driver to place the page on a flat surface in good light. The entire page should be visible in the new picture. Check the image before sending it to the client, and keep the original document available.",
+      "audioUrl": "/interview-audio/L010.wav"
+    },
+    {
+      "id": "L011",
+      "title": "Unconfirmed repair",
+      "text": "The truck is waiting for a repair inspection. We do not have a confirmed completion time, so the delivery estimate is still uncertain. Tell the broker what is known and what is being checked. Agree on a time for the next update, even if the repair is still in progress.",
+      "audioUrl": "/interview-audio/L011.wav"
+    },
+    {
+      "id": "L012",
+      "title": "Training session",
+      "text": "Tomorrow's training session will cover the new reporting form. Each team member should bring one example of a question they found difficult. The trainer will demonstrate the process before asking everyone to practice. Please take notes and ask for clarification if any step is unclear.",
+      "audioUrl": "/interview-audio/L012.wav"
+    },
+    {
+      "id": "L013",
+      "title": "Early arrival",
+      "text": "The driver expects to reach the receiver before the scheduled appointment. Call the facility to ask whether early check-in is possible. If it is not, request clear instructions about where the truck may wait. Confirm the plan with the driver and record the response in the load notes.",
+      "audioUrl": "/interview-audio/L013.wav"
+    },
+    {
+      "id": "L014",
+      "title": "Pending approval",
+      "text": "The draft has been prepared, but the manager has not approved the final figures. Keep the document in the shared folder and do not send it to the client yet. Highlight the entries that still need checking. Once approval arrives, update the version name and send the correct attachment.",
+      "audioUrl": "/interview-audio/L014.wav"
+    },
+    {
+      "id": "L015",
+      "title": "Contact details",
+      "text": "The phone number on the delivery instructions is no longer working. Please ask the broker for an updated contact at the receiving office. Confirm the person's name and department before ending the call. Add the new number to the load record so the next dispatcher can find it easily.",
+      "audioUrl": "/interview-audio/L015.wav"
+    },
+    {
+      "id": "L016",
+      "title": "End of shift",
+      "text": "Before finishing your shift, list the work that has been completed and the items still waiting for a reply. Include the last confirmed driver update for each active load. The next team needs to know who to contact and when. Keep the notes brief, specific, and easy to understand.",
+      "audioUrl": "/interview-audio/L016.wav"
+    },
+    {
+      "id": "L017",
+      "title": "Schedule conflict",
+      "text": "Two appointments have been entered at the same time. Please check the original messages to confirm which details are correct. Contact the organizers before moving either appointment. After a new arrangement is agreed, update the shared calendar and notify everyone affected by the change.",
+      "audioUrl": "/interview-audio/L017.wav"
+    },
+    {
+      "id": "L018",
+      "title": "Freight not ready",
+      "text": "The warehouse has advised that the freight is not ready for collection. The driver is waiting for further instructions in a permitted area. Ask the broker for the expected ready time and check the effect on delivery. Do not change the appointment until the new plan has been confirmed.",
+      "audioUrl": "/interview-audio/L018.wav"
+    },
+    {
+      "id": "L019",
+      "title": "Helpful follow-up",
+      "text": "After an important phone call, send a short written summary of the agreed actions. State who will complete each task and when an update is expected. Separate confirmed decisions from questions that remain open. Invite the other person to correct anything that does not match their understanding.",
+      "audioUrl": "/interview-audio/L019.wav"
+    },
+    {
+      "id": "L020",
+      "title": "Equipment details",
+      "text": "A new load offer has arrived, but some equipment details are missing. Ask the broker to confirm the trailer requirements and shipment information before accepting it. Check those details with the available driver. If anything is unsuitable or unclear, explain the issue and request clarification.",
+      "audioUrl": "/interview-audio/L020.wav"
+    },
+    {
+      "id": "L021",
+      "title": "Office maintenance",
+      "text": "The office printer will be unavailable during maintenance tomorrow morning. Please print any essential documents before the end of today. Digital copies can still be shared through the usual folder. Contact the office coordinator if an urgent document must be printed while the machine is being serviced.",
+      "audioUrl": "/interview-audio/L021.wav"
+    },
+    {
+      "id": "L022",
+      "title": "Receiver unavailable",
+      "text": "The receiver cannot unload the truck at the originally planned time. The broker has asked whether delivery tomorrow morning would be possible. Check the driver's availability and any effect on later commitments. Confirm the revised appointment and any agreed changes in writing before updating the schedule.",
+      "audioUrl": "/interview-audio/L022.wav"
+    },
+    {
+      "id": "L023",
+      "title": "Accurate update",
+      "text": "A client has asked for a status report, but the latest driver message is incomplete. Check the missing detail before describing the load as completed. You can tell the client which information is already confirmed. Explain what you are verifying and when they can expect another update.",
+      "audioUrl": "/interview-audio/L023.wav"
+    },
+    {
+      "id": "L024",
+      "title": "New colleague",
+      "text": "A new colleague will join the dispatch team next week. Please prepare a short guide to the shared folders and common contact numbers. Explain any abbreviations that may be unfamiliar. During the first shift, show the colleague how to leave clear notes and where to ask for help.",
+      "audioUrl": "/interview-audio/L024.wav"
+    },
+    {
+      "id": "L025",
+      "title": "Rate correction",
+      "text": "The amount on the rate confirmation does not match the figure discussed on the phone. Contact the broker and ask them to review the agreement. Keep a note of the difference and request corrected paperwork if needed. Both sides should confirm the same terms before the load proceeds.",
+      "audioUrl": "/interview-audio/L025.wav"
+    },
+    {
+      "id": "L026",
+      "title": "Safe response",
+      "text": "The driver is currently traveling and cannot answer a detailed question. Send a short message asking for a response when it is safe to stop. Use the last confirmed update in the meantime, and label any estimate clearly. Do not assume that an unanswered call means the delivery is late.",
+      "audioUrl": "/interview-audio/L026.wav"
+    },
+    {
+      "id": "L027",
+      "title": "Customer callback",
+      "text": "A customer called while the account manager was in a meeting. Please record the customer's name, contact number, and reason for calling. Ask whether the matter is urgent and confirm a suitable callback time. Send the message promptly so the manager can respond with the right information.",
+      "audioUrl": "/interview-audio/L027.wav"
+    },
+    {
+      "id": "L028",
+      "title": "Additional stop",
+      "text": "The broker has requested an extra stop on the delivery route. Ask for the full address, appointment details, and handling instructions. Check the effect on the driver's schedule before accepting the change. Record any agreed rate adjustment and send the confirmed plan to everyone who needs it.",
+      "audioUrl": "/interview-audio/L028.wav"
+    },
+    {
+      "id": "L029",
+      "title": "Report review",
+      "text": "The weekly report is ready for a final check. Compare the load references with the source records and look for missing dates. If a figure cannot be verified, mark it for follow-up instead of guessing. Send the report only after the required checks have been completed.",
+      "audioUrl": "/interview-audio/L029.wav"
+    },
+    {
+      "id": "L030",
+      "title": "Closing the day",
+      "text": "The final delivery update has arrived, but the paperwork is still pending. Note that difference clearly in the report before leaving. Ask the next dispatcher to follow up for a readable copy. The client should receive a confirmed status update without being told that all documents are complete.",
+      "audioUrl": "/interview-audio/L030.wav"
+    }
+  ]
+}

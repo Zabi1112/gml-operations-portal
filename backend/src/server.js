@@ -22,6 +22,7 @@ const payStatementRoutes = require("./routes/payStatement.routes");
 const app = express();
 
 app.use(cors());
+app.use(["/interviews", "/api/interviews"], require("./routes/interview.routes"));
 app.use(["/pay-statements", "/api/pay-statements"], express.json({ limit: "256kb" }));
 app.use(express.json());
 

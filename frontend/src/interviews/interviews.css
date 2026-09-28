@@ -1,0 +1,72 @@
+.iv-shell { min-height: 100vh; background: #fcf8f4; color: #23364a; font-family: Arial, sans-serif; }
+.iv-header { display: flex; align-items: center; gap: 18px; padding: 18px 5%; background: #fff; border-bottom: 1px solid #ecdfd4; }
+.iv-header img { width: 68px; height: 64px; object-fit: contain; }
+.iv-header strong { display: block; font-size: 19px; margin-top: 6px; }
+.iv-eyebrow, .iv-tag { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #a4411b; }
+.iv-demo { margin-left: auto; font-size: 10px; letter-spacing: 1px; border: 1px solid #dec7b7; padding: 9px 12px; border-radius: 30px; color: #865138; }
+.iv-wrap { max-width: 1060px; margin: auto; padding: 24px 24px 40px; }
+.iv-preview-note { font-size: 12px; line-height: 1.7; color: #7a6758; padding: 12px 16px; background: #f5eadd; border-radius: 8px; }
+.iv-hero { padding: 42px 0 22px; max-width: 730px; }
+.iv-hero h1 { font-size: clamp(32px, 4vw, 48px); letter-spacing: -1.5px; line-height: 1.15; margin: 16px 0; color: #20394c; }
+.iv-shell p, .iv-shell li { line-height: 1.75; }
+.iv-hero p { font-size: 17px; color: #68717a; }
+.iv-overview { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.iv-overview article { background: #fff; border: 1px solid #e9ddd2; border-radius: 14px; padding: 26px; }
+.iv-overview article > span { display: inline-block; border-radius: 9px; background: #fff0e2; color: #ae4219; padding: 10px 13px; font-weight: bold; }
+.iv-overview strong { font-size: 12px; color: #89502e; }
+.iv-card { background: #fff; border: 1px solid #e9ddd2; border-radius: 16px; padding: 30px; margin: 24px 0; box-shadow: 0 5px 22px #39200e04; }
+.iv-shell h1, .iv-shell h2, .iv-shell h3 { color: #20394c; }
+.iv-card h1 { font-size: 30px; margin-bottom: 14px; }
+.iv-card h2 { font-size: 22px; }
+.iv-card h3 { font-size: 15px; }
+.iv-shell label { display: block; font-size: 14px; font-weight: 600; margin: 15px 0; }
+.iv-shell input, .iv-shell textarea, .iv-shell select { width: 100%; box-sizing: border-box; display: block; border: 1px solid #cdbfb3; padding: 13px; border-radius: 8px; margin-top: 8px; font: inherit; color: #23364a; background: white; }
+.iv-shell textarea { line-height: 1.7; resize: vertical; }
+.iv-shell button { border: 1px solid #b84316; background: #b84316; color: white; padding: 12px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; }
+.iv-shell button:hover { background: #953410; }
+.iv-shell button:disabled { opacity: .5; cursor: not-allowed; }
+.iv-shell .iv-secondary { background: white; color: #994015; }
+.iv-shell :focus-visible { outline: 3px solid #e99d63; outline-offset: 3px; }
+.iv-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 18px; }
+.iv-actions h2 { margin-right: auto; }
+.iv-bottom { border-top: 1px solid #eee3d9; padding-top: 22px; margin-top: 26px; }
+.iv-muted { font-size: 13px; color: #69747c; }
+.iv-error { padding: 12px 16px; background: #fff0eb; color: #922f1c; border-radius: 8px; }
+.iv-progress { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 28px; }
+.iv-progress > div { background: #eee8e1; padding: 13px 10px; border-radius: 9px; font-size: 12px; color: #77716c; }
+.iv-progress span { font-weight: bold; margin-right: 7px; }
+.iv-progress .active { background: #b84316; color: white; }
+.iv-progress .complete { background: #e8efe9; color: #3b6745; }
+.iv-section-heading { display: flex; justify-content: space-between; gap: 15px; font-size: 12px; color: #7d766e; }
+.iv-listen-box { background: #fff7ef; border: 1px solid #efdfd0; border-radius: 12px; padding: 24px; margin: 24px 0; }
+.iv-listen-box select { max-width: 400px; }
+.iv-shell blockquote { background: #f3f6f7; border-left: 4px solid #b84316; border-radius: 0 10px 10px 0; padding: 20px 24px; margin: 22px 0; line-height: 1.8; font-size: 17px; }
+.iv-recorder { background: #faf7f3; padding: 18px; border-radius: 10px; }
+.iv-shell audio { width: 100%; max-width: 560px; margin: 12px 0; }
+.iv-review-heading { display: flex; justify-content: space-between; align-items: center; margin: 32px 0; }
+.iv-score { font-size: 36px; font-weight: bold; color: #aa3f18; text-align: center; }
+.iv-score small { display: block; font-size: 12px; font-weight: normal; color: #696b69; }
+.iv-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.iv-comparison > div { background: #f7f8f8; padding: 18px; border-radius: 10px; overflow-wrap: anywhere; }
+.iv-shell summary { cursor: pointer; color: #923b17; }
+.iv-rubric { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.iv-rubric small { display: block; font-size: 11px; line-height: 1.5; font-weight: normal; color: #6f797f; min-height: 70px; margin-top: 8px; }
+.iv-complete { text-align: center; padding: 48px 28px; }
+.iv-final-score { font-size: 74px; font-weight: bold; color: #a33a12; }
+.iv-final-score small { font-size: 25px; font-weight: normal; }
+.iv-result-note { text-align: left; background: #faf7f2; border-radius: 10px; padding: 18px; margin: 14px 0; }
+.iv-footer { text-align: center; font-size: 11px; color: #8e8075; padding-top: 20px; }
+@media(max-width: 700px) { .iv-wrap { padding: 16px; } .iv-header { padding: 14px; gap: 12px; flex-wrap: wrap; } .iv-header strong { font-size: 16px; } .iv-demo { font-size: 9px; margin-left: 0; } .iv-card { padding: 20px; } .iv-overview, .iv-comparison { grid-template-columns: 1fr; } .iv-rubric { grid-template-columns: 1fr 1fr; } .iv-rubric small { min-height: 0; } .iv-progress > div { padding: 10px 5px; font-size: 10px; } .iv-progress span { display: block; margin-bottom: 5px; } .iv-hero { padding-top: 28px; } }
+
+.iv-portal { min-height: 0; border-radius: 16px; }
+.iv-portal .iv-wrap { max-width: none; }
+.iv-consent { display: flex !important; align-items: flex-start; gap: 12px; line-height: 1.6; }
+.iv-consent input { width: 20px !important; flex: 0 0 20px; margin-top: 3px !important; }
+.iv-notice { padding: 14px; background: #e9f3ea; border-radius: 8px; color: #285335; overflow-wrap: anywhere; }
+.iv-bank-summary { display: flex; flex-wrap: wrap; gap: 12px; }
+.iv-bank-summary strong { border: 1px solid #eccab1; background: #fff; border-radius: 8px; padding: 12px; }
+.iv-bank-summary span { flex-basis: 100%; font-size: 13px; line-height: 1.6; }
+.iv-table-wrap { overflow-x: auto; }
+.iv-table-wrap table { width: 100%; border-collapse: collapse; text-align: left; }
+.iv-table-wrap th, .iv-table-wrap td { padding: 14px 10px; border-bottom: 1px solid #eee3d9; vertical-align: top; }
+.iv-table-wrap .iv-actions { margin: 0; }
