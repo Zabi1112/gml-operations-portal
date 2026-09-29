@@ -17,3 +17,11 @@ Run from backend: node scripts/add-interviews.js (preflight), then node scripts/
 From the repository root: node --test backend/test/interviews.test.js frontend/test/interviewScoring.test.js. Frontend production build: npm run build in frontend. The bank tests verify every paragraph has a non-silent audio asset.
 
 Audio assets were generated locally with the installed Windows Microsoft Zira voice at a slower speaking rate, 16 kHz mono PCM. Re-record the matching asset if you change a listening paragraph; keep previously assigned snapshots consistent. Candidate links use the portal origin, so links copied from localhost are for local testing only.
+
+## Beginner test
+
+Choose Beginner or Experienced dispatcher when creating an invitation. Beginner uses a separate bank of 20 simple speaking prompts and 15 everyday listening passages, selecting 3 listening and 4 speaking tasks. All speaking tasks allow 60 seconds. No dispatch knowledge is required. Dispatcher tests retain 2 listening and 3 speaking tasks. Existing invitations keep their saved question sets.
+
+Both types have 50 listening points and 50 speaking points. Individual dictation comparisons remain out of 25; their combined score is normalized to 50. Speaking is normalized across the assigned number of responses. Beginner recordings have a 512 KB per-response limit to keep all four within the upload limit.
+
+Run node backend/scripts/add-beginner-interviews.js --apply once to expand the recording position constraint to support the fourth recording. This does not change existing assessments.

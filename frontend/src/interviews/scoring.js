@@ -17,8 +17,8 @@ export function scoreDictation(reference, answer) {
   const accuracy = expected.length ? Math.max(0, 1 - errors / expected.length) : 0;
   return { points: Math.round(accuracy * 250) / 10, accuracy: Math.round(accuracy * 100), errors, wordCount: expected.length, changes: changes.reverse() };
 }
-export function speakingScore(scores) {
+export function speakingScore(scores, count = 3) {
   const values = scores.flatMap(row => Object.values(row));
-  if (scores.length !== 3 || scores.some(row => Object.keys(row).length !== 5) || values.some(v => !Number.isInteger(v) || v < 0 || v > 5)) return null;
-  return Math.round(values.reduce((sum, v) => sum + v, 0) / 75 * 500) / 10;
+  if (scores.length !== count || scores.some(row => Object.keys(row).length !== 5) || values.some(v => !Number.isInteger(v) || v < 0 || v > 5)) return null;
+  return Math.round(values.reduce((sum, v) => sum + v, 0) / (count * 25) * 500) / 10;
 }

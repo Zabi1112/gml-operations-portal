@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-export default function VoiceRecorder({ limit, audio, onAudio, onBusy, disabled = false }) {
+export default function VoiceRecorder({ limit, audio, onAudio, onBusy, disabled = false, maxBytes = 786432 }) {
   const active = useRef(true); const [starting, setStarting] = useState(false);
   const recorder = useRef(null); const stream = useRef(null); const started = useRef(0);
   const [recording, setRecording] = useState(false); const [seconds, setSeconds] = useState(0); const [error, setError] = useState("");
@@ -31,7 +31,7 @@ export default function VoiceRecorder({ limit, audio, onAudio, onBusy, disabled 
         stream.current?.getTracks().forEach(track => track.stop()); setRecording(false); onBusy(false);
         const duration = Math.min(limit, (Date.now() - started.current) / 1000);
         const blob = new Blob(chunks, { type: rec.mimeType });
-        if (blob.size > 786432) { setError("This recording is too large. Please record a shorter response."); return; }
+        if (blob.size > maxBytes) { setError("This recording is too large. Please record a shorter response."); return; }
         if (duration < 1 || !blob.size) { setError("The recording was too short. Please record again."); return; }
         onAudio({ url: URL.createObjectURL(blob), duration: Math.round(duration), bytes: blob.size });
       };

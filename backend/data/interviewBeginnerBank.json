@@ -1,0 +1,356 @@
+{
+  "speaking": [
+    {
+      "id": "BS001",
+      "title": "About yourself",
+      "prompt": "Tell us a little about yourself. What would you like us to know about you?",
+      "referenceAnswer": "I am a friendly person who enjoys learning. I like meeting people and improving my English.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS002",
+      "title": "Your hobbies",
+      "prompt": "What do you enjoy doing in your free time? Why do you enjoy it?",
+      "referenceAnswer": "I enjoy reading short stories and walking. Reading helps me learn new words, and walking helps me relax.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS003",
+      "title": "Your daily routine",
+      "prompt": "Describe a normal day in your life, from morning to evening.",
+      "referenceAnswer": "I wake up early and have breakfast. During the day I study or work. In the evening I relax and prepare for tomorrow.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS004",
+      "title": "Your favorite food",
+      "prompt": "What is your favorite food? Describe it and say when you like to eat it.",
+      "referenceAnswer": "I like rice with vegetables because it is simple and tasty. I often eat it for lunch with my family.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS005",
+      "title": "Your hometown",
+      "prompt": "Tell us about the town or city where you live. What do you like about it?",
+      "referenceAnswer": "My town has shops, schools, and a park. I like the park because it is a quiet place to walk.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS006",
+      "title": "A good friend",
+      "prompt": "What qualities do you like in a friend? Give an example.",
+      "referenceAnswer": "I like friends who are kind and honest. A good friend listens when I have a problem and helps when possible.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS007",
+      "title": "Your weekend",
+      "prompt": "How do you usually spend your weekend? What would you like to do next weekend?",
+      "referenceAnswer": "I usually rest and spend time with friends. Next weekend I would like to visit a park and have lunch outside.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS008",
+      "title": "A place to visit",
+      "prompt": "Where would you like to visit? Explain why you chose that place.",
+      "referenceAnswer": "I would like to visit a place near the mountains. I enjoy fresh air and would like to see the beautiful views.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS009",
+      "title": "Learning English",
+      "prompt": "Why do you want to improve your English? How do you practice?",
+      "referenceAnswer": "I want to speak more confidently with other people. I practice by listening to short stories and speaking a little every day.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS010",
+      "title": "Your favorite season",
+      "prompt": "Which season do you like best? What do you do during that season?",
+      "referenceAnswer": "I like spring because the weather is pleasant. I enjoy walking outside and seeing flowers in the park.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS011",
+      "title": "A useful skill",
+      "prompt": "What is one simple skill you would like to learn? How would you start?",
+      "referenceAnswer": "I would like to learn to cook. I would begin with an easy recipe and ask someone to show me the steps.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS012",
+      "title": "A happy memory",
+      "prompt": "Describe a happy day you remember. What made it special?",
+      "referenceAnswer": "I remember a picnic with my friends. We shared food and played games. It was special because we had time to enjoy being together.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS013",
+      "title": "Your favorite sport",
+      "prompt": "Do you enjoy playing or watching a sport? Explain your answer.",
+      "referenceAnswer": "I like playing cricket with friends. It is fun and helps me stay active. I also enjoy working together as a team.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS014",
+      "title": "Books or films",
+      "prompt": "Do you prefer reading books or watching films? Tell us why.",
+      "referenceAnswer": "I prefer films because I enjoy seeing the characters and places. I sometimes watch with subtitles to learn new English words.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS015",
+      "title": "A person you admire",
+      "prompt": "Describe someone you admire and explain what you like about them.",
+      "referenceAnswer": "I admire a teacher who was always patient. They explained things clearly and encouraged everyone to keep trying.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS016",
+      "title": "Your morning",
+      "prompt": "What do you do after waking up? Describe the steps in order.",
+      "referenceAnswer": "First I wash and get dressed. Then I have breakfast and check my plans. After that I get ready to leave home.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS017",
+      "title": "Helping someone",
+      "prompt": "Tell us about a time you helped someone, or describe how you would help a new classmate.",
+      "referenceAnswer": "I would introduce myself and show a new classmate around. I would help them find the classroom and answer their questions.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS018",
+      "title": "Your goals",
+      "prompt": "What is one goal you have for the next year? What can you do to reach it?",
+      "referenceAnswer": "I want to speak English more clearly. I plan to practice every day and ask for feedback so I can improve.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS019",
+      "title": "Your favorite place",
+      "prompt": "Describe a place where you feel comfortable. What do you like about it?",
+      "referenceAnswer": "I like a quiet corner at home where I can read. It has good light and a comfortable chair.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    },
+    {
+      "id": "BS020",
+      "title": "Trying something new",
+      "prompt": "What new activity would you like to try? Why does it interest you?",
+      "referenceAnswer": "I would like to try gardening. I enjoy being outside and would like to learn how to grow flowers.",
+      "tag": "Everyday English",
+      "seconds": 60,
+      "points": [
+        "Answer in your own words",
+        "Give a few simple details",
+        "Speak clearly; take your time"
+      ]
+    }
+  ],
+  "listening": [
+    {
+      "id": "BL001",
+      "title": "A morning walk",
+      "text": "I like to walk in the park before breakfast. The park is near my house. I usually go with my friend. After our walk, we return home and get ready for the day.",
+      "audioUrl": "/interview-audio/BL001.wav"
+    },
+    {
+      "id": "BL002",
+      "title": "A new student",
+      "text": "My name is Sara. I am learning English at a small school. My classes start in the morning. I bring a notebook and a pen. After class, I practice new words with a friend.",
+      "audioUrl": "/interview-audio/BL002.wav"
+    },
+    {
+      "id": "BL003",
+      "title": "Weekend plans",
+      "text": "On Saturday, we plan to visit the library. My brother wants a book about animals. I would like a short story. After choosing our books, we will have lunch at home.",
+      "audioUrl": "/interview-audio/BL003.wav"
+    },
+    {
+      "id": "BL004",
+      "title": "Making breakfast",
+      "text": "Every morning, I make a cup of tea and prepare breakfast. I like bread and eggs. Before leaving the kitchen, I wash my cup and put the dishes away. Then I check my plans.",
+      "audioUrl": "/interview-audio/BL004.wav"
+    },
+    {
+      "id": "BL005",
+      "title": "A birthday visit",
+      "text": "Today is my friend's birthday. I will visit her in the evening. I have a small gift and a card. We will share some food and talk about our favorite memories.",
+      "audioUrl": "/interview-audio/BL005.wav"
+    },
+    {
+      "id": "BL006",
+      "title": "At the shop",
+      "text": "Please buy some milk and bread from the shop. The shop is next to the bus stop. Take a bag with you. When you come home, put the milk in the kitchen.",
+      "audioUrl": "/interview-audio/BL006.wav"
+    },
+    {
+      "id": "BL007",
+      "title": "A rainy day",
+      "text": "It is raining this afternoon, so we will stay inside. I will read a book, and my sister will draw a picture. Later, we will make tea and watch a film together.",
+      "audioUrl": "/interview-audio/BL007.wav"
+    },
+    {
+      "id": "BL008",
+      "title": "A favorite hobby",
+      "text": "My favorite hobby is drawing. I keep my pencils in a small box. I like drawing trees and flowers. Sometimes I show my pictures to my friends and ask which one they like.",
+      "audioUrl": "/interview-audio/BL008.wav"
+    },
+    {
+      "id": "BL009",
+      "title": "An evening routine",
+      "text": "After dinner, I usually clean the table and help in the kitchen. Then I spend some time reading. Before bed, I prepare my clothes for the next day and set my alarm.",
+      "audioUrl": "/interview-audio/BL009.wav"
+    },
+    {
+      "id": "BL010",
+      "title": "A family picnic",
+      "text": "We are going to the park for a picnic. Please bring some water and a blanket. I will pack the sandwiches. We can sit under a tree and enjoy the warm weather.",
+      "audioUrl": "/interview-audio/BL010.wav"
+    },
+    {
+      "id": "BL011",
+      "title": "Learning a skill",
+      "text": "I want to learn how to cook a simple meal. My friend will show me the steps this weekend. First, we will buy the food we need. Then we will prepare everything in the kitchen.",
+      "audioUrl": "/interview-audio/BL011.wav"
+    },
+    {
+      "id": "BL012",
+      "title": "A bus journey",
+      "text": "The bus stop is a short walk from my home. I leave early so I do not have to hurry. I carry my bag and wait in line. On the bus, I like to sit near the window.",
+      "audioUrl": "/interview-audio/BL012.wav"
+    },
+    {
+      "id": "BL013",
+      "title": "A quiet library",
+      "text": "The library is a quiet place to read and study. Please speak softly and keep your phone silent. You can ask for help at the front desk. Return your books before you leave.",
+      "audioUrl": "/interview-audio/BL013.wav"
+    },
+    {
+      "id": "BL014",
+      "title": "Meeting a friend",
+      "text": "I am meeting my friend at the cafe after lunch. We will sit near the window. I want to hear about her new class. If I am late, I will call and let her know.",
+      "audioUrl": "/interview-audio/BL014.wav"
+    },
+    {
+      "id": "BL015",
+      "title": "Preparing for tomorrow",
+      "text": "Before going to sleep, I write a short list for tomorrow. I put my notebook in my bag and check the weather. If rain is expected, I leave an umbrella near the door.",
+      "audioUrl": "/interview-audio/BL015.wav"
+    }
+  ]
+}

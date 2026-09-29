@@ -69,3 +69,27 @@ test("all staff routes reject anonymous and unauthorized roles before accessing 
   assert.equal((await fetch(base+"/public/"+"a".repeat(64))).status,200);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+test("beginner assignments contain three everyday dictations and four simple speaking prompts", () => {
+ const { beginner } = require("../src/utils/interviewBank");
+ assert.equal(beginner.speaking.length,20);assert.equal(beginner.listening.length,15);
+ const first=selectQuestions(null,"BEGINNER"), next=selectQuestions(first,"BEGINNER");
+ assert.equal(first.testType,"BEGINNER");assert.equal(first.listening.length,3);assert.equal(first.speaking.length,4);
+ const ids=[...first.listening,...first.speaking].map(q=>q.id);
+ assert.ok([...next.listening,...next.speaking].every(q=>!ids.includes(q.id)));
+ assert.ok(first.speaking.every(q=>q.id.startsWith("BS")&&q.seconds===60));
+ for(const q of beginner.listening) {
+  const bytes=fs.readFileSync(path.join(__dirname,"../../frontend/public",q.audioUrl));
+  assert.equal(bytes.subarray(0,4).toString(),"RIFF");assert.ok(bytes.length>100000);
+ }
+ const input={consent:true,answers:["","",""],recordings:[null,null,null,null]};
+ assert.equal(validateSubmission(input,first).answers.length,3);
+ assert.throws(()=>validateSubmission({...input,recordings:[null,null,null]},first),{status:400});
+ const recording={data:Buffer.from("1a45dfa30000","hex").toString("base64"),mimeType:"audio/webm;codecs=opus",duration:60};
+ assert.equal(validateSubmission({...input,recordings:[null,null,null,recording]},first).recordings[0].position,3);
+ assert.throws(()=>validateSubmission({...input,recordings:[null,null,null,{...recording,duration:61}]},first),{status:400});
+ const review={scores:Array.from({length:4},()=>Object.fromEntries(rubric.map(([key])=>[key,5]))),notes:["","","",""]};
+ assert.deepEqual(validateReview(review,4),review);
+ assert.throws(()=>validateReview({...review,scores:review.scores.slice(0,3)},4),{status:400});
+ assert.equal(require("../src/utils/interviewScoring").speakingScore(review.scores,4),50);
+});
