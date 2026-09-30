@@ -1,0 +1,4 @@
+﻿const fs=require('node:fs'),path=require('node:path');
+require('dotenv').config({path:path.join(__dirname,'../.env'),quiet:true});
+const {PrismaClient}=require('@prisma/client');const db=new PrismaClient();
+(async()=>{if(!process.argv.includes('--apply')){console.log('Dry run: --apply installs the atomic Sales carrier-save function.');return;}await db.$transaction(async tx=>{await tx.$executeRawUnsafe(fs.readFileSync(path.join(__dirname,'../prisma/migrations/add_sales_atomic_completion/migration.sql'),'utf8').replace(/^\uFEFF/,''));await tx.$executeRawUnsafe('REVOKE ALL ON FUNCTION public.ewl_sales_finish(integer, integer, text, jsonb) FROM PUBLIC, anon, authenticated');},{timeout:30000});console.log('Atomic Sales save function installed. Existing records were preserved.');})().catch(e=>{console.error('Sales function installation failed:',e.code||e.name);process.exitCode=1;}).finally(()=>db.$disconnect());

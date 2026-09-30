@@ -9,7 +9,7 @@
     "build": "npx prisma generate",
     "vercel-build": "npx prisma generate",
     "sales:worker": "node scripts/sales-worker.js",
-    "sales:migrate": "node scripts/add-sales-department.js --apply",
+    "sales:migrate": "node scripts/add-sales-department.js --apply && node scripts/add-sales-atomic-completion.js --apply",
     "sales:scheduler": "node scripts/install-sales-scheduler.js"
   },
   "keywords": [],

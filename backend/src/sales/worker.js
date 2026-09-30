@@ -2,32 +2,11 @@
 const {decrypt}=require('./secrets');
 const {decodeSnapshot}=require('./provider');
 const running={in:['QUEUED','RUNNING']};
-async function finish(db,job,owner,result){return db.$transaction(async tx=>{
- await tx.$queryRawUnsafe('SELECT "id" FROM "SalesWorker" WHERE "id"=$1 FOR UPDATE','main');
- const worker=await tx.salesWorker.findUnique({where:{id:'main'}});if(worker.owner!==owner||worker.leaseUntil<new Date())return false;
- await tx.$queryRawUnsafe('SELECT "id" FROM "SalesJob" WHERE "id"=$1 FOR UPDATE',job.id);
- const current=await tx.salesJob.findUnique({where:{id:job.id},include:{branch:{select:{isActive:true}}}});
- if(!current||!['QUEUED','RUNNING'].includes(current.status)||current.nextMc!==job.nextMc)return false;
- if(!current.branch.isActive){await tx.salesJob.update({where:{id:job.id},data:{status:'PAUSED',lastError:'Branch is archived.'}});return false;}
- let outcome=result.outcome;
- if(outcome==='ACCEPTED'){
-  const duplicate=await tx.salesLead.findUnique({where:{branchId_mc:{branchId:job.branchId,mc:job.nextMc}}});
-  if(duplicate)outcome='DUPLICATE';
-  else{
-   const ordinal=Math.floor(current.accepted/1000)+1;
-   const list=await tx.salesList.upsert({where:{jobId_ordinal:{jobId:job.id,ordinal}},create:{jobId:job.id,ordinal,startMc:job.nextMc,endMc:job.nextMc},update:{}});
-   const d=result.details;
-   await tx.salesLead.create({data:{branchId:job.branchId,listId:list.id,mc:job.nextMc,usdot:d.usdot,name:d.name,phone:d.phone||null,email:d.email||null,address:d.address,details:d}});
-   await tx.salesList.update({where:{id:list.id},data:{count:{increment:1},endMc:job.nextMc}});
-  }
- }else if(outcome==='REVIEW')await tx.salesReview.create({data:{jobId:job.id,mc:job.nextMc,reason:result.reason,details:result.details}});
- const field={ACCEPTED:'accepted',DUPLICATE:'duplicates',REVIEW:'needsReview',EXCLUDED:'excluded',MISSING:'missing'}[outcome];
- if(!field)throw new Error('Unknown carrier outcome');
- const reasons={...current.reasons};if(result.reason)reasons[result.reason]=(reasons[result.reason]||0)+1;
- const complete=job.nextMc===job.endMc;
- await tx.salesJob.update({where:{id:job.id},data:{[field]:{increment:1},processed:{increment:1},nextMc:job.nextMc+1,status:complete?'COMPLETED':'RUNNING',...(complete?{encryptedKey:null}:{}),retryCount:0,lastError:null,reasons,availableAt:new Date()}});
- return true;
-},{timeout:15000});}
+// A single database statement avoids interactive-transaction failures in serverless execution.
+async function finish(db,job,owner,result){
+ const [row]=await db.$queryRawUnsafe('SELECT public.ewl_sales_finish($1::integer,$2::integer,$3::text,$4::jsonb) AS saved',job.id,job.nextMc,owner,JSON.stringify(result));
+ return row.saved;
+}
 function retryDelay(header,now=Date.now()){if(!header)return 0;const seconds=Number(header);const ms=Number.isFinite(seconds)?seconds*1000:Date.parse(header)-now;return Number.isFinite(ms)?Math.max(2000,Math.min(ms,86400000)):0;}
 async function tick(db,fetcher=fetch){
  const now=new Date(),owner=randomUUID();
@@ -47,7 +26,7 @@ async function tick(db,fetcher=fetch){
   stage="reading provider response";
   const result=await decodeSnapshot(response,job.nextMc);
   stage="saving carrier";
-  await finish(db,job,owner,result);return {state:'processed'};
+  const saved=await finish(db,job,owner,result);return {state:saved?'processed':'unchanged'};
  }catch(error){
   const diagnostic=[error.code,error.cause?.code,error.name].filter(v=>typeof v==='string'&&/^[A-Za-z0-9_]{1,60}$/.test(v)).join('/');
   console.error('Sales worker failure',JSON.stringify({jobId:job?.id,mc:job?.nextMc,stage,diagnostic}));
