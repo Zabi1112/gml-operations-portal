@@ -1,0 +1,37 @@
+
+CREATE TABLE "SalesWorker" ("id" TEXT PRIMARY KEY, "owner" TEXT, "heartbeatAt" TIMESTAMP(3), "leaseUntil" TIMESTAMP(3), "nextRequestAt" TIMESTAMP(3), "hosted" BOOLEAN NOT NULL DEFAULT false, "tokenHash" TEXT, "schedulerAt" TIMESTAMP(3));
+INSERT INTO "SalesWorker" ("id") VALUES ('main');
+CREATE TABLE "SalesJob" (
+ "id" SERIAL PRIMARY KEY, "branchId" INTEGER NOT NULL REFERENCES "Branch"("id") ON DELETE RESTRICT,
+ "startMc" INTEGER NOT NULL, "endMc" INTEGER NOT NULL, "nextMc" INTEGER NOT NULL,
+ "status" TEXT NOT NULL DEFAULT 'QUEUED' CHECK ("status" IN ('QUEUED','RUNNING','PAUSED','STOPPED','COMPLETED','BLOCKED')),
+ "encryptedKey" TEXT, "processed" INTEGER NOT NULL DEFAULT 0, "accepted" INTEGER NOT NULL DEFAULT 0,
+ "excluded" INTEGER NOT NULL DEFAULT 0, "needsReview" INTEGER NOT NULL DEFAULT 0, "missing" INTEGER NOT NULL DEFAULT 0,
+ "duplicates" INTEGER NOT NULL DEFAULT 0, "requests" INTEGER NOT NULL DEFAULT 0, "retryCount" INTEGER NOT NULL DEFAULT 0,
+ "availableAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "lastError" TEXT,
+ "reasons" JSONB NOT NULL DEFAULT '{}', "createdBy" INTEGER NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL,
+ CHECK ("startMc" > 0 AND "endMc" >= "startMc" AND "nextMc" BETWEEN "startMc" AND "endMc" + 1)
+);
+CREATE INDEX "SalesJob_branchId_createdAt_idx" ON "SalesJob"("branchId","createdAt");
+CREATE TABLE "SalesList" ("id" SERIAL PRIMARY KEY, "jobId" INTEGER NOT NULL REFERENCES "SalesJob"("id") ON DELETE RESTRICT, "ordinal" INTEGER NOT NULL, "count" INTEGER NOT NULL DEFAULT 0 CHECK ("count" BETWEEN 0 AND 1000), "startMc" INTEGER NOT NULL, "endMc" INTEGER NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE UNIQUE INDEX "SalesList_jobId_ordinal_key" ON "SalesList"("jobId","ordinal");
+CREATE TABLE "SalesLead" (
+ "id" SERIAL PRIMARY KEY, "branchId" INTEGER NOT NULL REFERENCES "Branch"("id") ON DELETE RESTRICT,
+ "listId" INTEGER NOT NULL REFERENCES "SalesList"("id") ON DELETE RESTRICT,
+ "mc" INTEGER NOT NULL, "usdot" TEXT NOT NULL, "name" TEXT NOT NULL, "phone" TEXT, "email" TEXT, "address" TEXT, "details" JSONB NOT NULL,
+ "status" TEXT NOT NULL DEFAULT 'NEW', "notes" TEXT NOT NULL DEFAULT '', "followUpDate" TEXT,
+ "contactCount" INTEGER NOT NULL DEFAULT 0 CHECK ("contactCount" >= 0), "lastContactAt" TIMESTAMP(3),
+ "revision" INTEGER NOT NULL DEFAULT 1, "fetchedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX "SalesLead_branchId_mc_key" ON "SalesLead"("branchId","mc");
+CREATE INDEX "SalesLead_listId_mc_idx" ON "SalesLead"("listId","mc");
+CREATE TABLE "SalesContact" ("id" TEXT PRIMARY KEY, "leadId" INTEGER NOT NULL REFERENCES "SalesLead"("id") ON DELETE CASCADE, "userId" INTEGER NOT NULL, "userName" TEXT NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "undoneAt" TIMESTAMP(3));
+CREATE INDEX "SalesContact_leadId_createdAt_idx" ON "SalesContact"("leadId","createdAt");
+CREATE TABLE "SalesReview" ("id" SERIAL PRIMARY KEY, "jobId" INTEGER NOT NULL REFERENCES "SalesJob"("id") ON DELETE RESTRICT, "mc" INTEGER NOT NULL, "reason" TEXT NOT NULL, "details" JSONB NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE UNIQUE INDEX "SalesReview_jobId_mc_key" ON "SalesReview"("jobId","mc");
+ALTER TABLE "SalesWorker" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "SalesJob" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "SalesList" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "SalesLead" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "SalesContact" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "SalesReview" ENABLE ROW LEVEL SECURITY;

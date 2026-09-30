@@ -1,3 +1,4 @@
+import SalesDepartment from "./Pages/SalesDepartment.jsx";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { BranchProvider } from "./context/BranchContext.jsx";
 import Login from "./Pages/Login.jsx";
@@ -27,6 +28,7 @@ function App() {
   return (
     <BranchProvider>
       <Routes>
+        <Route path="/sales" element={token && ["ADMIN", "MANAGER", "EDITOR"].includes(user?.role) ? <SalesDepartment /> : <Navigate to="/login" />} />
         <Route path="/interview/:token" element={<InterviewCandidate />} />
         <Route path="/interviews" element={token && ["ADMIN", "MANAGER"].includes(user?.role) ? <Interviews /> : <Navigate to={token ? "/dashboard" : "/login"} />} />
         <Route path="/interview-review" element={<Navigate to="/interviews" replace />} />

@@ -48,6 +48,8 @@ model Branch {
   dispatcherPercent Float @default(25)
   accountsPercent   Float @default(10)
 
+  salesJobs   SalesJob[]
+  salesLeads  SalesLead[]
   interviews  InterviewAssessment[]
   payStatements PayStatement[]
   contracts   DispatchContract[]
@@ -539,4 +541,104 @@ model InterviewRecording {
   data         Bytes
 
   @@unique([assessmentId, position])
+}
+
+
+model SalesWorker {
+ id String @id
+ owner String?
+ heartbeatAt DateTime?
+ leaseUntil DateTime?
+ nextRequestAt DateTime?
+ hosted Boolean @default(false)
+ tokenHash String?
+ schedulerAt DateTime?
+}
+
+model SalesJob {
+ id Int @id @default(autoincrement())
+ branchId Int
+ branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+ startMc Int
+ endMc Int
+ nextMc Int
+ status String @default("QUEUED")
+ encryptedKey String?
+ processed Int @default(0)
+ accepted Int @default(0)
+ excluded Int @default(0)
+ needsReview Int @default(0)
+ missing Int @default(0)
+ duplicates Int @default(0)
+ requests Int @default(0)
+ retryCount Int @default(0)
+ availableAt DateTime @default(now())
+ lastError String?
+ reasons Json @default("{}")
+ createdBy Int
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ lists SalesList[]
+ reviews SalesReview[]
+ @@index([branchId, createdAt])
+}
+
+model SalesList {
+ id Int @id @default(autoincrement())
+ jobId Int
+ job SalesJob @relation(fields: [jobId], references: [id], onDelete: Restrict)
+ ordinal Int
+ count Int @default(0)
+ startMc Int
+ endMc Int
+ leads SalesLead[]
+ createdAt DateTime @default(now())
+ @@unique([jobId, ordinal])
+}
+
+model SalesLead {
+ id Int @id @default(autoincrement())
+ branchId Int
+ branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+ listId Int
+ list SalesList @relation(fields: [listId], references: [id], onDelete: Restrict)
+ mc Int
+ usdot String
+ name String
+ phone String?
+ email String?
+ address String?
+ details Json
+ status String @default("NEW")
+ notes String @default("")
+ followUpDate String?
+ contactCount Int @default(0)
+ lastContactAt DateTime?
+ revision Int @default(1)
+ fetchedAt DateTime @default(now())
+ contacts SalesContact[]
+ @@unique([branchId, mc])
+ @@index([listId, mc])
+}
+
+model SalesContact {
+ id String @id
+ leadId Int
+ lead SalesLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+ userId Int
+ userName String
+ createdAt DateTime @default(now())
+ undoneAt DateTime?
+ @@index([leadId, createdAt])
+}
+
+model SalesReview {
+ id Int @id @default(autoincrement())
+ jobId Int
+ job SalesJob @relation(fields: [jobId], references: [id], onDelete: Restrict)
+ mc Int
+ reason String
+ details Json
+ createdAt DateTime @default(now())
+ @@unique([jobId, mc])
 }

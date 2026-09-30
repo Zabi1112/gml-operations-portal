@@ -7,7 +7,10 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "build": "npx prisma generate",
-    "vercel-build": "npx prisma generate"
+    "vercel-build": "npx prisma generate",
+    "sales:worker": "node scripts/sales-worker.js",
+    "sales:migrate": "node scripts/add-sales-department.js --apply",
+    "sales:scheduler": "node scripts/install-sales-scheduler.js"
   },
   "keywords": [],
   "author": "",

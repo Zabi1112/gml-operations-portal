@@ -46,6 +46,7 @@ console.log("ROUTES CHECK", {
 });
 
 const registerRoutes = (prefix = "") => {
+  app.use(`${prefix}/sales`, require("./routes/sales.routes"));
   app.use(`${prefix}/pay-statements`, payStatementRoutes);
   app.use(`${prefix}/contracts`, contractRoutes);
   app.use(`${prefix}/auth`, authRoutes);
