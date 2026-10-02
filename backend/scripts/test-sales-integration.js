@@ -35,8 +35,13 @@ async function main(){
  await run(async()=>new Response(JSON.stringify(fixture(1999))));await run(async()=>new Response(JSON.stringify(fixture(2000))));
  const lists=await tx.salesList.findMany({where:{jobId:boundary.id},orderBy:{ordinal:'asc'}});assert.deepEqual(lists.map(l=>l.count),[1000,1]);assert.equal(lists[0].endMc,1999);assert.equal(lists[1].startMc,2000);
  assert.equal((await service.export(list.id,branch.id)).csv.split('\r\n').length,1001);
+ const parserJob=await service.create({branchId:branch.id,startMc:2045,endMc:2046,apiKey:'synthetic-api-key'},user);
+ for(let attempt=0;attempt<3;attempt++){await tx.salesJob.update({where:{id:parserJob.id},data:{availableAt:new Date(0)}});await run(async()=>new Response(JSON.stringify({message:'list index out of range'}),{status:400}));}
+ const parserState=await tx.salesJob.findUnique({where:{id:parserJob.id}});assert.equal(parserState.nextMc,2046);assert.equal(parserState.needsReview,1);assert.equal(parserState.status,'RUNNING');assert.equal(parserState.accepted,0);
+ const held=await tx.salesReview.findFirst({where:{jobId:parserJob.id}});assert.equal(held.mc,2045);assert.equal(held.details.lookupError.category,'SNAPSHOT_PARSE_ERROR');
+ await run(async()=>new Response(JSON.stringify(fixture(2046))));const recovered=await tx.salesJob.findUnique({where:{id:parserJob.id}});assert.equal(recovered.status,'COMPLETED');assert.equal(recovered.accepted,1);assert.equal(recovered.lastError,null);
  await tx.branch.update({where:{id:branch.id},data:{isActive:false}});await assert.rejects(()=>service.create({branchId:branch.id,startMc:1,endMc:2,apiKey:'synthetic-api-key'},user),e=>e.status===409);
- console.log('PASS: fetch checkpoint, pause/resume, rate limit, invalid key, missing/excluded records, completion/key removal, duplicate MC, contact idempotency/undo, branch isolation, revision conflicts, 1000-row rollover, CSV and archive guard.');
+ console.log('PASS: fetch checkpoint, pause/resume, rate limit, invalid key, missing/excluded records, completion/key removal, duplicate MC, contact idempotency/undo, branch isolation, revision conflicts, 1000-row rollover, parser failure review/automatic continuation, CSV and archive guard.');
  throw marker;
  },{timeout:180000});}catch(e){if(e!==marker)throw e;}
  console.log('Synthetic test data rolled back.');

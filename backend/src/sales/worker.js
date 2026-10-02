@@ -8,6 +8,13 @@ async function finish(db,job,owner,result){
  return row.saved;
 }
 function retryDelay(header,now=Date.now()){if(!header)return 0;const seconds=Number(header);const ms=Number.isFinite(seconds)?seconds*1000:Date.parse(header)-now;return Number.isFinite(ms)?Math.max(2000,Math.min(ms,86400000)):0;}
+function retryPlan(error,stage,previousRetries,now=Date.now()){
+ const retries=Math.min(1000000,previousRetries+1);
+ const transient=!!error.delay||error.retryable||(['requesting provider','reading provider response'].includes(stage)&&['TimeoutError','AbortError','TypeError'].includes(error.name))||['P2028','P2024','P1001','P1002'].includes(error.code);
+ const delay=error.delay||Math.min(900000,2000*2**Math.min(retries,10));
+ return {retries,delay,availableAt:new Date(now+delay),quarantine:!!error.quarantine&&retries>=3,blocked:!transient&&!error.quarantine&&retries>=5};
+}
+function failedSnapshot(mc){return {outcome:'REVIEW',reason:'Provider could not parse snapshot after repeated attempts',details:{mc,usdot:'',name:'MC-'+mc+' - snapshot unavailable',dba:'',address:'',mailingAddress:'',phone:'',email:'',powerUnits:null,drivers:null,operatingStatus:'Unverified',cargo:[],classifications:[],carrierOperation:[],safetyRating:'',sourceUrl:'',sourceUpdatedAt:'',equipment:'Unknown - snapshot unavailable',lookupError:{status:400,category:'SNAPSHOT_PARSE_ERROR'}}};}
 async function tick(db,fetcher=fetch){
  const now=new Date(),owner=randomUUID();
  const claimed=await db.salesWorker.updateMany({where:{id:'main',AND:[{OR:[{leaseUntil:null},{leaseUntil:{lt:now}}]},{OR:[{nextRequestAt:null},{nextRequestAt:{lte:now}}]}]},data:{owner,leaseUntil:new Date(+now+90000),heartbeatAt:now,nextRequestAt:new Date(+now+2000)}});
@@ -30,8 +37,20 @@ async function tick(db,fetcher=fetch){
  }catch(error){
   const diagnostic=[error.code,error.cause?.code,error.name].filter(v=>typeof v==='string'&&/^[A-Za-z0-9_]{1,60}$/.test(v)).join('/');
   console.error('Sales worker failure',JSON.stringify({jobId:job?.id,mc:job?.nextMc,stage,diagnostic}));
-  if(job){const message=error.delay?'Provider rate limit; waiting before retrying.':error.publicMessage||(error.name==='TimeoutError'?'Provider request timed out; retrying the same MC.':'Failed while '+stage+' ('+diagnostic+'); retrying the same MC.');const retries=job.retryCount+1;const delay=error.delay||Math.min(60000,2000*2**Math.min(retries,5));await db.salesJob.updateMany({where:{id:job.id,status:running,nextMc:job.nextMc},data:{retryCount:retries,status:retries>=5?'BLOCKED':'RUNNING',availableAt:new Date(Date.now()+delay),lastError:retries>=5?'Blocked after five attempts. '+message+' Resume to try again.':message}});}
+  if(job){
+   const plan=retryPlan(error,stage,job.retryCount);
+   if(plan.quarantine){
+    // Preserve this MC in review rather than treating an unreadable snapshot as a non-carrier.
+    // The atomic completion fences the owner and updates review counts/checkpoint together.
+    const saved=await finish(db,job,owner,failedSnapshot(job.nextMc));
+    return {state:saved?'review':'unchanged'};
+   }
+   const message=error.delay?'Provider rate limit; waiting before retrying.':error.publicMessage||(error.name==='TimeoutError'||error.name==='AbortError'?'Provider request timed out; retrying the same MC.':'Failed while '+stage+' ('+diagnostic+'); retrying the same MC.');
+   const status=plan.blocked?'BLOCKED':'RUNNING';
+   const lastError=plan.blocked?'Blocked after five attempts. '+message+' Resume to try again.':message+' Automatic retry at '+plan.availableAt.toISOString()+'.';
+   await db.salesJob.updateMany({where:{id:job.id,status:running,nextMc:job.nextMc},data:{retryCount:plan.retries,status,availableAt:plan.availableAt,lastError}});
+  }
   return {state:'retry'};
  }finally{await db.salesWorker.updateMany({where:{id:'main',owner},data:{owner:null,leaseUntil:null,heartbeatAt:new Date()}});}
 }
-module.exports={tick,finish,retryDelay};
+module.exports={tick,finish,retryDelay,retryPlan,failedSnapshot};
