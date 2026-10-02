@@ -1,0 +1,41 @@
+﻿const assert=require('node:assert/strict');
+require('dotenv').config({path:require('node:path').join(__dirname,'../.env'),quiet:true});
+const {PrismaClient}=require('@prisma/client');
+const {createPartnerService}=require('../src/partners/service');
+const db=new PrismaClient();
+const input={companyName:'SYNTHETIC TEST LLC',managerName:'Synthetic Manager',silentName:'Synthetic Member',managerEmail:'manager@example.test',silentEmail:'silent@example.test',address:'Synthetic Address, Pennsylvania',effectiveDate:'2026-10-02',formationStatus:'PLANNED',formationDate:'2026-11-01',payoutDays:7,filingCosts:'MANAGER',contributions:'Synthetic services only, not a real agreement.'};
+const scan={mime:'application/pdf',base64:Buffer.from('%PDF-1.4\nSynthetic passport fixture, not an identity document.\n%%EOF').toString('base64')};
+async function main(){const rollback=new Error('ROLLBACK_PARTNER_TEST');
+ try{await db.$transaction(async tx=>{
+ const branch=await tx.branch.create({data:{branchName:'Synthetic partner agreement test'}});
+ const service=createPartnerService(tx);const draft=service.preview(input);
+ const create=()=>service.create({...input,branchId:branch.id,reviewed:true,documentHash:draft.documentHash},1);
+ await assert.rejects(service.create({...input,branchId:branch.id,reviewed:false},1),e=>e.status===400);
+ const a=await create();assert.notEqual(a.links.manager,a.links.silent);
+ const response=role=>({action:'sign',signedName:input[role+'Name'],documentHash:a.documentHash,consent:true,identityConsent:true,passportNumber:'SYNTH123456',passportCountry:'Synthetic Country',passportFile:scan});
+ const before=await service.publicGet(a.links.manager);assert.equal(before.role,'manager');assert.equal(before.canSign,true);
+ for(const f of ['links','branchId','encryptedLinks','privateIdentity','managerTokenHash','silentTokenHash'])assert.equal(f in before,false);
+ await assert.rejects(service.detail(a.id,branch.id+1),e=>e.status===404);
+ await assert.rejects(service.identity(a.id,branch.id+1,'manager'),e=>e.status===404);
+ await assert.rejects(service.respond(a.links.manager,{...response('manager'),signedName:input.silentName}),e=>e.status===400);
+ await assert.rejects(service.respond(a.links.manager,{...response('manager'),documentHash:'wrong'}),e=>e.status===409);
+ await assert.rejects(service.respond(a.links.manager,{...response('manager'),identityConsent:false}),e=>e.status===400);
+ const first=await service.respond(a.links.manager,response('manager'));assert.equal(first.status,'PARTIALLY_SIGNED');assert.equal(first.canSign,false);
+ await assert.rejects(service.respond(a.links.manager,response('manager')),e=>e.status===409);
+ const second=await service.respond(a.links.silent,response('silent'));assert.equal(second.status,'SIGNED');assert.equal(Object.keys(second.signatures).length,2);
+ const pub=JSON.stringify(second);assert.ok(!pub.includes('SYNTH123456'));assert.ok(!pub.includes(scan.base64));assert.ok(!pub.includes(a.links.manager));
+ const privateScan=await service.identity(a.id,branch.id,'manager');assert.equal(privateScan.number,'SYNTH123456');assert.equal(privateScan.base64,scan.base64);
+ const [stored]=await tx.$queryRawUnsafe('SELECT "privateIdentity", "encryptedLinks" FROM "PartnerAgreement" WHERE id=$1',a.id);assert.ok(!JSON.stringify(stored).includes('SYNTH123456'));assert.ok(!JSON.stringify(stored).includes(a.links.manager));
+ await assert.rejects(service.cancel(a.id,branch.id),e=>e.status===409);
+ const b=await create();await Promise.all([service.respond(b.links.manager,response('manager')),service.respond(b.links.silent,response('silent'))]);assert.equal((await service.publicGet(b.links.manager)).status,'SIGNED');
+ const c=await create();const attempts=await Promise.allSettled([service.respond(c.links.manager,response('manager')),service.respond(c.links.manager,response('manager'))]);assert.equal(attempts.filter(r=>r.status==='fulfilled').length,1);
+ await service.cancel(c.id,branch.id);await assert.rejects(service.respond(c.links.silent,response('silent')),e=>e.status===409);
+ const d=await create();await service.respond(d.links.manager,{...response('manager'),action:'reject'});assert.equal((await service.publicGet(d.links.silent)).canSign,false);
+ const e=await create();await tx.branch.update({where:{id:branch.id},data:{isActive:false}});assert.equal((await service.publicGet(e.links.manager)).canSign,false);await assert.rejects(create(),e=>e.status===409);await assert.rejects(service.respond(e.links.manager,response('manager')),e=>e.status===409);
+ const [rls]=await tx.$queryRawUnsafe(`SELECT relrowsecurity FROM pg_class WHERE oid='public."PartnerAgreement"'::regclass`);assert.equal(rls.relrowsecurity,true);
+ console.log('PASS: preview freeze, two signing roles, required consent, masked public data, encrypted scans, admin detail branch isolation, duplicate/concurrent attempts, both signatures, cancellation, rejection, archive guards and RLS.');
+ throw rollback;
+ },{timeout:180000});}catch(e){if(e!==rollback)throw e;}
+ console.log('All synthetic records rolled back; no customer agreements or passports created.');
+}
+main().catch(e=>{console.error('Partner integration failed:',e.code||e.message);process.exitCode=1;}).finally(()=>db.$disconnect());

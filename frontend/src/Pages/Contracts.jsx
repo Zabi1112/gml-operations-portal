@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import "../contracts/partners.css";
 import { useCallback, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "../components/Layout";
@@ -66,6 +68,7 @@ function BranchContracts({ branch }) {
   }
   const visible = items.filter(item => filter === "ALL" || item.status === filter);
   return <div className="contracts-page">
+    <nav className="partner-tabs"><Link to="/contracts" aria-current="page">Carrier agreements</Link>{JSON.parse(localStorage.getItem("user") || "null")?.role === "ADMIN" && <Link to="/partner-agreements">Partner agreements</Link>}</nav>
     <p>Create an agreement for an existing company or a new carrier. Clients can review and sign without a portal account.</p>
     {error && <p role="alert" className="contract-error">{error}</p>}
     {notice && <p role="status" className="contract-notice">{notice}</p>}
