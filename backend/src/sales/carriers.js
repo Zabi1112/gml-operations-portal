@@ -4,13 +4,18 @@ const text = (v, max = 1000) => typeof v === "string" ? v.trim().slice(0,max) : 
 const items = v => Array.isArray(v) ? v.filter(x=>typeof x==="string").map(x=>x.trim()) : typeof v==="string" ? v.split(/[,;|]/).map(x=>x.trim()).filter(Boolean) : [];
 const count = v => v !== null && v !== "" && v !== undefined && Number.isSafeInteger(Number(v)) && Number(v)>=0 ? Number(v) : null;
 function classifyCarrier(raw, mc) {
- if (!raw || typeof raw !== "object" || Array.isArray(raw) || !text(raw.legal_name)) throw new Error("UNRECOGNIZED_RESPONSE");
+ if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("UNRECOGNIZED_RESPONSE");
+ const legalName = text(raw.legal_name,250);
+ // Some genuine snapshots have a null legal_name. Require carrier identifiers
+ // before treating them as records, so API error objects are never skipped.
+ const identifiedSnapshot = text(raw.entity_type) && /^\d+$/.test(String(raw.usdot ?? raw.usdot_number ?? "")) && (items(raw.mc_mx_ff_numbers).join(" ").match(/MC[-\s]*(\d+)/gi) || []).some(value=>Number(value.replace(/\D/g,""))===mc);
+ if (!legalName && !identifiedSnapshot) throw new Error("UNRECOGNIZED_RESPONSE");
  const cargo = items(raw.cargo_carried);
  const operatingStatus = text(raw.operating_status).toUpperCase().replace(/\s+/g," ");
  const address = text(raw.physical_address);
  const sourceUrl = /^https?:\/\/safer\.fmcsa\.dot\.gov\//i.test(text(raw.url)) ? text(raw.url) : "";
  const email = text(raw.email || raw.email_address,254);
- const details = { mc, usdot:text(String(raw.usdot ?? raw.usdot_number ?? ""),30), name:text(raw.legal_name,250), dba:text(raw.dba_name,250),
+ const details = { mc, usdot:text(String(raw.usdot ?? raw.usdot_number ?? ""),30), name:legalName || "MC-"+mc+" - company name unavailable", dba:text(raw.dba_name,250),
   address, mailingAddress:text(raw.mailing_address), phone:text(raw.phone,80), email:/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?email:"",
   powerUnits:count(raw.power_units), drivers:count(raw.drivers), operatingStatus, cargo,
   classifications:items(raw.operation_classification), carrierOperation:items(raw.carrier_operation),
@@ -18,6 +23,7 @@ function classifyCarrier(raw, mc) {
  const result = (outcome, reason) => ({ outcome, reason, details });
  if (/GARBAGE|REFUSE|\bTRASH\b|\bHAY\b|AGRICULT|FARM SUPPL|GRAIN|FEED|LIVESTOCK/i.test([...cargo,...details.classifications].join(" | "))) return result("EXCLUDED","Excluded garbage, hay or agricultural cargo");
  if (/NOT AUTHORIZED|INACTIVE|OUT OF SERVICE|REVOKED/.test(operatingStatus) || (raw.out_of_service_date && !/^(none|n\/a|not applicable)$/i.test(String(raw.out_of_service_date).trim()))) return result("EXCLUDED","Not authorized or out of service");
+ if (!legalName) return result("REVIEW","Company legal name missing from provider snapshot");
  if (!/\bCARRIER\b/i.test(text(raw.entity_type))) return result(text(raw.entity_type)?"EXCLUDED":"REVIEW","Carrier entity not confirmed");
  if (!/^(AUTHORIZED FOR (PROPERTY|HIRE)|AUTHORIZED FOR PROPERTY(?:,? HHG)?|ACTIVE: AUTHORIZED FOR PROPERTY|AUTHORIZED FOR: MOTOR CARRIER OF PROPERTY \(EXCEPT HOUSEHOLD GOODS\))$/.test(operatingStatus)) return result("REVIEW","Property authority not confirmed");
  const mcValues = items(raw.mc_mx_ff_numbers).join(" ").match(/MC[-\s]*(\d+)/gi) || [];
