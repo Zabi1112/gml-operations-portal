@@ -19,7 +19,7 @@ function createPartnerRouter(service, authenticate = protect) {
  router.post('/:id/cancel',handle(req => service.cancel(req.params.id,req.body?.branchId)));
  router.get('/:id/identity/:role',handle(async req => {
   const p = await service.identity(req.params.id,req.query.branchId,req.params.role);
-  return { number:p.number,country:p.country };
+  return { documentType:p.documentType || 'PASSPORT',number:p.number,country:p.country };
  }));
  router.get('/:id/passport/:role',async (req,res) => {
   try {
@@ -27,11 +27,11 @@ function createPartnerRouter(service, authenticate = protect) {
    const extension = { 'application/pdf':'pdf','image/png':'png','image/jpeg':'jpg' }[p.mime];
    res.set('Access-Control-Expose-Headers','Content-Disposition');
    res.set('Content-Type','application/octet-stream');
-   res.set('Content-Disposition',`attachment; filename="passport-${req.params.role}.${extension}"`);
+   res.set('Content-Disposition',`attachment; filename="${p.documentType === 'DRIVING_LICENSE' ? 'driving-licence' : 'passport'}-${req.params.role}.${extension}"`);
    res.send(Buffer.from(p.base64,'base64'));
-  } catch(e) { res.status(e.status || 500).json({message:e.status ? e.message : 'Unable to retrieve private passport.'}); }
+  } catch(e) { res.status(e.status || 500).json({message:e.status ? e.message : 'Unable to retrieve private identity document.'}); }
  });
- router.use((err,req,res,next) => { if (err.type === 'entity.too.large') return res.status(413).json({message:'Passport uploads are limited to 2 MB.'}); if(err instanceof SyntaxError) return res.status(400).json({message:'Invalid request.'}); next(err); });
+ router.use((err,req,res,next) => { if (err.type === 'entity.too.large') return res.status(413).json({message:'Identity document uploads are limited to 2 MB.'}); if(err instanceof SyntaxError) return res.status(400).json({message:'Invalid request.'}); next(err); });
  return router;
 }
 module.exports = createPartnerRouter(createPartnerService(require('../utils/prisma')));

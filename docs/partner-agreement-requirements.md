@@ -50,3 +50,9 @@ The template is a starting agreement for the confirmed terms, not a guarantee of
 - Pennsylvania member information rights: https://www.legis.state.pa.us/WU01/LI/LI/CT/HTM/15/00.088.050.000..HTM
 - Pennsylvania management: https://www.legis.state.pa.us/WU01/LI/LI/CT/HTM/15/00.088.047.000..HTM
 - Federal electronic records/signatures: https://uscode.house.gov/view.xhtml?edition=prelim&num=0&req=granuleid%3AUSC-prelim-title15-section7001
+
+## Identity document choice (v2)
+
+New agreements allow each partner to choose Passport or Driving licence. The signer provides the document number, issuing country (and state/province for a licence), and a private PNG/JPEG/PDF scan up to 2 MB. The receipt and PDF identify the selected type and mask the number. Admin-only downloads retain encrypted storage and privacy controls.
+
+Previously issued v1 documents still require passports because their frozen wording explicitly says so; issue a new agreement to use a licence. Existing signatures and scans remain readable as passports. This update needs no database migration; the document type is stored in the existing JSON records.

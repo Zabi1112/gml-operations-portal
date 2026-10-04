@@ -30,3 +30,16 @@ test('private passport and staff routes require ADMIN; public API is no-store',a
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
 module.exports={input,scan};
+
+test('identity uploads support driving licences and default older submissions to passport',()=>{
+ const body={passportNumber:'DL12345678',passportCountry:'USA / Pennsylvania',passportFile:scan};
+ assert.equal(passport(body).documentType,'PASSPORT');assert.equal(passport({...body,documentType:'DRIVING_LICENSE'}).documentType,'DRIVING_LICENSE');
+ assert.throws(()=>passport({...body,documentType:'OTHER'}),e=>e.status===400);
+ assert.match(preview(input).termsText,/either a passport or driving licence/);
+});
+test('old issued passport-only terms cannot silently accept a driving licence',async()=>{
+ const {createPartnerService}=require('../src/partners/service');
+ const service=createPartnerService({$queryRawUnsafe:async()=>[{id:1,termsText:'Template pa-dispatch-members-v1',settings:{managerName:'Synthetic Manager'},documentHash:'old-hash',status:'PENDING',signatures:{},role:'manager',isActive:true}]});
+ const token='a'.repeat(64);assert.deepEqual((await service.publicGet(token)).allowedDocumentTypes,['PASSPORT']);
+ await assert.rejects(service.respond(token,{documentType:'DRIVING_LICENSE',action:'sign',signedName:'Synthetic Manager',documentHash:'old-hash',consent:true,identityConsent:true,passportNumber:'DL12345678',passportCountry:'USA / Pennsylvania',passportFile:scan}),e=>e.status===400&&/requires a passport/.test(e.message));
+});
