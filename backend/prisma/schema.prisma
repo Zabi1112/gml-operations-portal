@@ -39,6 +39,8 @@ model User {
 }
 
 model Branch {
+  quoConnection QuoConnection?
+  quoCampaigns QuoCampaign[]
   id          Int      @id @default(autoincrement())
   branchName  String
   location    String?
@@ -585,6 +587,7 @@ model SalesJob {
 }
 
 model SalesList {
+ quoCampaigns QuoCampaign[]
  id Int @id @default(autoincrement())
  jobId Int
  job SalesJob @relation(fields: [jobId], references: [id], onDelete: Restrict)
@@ -662,4 +665,60 @@ model PartnerAgreement {
  createdAt DateTime @default(now()) @db.Timestamptz(6)
  updatedAt DateTime @default(now()) @db.Timestamptz(6)
  @@index([branchId, createdAt(sort: Desc)], map: "PartnerAgreement_branch_created")
+}
+
+model QuoConnection {
+ branchId Int @id
+ branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+ sender String
+ phoneNumberId String
+ encryptedKey String
+ updatedAt DateTime @default(now()) @db.Timestamptz(6)
+}
+model QuoCampaign {
+ id String @id
+ branchId Int
+ branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+ listId Int
+ list SalesList @relation(fields: [listId], references: [id], onDelete: Restrict)
+ name String
+ template String
+ sender String
+ phoneNumberId String
+ encryptedKey String
+ reviewHash String
+ status String @default("DRAFT")
+ lastError String?
+ createdBy Int
+ createdAt DateTime @default(now()) @db.Timestamptz(6)
+ updatedAt DateTime @default(now()) @db.Timestamptz(6)
+ recipients QuoRecipient[]
+ @@index([branchId, createdAt(sort: Desc)], map: "QuoCampaign_branch_created")
+}
+model QuoRecipient {
+ id Int @id @default(autoincrement())
+ campaignId String
+ campaign QuoCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+ leadId Int
+ mc Int
+ companyName String
+ phone String?
+ content String
+ status String
+ reason String?
+ providerId String?
+ providerStatus String?
+ owner String?
+ startedAt DateTime? @db.Timestamptz(6)
+ updatedAt DateTime @default(now()) @db.Timestamptz(6)
+ @@unique([campaignId, leadId])
+ @@index([campaignId, status, id], map: "QuoRecipient_campaign_status")
+}
+model QuoWorker {
+ id String @id
+ owner String?
+ leaseUntil DateTime? @db.Timestamptz(6)
+ nextRequestAt DateTime? @db.Timestamptz(6)
+ heartbeatAt DateTime? @db.Timestamptz(6)
+ schedulerAt DateTime? @db.Timestamptz(6)
 }
