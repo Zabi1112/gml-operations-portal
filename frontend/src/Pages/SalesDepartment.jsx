@@ -1,3 +1,5 @@
+import {Link,useSearchParams} from 'react-router-dom';
+import QuoMessages from '../sales/QuoMessages';
 ﻿import {useCallback,useContext,useEffect,useState} from 'react';
 import Layout from '../components/Layout';
 import {BranchContext} from '../context/BranchContext';
@@ -43,4 +45,4 @@ function SalesWorkspace({branch}){
  {replaceJob&&<div className="sales-overlay"><form className="sales-dialog" onSubmit={e=>{e.preventDefault();act(async()=>{await request('/jobs/'+replaceJob.id+'/key',{method:'POST',body:JSON.stringify({apiKey:replacement})});setReplacement('');setReplaceJob(null);setNotice('API key replaced. Press Resume when ready.');await refresh();});}}><h2>Replace API key</h2>{error&&<p className="sales-alert" role="alert">{error}</p>}<label>New API key<input type="password" autoComplete="new-password" required minLength={8} value={replacement} onChange={e=>setReplacement(e.target.value)}/></label><div className="sales-actions"><button disabled={busy}>Save key and pause</button><button type="button" onClick={()=>{setReplaceJob(null);setReplacement('');}}>Cancel</button></div></form></div>}
  </div>;
 }
-export default function SalesDepartment(){const {selectedBranch}=useContext(BranchContext);return <Layout title="Sales Department">{selectedBranch&&<SalesWorkspace key={selectedBranch.id} branch={selectedBranch}/>}</Layout>;}
+export default function SalesDepartment(){const {selectedBranch}=useContext(BranchContext);const [params]=useSearchParams();const messages=params.get('view')==='messages';return <Layout title="Sales Department"><nav className="sales-section-tabs" aria-label="Sales Department sections"><Link to="/sales" aria-current={!messages?'page':undefined}>Carrier leads</Link><Link to="/sales?view=messages" aria-current={messages?'page':undefined}>Messages &middot; Preview</Link></nav>{selectedBranch&&(messages?<QuoMessages key={selectedBranch.id} branch={selectedBranch}/>:<SalesWorkspace key={selectedBranch.id} branch={selectedBranch}/>)}</Layout>;}
