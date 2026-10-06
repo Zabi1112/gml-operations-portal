@@ -39,6 +39,7 @@ model User {
 }
 
 model Branch {
+  salesExportPreference SalesExportPreference?
   quoConnection QuoConnection?
   quoCampaigns QuoCampaign[]
   id          Int      @id @default(autoincrement())
@@ -587,6 +588,7 @@ model SalesJob {
 }
 
 model SalesList {
+ contactBatches SalesListContactBatch[]
  quoCampaigns QuoCampaign[]
  id Int @id @default(autoincrement())
  jobId Int
@@ -721,4 +723,21 @@ model QuoWorker {
  nextRequestAt DateTime? @db.Timestamptz(6)
  heartbeatAt DateTime? @db.Timestamptz(6)
  schedulerAt DateTime? @db.Timestamptz(6)
+}
+
+model SalesExportPreference {
+ branchId Int @id
+ branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+ messageTemplate String
+ enabled Boolean @default(true)
+ updatedAt DateTime @default(now()) @db.Timestamptz
+}
+model SalesListContactBatch {
+ id String @id
+ listId Int
+ list SalesList @relation(fields: [listId], references: [id], onDelete: Restrict)
+ userId Int
+ leadCount Int
+ createdAt DateTime @default(now()) @db.Timestamptz
+ @@index([listId])
 }

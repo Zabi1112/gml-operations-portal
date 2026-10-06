@@ -1,0 +1,1 @@
+export const messageFields=[['company_name','Company name'],['mc_number','MC number'],['state_name','State name'],['state_code','State code'],['address','Address'],['phone','Phone'],['email','Email'],['usdot_number','USDOT'],['truck_count','Reported power units']];

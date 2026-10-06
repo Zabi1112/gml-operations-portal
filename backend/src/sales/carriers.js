@@ -1,3 +1,4 @@
+const {validateTemplate,renderMessage}=require('./messageTemplate');
 
 const states = new Set("AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC PR VI GU AS MP".split(" "));
 const text = (v, max = 1000) => typeof v === "string" ? v.trim().slice(0,max) : "";
@@ -43,9 +44,11 @@ function csvCell(value) {
  if (/^[\s]*[=+@-]/.test(s) || /^[\t\r\n]/.test(s)) s = "'" + s;
  return '"' + s.replace(/"/g,'""') + '"';
 }
-function leadsCsv(leads) {
+function leadsCsv(leads, messageTemplate) {
+ const message=messageTemplate===undefined?null:validateTemplate(messageTemplate);
  const headers=["MC","USDOT","Company","DBA","Physical address","Mailing address","Phone","Email","Reported power units","Drivers","Operating status","Cargo","Equipment","Safety rating","Source updated","Fetched at","Status","Contact count","Last contact","Follow-up date","Notes","Source"];
  const rows=leads.map(l=>{const d=l.details;return ["MC-"+l.mc,l.usdot,l.name,d.dba,l.address,d.mailingAddress,l.phone,l.email,d.powerUnits,d.drivers,d.operatingStatus,d.cargo.join("; "),d.equipment,d.safetyRating,d.sourceUpdatedAt,l.fetchedAt.toISOString(),l.status,l.contactCount,l.lastContactAt?.toISOString(),l.followUpDate,l.notes,d.sourceUrl];});
+ if(message){headers.splice(7,0,'Message');rows.forEach((row,index)=>{const rendered=renderMessage(leads[index],message);if(rendered.missing.length)throw Object.assign(new Error('MC-'+leads[index].mc+' is missing: '+rendered.missing.join(', ')+'. Remove these fields from your template or download without messages.'),{status:400});row.splice(7,0,rendered.text);});}
  return "\uFEFF"+[headers,...rows].map(r=>r.map(csvCell).join(",")).join("\r\n");
 }
 module.exports={classifyCarrier,leadsCsv,csvCell};
