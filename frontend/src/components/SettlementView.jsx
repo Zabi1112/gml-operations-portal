@@ -36,6 +36,14 @@ function SettlementView({ settlement, onClose }) {
     const element = document.querySelector(".settlement-print");
     if (!element) return;
 
+    const signature = element.querySelector('.accounts-office-signature img');
+    try {
+      await signature.decode();
+    } catch {
+      alert('The accounts office signature could not load. Please refresh and try again.');
+      return;
+    }
+
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
@@ -187,17 +195,11 @@ function SettlementView({ settlement, onClose }) {
         )}
 
         <div className="signature-section">
-          <div>
-            <span>Admin Signature</span>
+          <div className="accounts-office-signature">
+            <img src="/accounts-office-signature.png" alt="Accounts Office signature" />
             <div className="signature-line"></div>
+            <strong>Accounts Office Signature</strong>
           </div>
-
-          {partnerSplits.map((partner, index) => (
-            <div key={index}>
-              <span>{partner.name} Signature</span>
-              <div className="signature-line"></div>
-            </div>
-          ))}
         </div>
       </div>
     </div>
