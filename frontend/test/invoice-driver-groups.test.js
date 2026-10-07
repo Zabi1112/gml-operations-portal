@@ -12,3 +12,13 @@ test('same-name drivers with different IDs remain separate and old loads are not
  const groups=groupInvoiceLoads([{driverId:1,driverName:'Alex'},{driverId:2,driverName:'Alex'},{driverName:'Historical driver'},{pickup:'Unknown load'}]);
  assert.equal(groups.length,4);assert.equal(groups[3].name,'Driver not recorded');assert.deepEqual(groupInvoiceLoads([]),[]);
 });
+
+import {invoiceDriverName} from '../src/invoices/groupLoads.js';
+test('selected driver overrides legacy combined names, including string IDs',()=>{
+ const drivers=[{id:1,name:'ISAAC ISAYA'},{id:2,name:'MALENGA'},{id:3,name:'JUMA'}];
+ const legacy={driverId:'1',driverName:'ISAAC ISAYA, MALENGA, JUMA'};
+ assert.equal(invoiceDriverName(legacy,drivers),'ISAAC ISAYA');
+ assert.equal(invoiceDriverName({...legacy,driverId:2},drivers),'MALENGA');
+ assert.equal(invoiceDriverName({driverId:99,driverName:'Historical driver'},drivers),'Historical driver');
+ assert.equal(invoiceDriverName({},drivers),'');
+});

@@ -1,3 +1,4 @@
+import {invoiceDriverName} from "../invoices/groupLoads";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../api";
@@ -224,7 +225,7 @@ function Invoices() {
 
       const invoiceLoads = allFetchedLoads.map((load) => ({
         driverId: load.driverId || null,
-        driverName: load.driverName || companyDrivers.find(d => d.id === load.driverId)?.name || "",
+        driverName: invoiceDriverName(load, companyDrivers),
         truckId: load.truckId || null,
         truckNumber: load.truckNumber || companyTrucks.find(t => t.id === load.truckId)?.truckNumber || "",
         date: String(load.loadDate || load.pickupDate || "").slice(0, 10),
@@ -398,6 +399,7 @@ function Invoices() {
         form.billingType === "PERCENTAGE"
           ? validLoads.map((load) => ({
               ...load,
+              driverName: invoiceDriverName(load, companyDrivers),
               loadAmount: Number(load.loadAmount || 0),
               dispatchPercent: Number(form.dispatchPercent || 0),
               dispatchAmount:

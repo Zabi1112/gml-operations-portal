@@ -8,3 +8,9 @@ export function groupInvoiceLoads(loads = []) {
  }
  return [...groups.values()];
 }
+
+// The driver selected for a load takes precedence over older combined-name snapshots.
+export function invoiceDriverName(load, drivers = []) {
+ const assigned = load.driverId && drivers.find(driver => Number(driver.id) === Number(load.driverId));
+ return assigned?.name || load.driverName || '';
+}
