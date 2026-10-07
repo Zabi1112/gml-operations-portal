@@ -1,0 +1,4 @@
+.accounts-office-signature { width: 260px; max-width: 100%; text-align: center; break-inside: avoid; flex-shrink: 0; }
+.accounts-office-signature img { display: block; width: 240px; max-width: 100%; height: 100px; object-fit: contain; margin: 0 auto 6px; }
+.accounts-office-signature .accounts-signature-line { border-bottom: 1px solid #111827; margin: 0 0 10px; }
+.accounts-office-signature strong { font-size: 13px; color: #334155; }

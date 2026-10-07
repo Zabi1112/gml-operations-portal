@@ -126,3 +126,5 @@
     padding: 0;
   }
 }
+.slip-footer { align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.slip-footer .accounts-office-signature { margin-left: auto; }

@@ -1,3 +1,4 @@
+import AccountsOfficeSignature, {waitForAccountsSignature} from "./AccountsOfficeSignature";
 import "./SettlementView.css";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -36,9 +37,8 @@ function SettlementView({ settlement, onClose }) {
     const element = document.querySelector(".settlement-print");
     if (!element) return;
 
-    const signature = element.querySelector('.accounts-office-signature img');
     try {
-      await signature.decode();
+      await waitForAccountsSignature(element);
     } catch {
       alert('The accounts office signature could not load. Please refresh and try again.');
       return;
@@ -195,11 +195,7 @@ function SettlementView({ settlement, onClose }) {
         )}
 
         <div className="signature-section">
-          <div className="accounts-office-signature">
-            <img src="/accounts-office-signature.png" alt="Accounts Office signature" />
-            <div className="signature-line"></div>
-            <strong>Accounts Office Signature</strong>
-          </div>
+          <AccountsOfficeSignature />
         </div>
       </div>
     </div>

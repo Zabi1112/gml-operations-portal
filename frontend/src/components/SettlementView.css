@@ -132,7 +132,3 @@
   }
 }
 .settlement-print .signature-section { display: flex; justify-content: flex-end; break-inside: avoid; }
-.accounts-office-signature { width: 260px; max-width: 100%; text-align: center; }
-.accounts-office-signature img { display: block; width: 240px; max-width: 100%; height: 100px; object-fit: contain; margin: 0 auto 6px; }
-.accounts-office-signature .signature-line { margin: 0 0 10px; }
-.accounts-office-signature strong { font-size: 13px; color: #334155; }
