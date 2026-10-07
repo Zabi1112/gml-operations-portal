@@ -37,7 +37,7 @@
 
 .load-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr) 100px;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) 100px;
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -108,3 +108,5 @@
 .loads-header button:hover {
   background: #963510;
 }
+@media (max-width: 900px) { .invoice-loads .load-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 540px) { .invoice-loads .load-row { grid-template-columns: minmax(0, 1fr); } }

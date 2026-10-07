@@ -36,6 +36,10 @@ const calculateInvoice = (data) => {
     totalDispatchAmount += dispatchAmount;
 
     return {
+      driverId: Number.isSafeInteger(Number(load.driverId)) && Number(load.driverId) > 0 ? Number(load.driverId) : null,
+      driverName: typeof load.driverName === "string" ? load.driverName.trim().slice(0, 200) || null : null,
+      truckId: Number.isSafeInteger(Number(load.truckId)) && Number(load.truckId) > 0 ? Number(load.truckId) : null,
+      truckNumber: typeof load.truckNumber === "string" ? load.truckNumber.trim().slice(0, 100) || null : null,
       date: new Date(load.date),
       pickup: load.pickup,
       dropoff: load.dropoff,
@@ -176,12 +180,12 @@ const createInvoice = async (req, res) => {
       invoice.loads.map((load) => ({
         branchId: Number(branchId),
         companyId: req.body.companyId ? Number(req.body.companyId) : null,
-        truckId: req.body.selectedTruckIds?.[0] ? Number(req.body.selectedTruckIds[0]) : null,
-        driverId: req.body.selectedDriverIds?.[0] ? Number(req.body.selectedDriverIds[0]) : null,
+        truckId: load.truckId || (req.body.selectedTruckIds?.length === 1 ? Number(req.body.selectedTruckIds[0]) : null),
+        driverId: load.driverId,
 
         companyName: invoice.companyName,
-        truckNumber: invoice.truckNumbers,
-        driverName: invoice.driverNames,
+        truckNumber: load.truckNumber,
+        driverName: load.driverName,
 
         loadDate: load.date,
         pickupDate: load.date,
@@ -432,6 +436,7 @@ const deleteInvoice = async (req, res) => {
 };
 
 module.exports = {
+  calculateInvoice,
   createInvoice,
   getInvoices,
   getInvoicesByBranch,

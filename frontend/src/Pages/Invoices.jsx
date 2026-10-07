@@ -223,6 +223,10 @@ function Invoices() {
       }
 
       const invoiceLoads = allFetchedLoads.map((load) => ({
+        driverId: load.driverId || null,
+        driverName: load.driverName || companyDrivers.find(d => d.id === load.driverId)?.name || "",
+        truckId: load.truckId || null,
+        truckNumber: load.truckNumber || companyTrucks.find(t => t.id === load.truckId)?.truckNumber || "",
         date: String(load.loadDate || load.pickupDate || "").slice(0, 10),
         pickup: load.pickup || "",
         dropoff: load.dropoff || "",
@@ -245,6 +249,15 @@ function Invoices() {
     const updated = [...form.loads];
     updated[index][key] = value;
     setForm({ ...form, loads: updated });
+  };
+
+  const assignLoadDriver = (index, value) => {
+    const driver = companyDrivers.find(d => d.id === Number(value));
+    setForm(previous => ({...previous, loads: previous.loads.map((load, i) => i === index ? {
+      ...load, driverId: driver?.id || null, driverName: driver?.name || "",
+      truckId: load.truckId || driver?.truckId || driver?.truck?.id || null,
+      truckNumber: load.truckNumber || driver?.truck?.truckNumber || ""
+    } : load)}));
   };
 
   const addLoad = () => {
@@ -624,6 +637,7 @@ function Invoices() {
 
               {form.loads.map((load, index) => (
                 <div className="load-row" key={index}>
+                  <div className="form-group"><label>Driver for this load</label><select value={load.driverId || (load.driverName ? "recorded" : "")} onChange={e => assignLoadDriver(index, e.target.value)}><option value="">Driver not recorded</option>{((load.driverId && !companyDrivers.some(d => d.id === load.driverId)) || (!load.driverId && load.driverName)) && <option value={load.driverId || "recorded"}>{load.driverName || "Recorded driver"}</option>}{companyDrivers.map(driver => <option key={driver.id} value={driver.id}>{driver.name}</option>)}</select></div>
                   <div className="form-group">
                     <label>Date</label>
                     <input

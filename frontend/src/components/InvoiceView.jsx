@@ -1,3 +1,4 @@
+import {groupInvoiceLoads} from "../invoices/groupLoads";
 import axios from "axios";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -221,8 +222,9 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
                 </tr>
               </thead>
 
-              <tbody>
-                {loads.map((load, index) => (
+              {groupInvoiceLoads(loads).map(group => <tbody key={group.key}>
+                <tr className="invoice-driver-heading"><th colSpan="6" scope="rowgroup">Driver: {group.name}</th></tr>
+                {group.loads.map((load, index) => (
                   <tr key={index}>
                     <td>{formatDate(load.date)}</td>
                     <td>{load.pickup || "-"}</td>
@@ -233,12 +235,14 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
                   </tr>
                 ))}
 
+              </tbody>)}
+              {loads.length === 0 && <tbody>
                 {loads.length === 0 && (
                   <tr>
                     <td colSpan="6">No loads added.</td>
                   </tr>
                 )}
-              </tbody>
+              </tbody>}
 
               <tfoot>
                 <tr>

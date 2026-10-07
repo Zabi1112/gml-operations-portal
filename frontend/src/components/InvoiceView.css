@@ -419,3 +419,6 @@
     overflow: visible !important;
   }
 }
+.invoice-table .invoice-driver-heading th { background: #fff1e6; color: #873310; text-align: left; text-transform: none; font-size: 13px; letter-spacing: normal; }
+.invoice-driver-heading { break-after: avoid; page-break-after: avoid; }
+.invoice-table tr { break-inside: avoid; page-break-inside: avoid; }
