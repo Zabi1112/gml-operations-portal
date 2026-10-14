@@ -5,7 +5,8 @@ This implementation adds flexible settlement management to GML Portal with suppo
 - **Percentage-based settlements**: Calculate dispatcher & accounts amounts as percentages
 - **Absolute-based settlements**: Enter fixed PKR amounts for dispatcher & accounts
 - **Manual settlements**: Record old settlements that were already given (not tied to invoices)
-- **Automatic partner calculation**: Partners get the remaining profit after dispatcher & accounts
+- **Partner-specific accounts fees**: Deduct the accounts fee from the selected partner's share
+- **Private partner statements**: Download a PDF with only one partner's share, company revenue, and dispatch total
 
 ## What Was Changed
 
@@ -47,6 +48,7 @@ Features:
   - Toggle between percentage and absolute amounts
   - Dispatcher allocation
   - Accounts allocation
+  - Selection of which partner pays the accounts fee (defaults to the unique 70% partner)
   - Real-time calculation preview
   - Partner breakdown
 - **Settlement history table** showing all settlements
@@ -236,9 +238,12 @@ The Settlements page should now be accessible at: `/settlements`
 - Can mix percentage and absolute settlements
 
 🔄 **Calculation Logic**:
-- Partner amounts are always calculated as: `totalAmount - dispatcher - accounts`
-- No validation that dispatcher + accounts < total (allows negative partner profit if needed)
-- All calculations work with decimal precision
+- The dispatcher amount is removed from company revenue first.
+- The remaining amount is split according to the partner percentages; the percentages must total 100% when assigning the accounts fee.
+- The accounts fee is deducted only from the selected partner's gross share.
+- The unique 70% partner is selected by default, but the partner can be changed per settlement.
+- Settlement records include the selected partner ID and a snapshot of each partner's gross share, accounts deduction, and net share.
+- A partner-only PDF shows company revenue, total given to dispatch, and only that partner's net share. It omits the accounts amount and all other partner details.
 
 ## Troubleshooting
 

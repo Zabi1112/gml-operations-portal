@@ -8,6 +8,7 @@ import LoadReportView from "../components/LoadReportView.jsx";
 import SettlementView from "../components/SettlementView.jsx";
 import DispatcherSplitEditor from "../components/DispatcherSplitEditor.jsx";
 import SettlementEditModal from "../components/SettlementEditModal.jsx";
+import { allocatePartnerAmounts, defaultAccountsPartner } from "../finance/settlementAllocation.js";
 import { BranchContext } from "../context/BranchContext.jsx";
 import "./History.css";
 
@@ -52,6 +53,7 @@ function History() {
     dispatcherSplits: [],
     accountsValue: "",
     accountsType: "PERCENTAGE",
+    accountsPartnerId: "",
     notes: ""
   });
 
@@ -140,7 +142,19 @@ function History() {
       `${API}/finance/settings/${selectedBranch.id}`,
       auth
     );
-    setPartners(res.data?.partners || []);
+    const loadedPartners = res.data?.partners || [];
+    setPartners(loadedPartners);
+    setSettlementForm((previous) => {
+      const selectedPartnerExists = loadedPartners.some(
+        (partner) => String(partner.id) === String(previous.accountsPartnerId)
+      );
+      return {
+        ...previous,
+        accountsPartnerId: selectedPartnerExists
+          ? previous.accountsPartnerId
+          : defaultAccountsPartner(loadedPartners)
+      };
+    });
     setDispatchers(res.data?.dispatchers || []);
   };
 
@@ -167,6 +181,7 @@ function History() {
       dispatcherSplits: [],
       accountsValue: selectedBranch?.accountsPercent ?? 10,
       accountsType: "PERCENTAGE",
+      accountsPartnerId: defaultAccountsPartner(partners),
       notes: ""
     });
   };
@@ -180,6 +195,7 @@ function History() {
       dispatcherSplits: [],
       accountsValue: "",
       accountsType: "PERCENTAGE",
+      accountsPartnerId: "",
       notes: ""
     });
   };
@@ -207,6 +223,7 @@ function History() {
           dispatcherSplits: settlementForm.dispatcherSplits,
           accountsValue: Number(settlementForm.accountsValue || 0),
           accountsType: settlementForm.accountsType,
+          accountsPartnerId: settlementForm.accountsPartnerId || null,
           notes: settlementForm.notes
         },
         auth
@@ -394,14 +411,27 @@ function History() {
       ? dispatcherPercent
       : (invoiceAmountPKR * dispatcherPercent) / 100;
 
-  let accountsAmountPKR = 0;
-  if (settlementForm.accountsType === "PERCENTAGE") {
-    accountsAmountPKR = (invoiceAmountPKR * accountsValue) / 100;
-  } else {
-    accountsAmountPKR = accountsValue;
+  const accountsAmountPKR =
+    settlementForm.accountsType === "PERCENTAGE"
+      ? (invoiceAmountPKR * accountsValue) / 100
+      : accountsValue;
+  let partnerProfitPKR =
+    invoiceAmountPKR - dispatcherAmountPKR - accountsAmountPKR;
+  let partnerAllocationError = "";
+  try {
+    partnerProfitPKR = allocatePartnerAmounts(
+      invoiceAmountPKR,
+      dispatcherAmountPKR,
+      accountsAmountPKR,
+      partners,
+      settlementForm.accountsPartnerId
+    ).partnerProfitPKR;
+    if (accountsAmountPKR > 0 && !settlementForm.accountsPartnerId) {
+      partnerAllocationError = "Select the partner who will pay the accounts fee.";
+    }
+  } catch (error) {
+    partnerAllocationError = error.message;
   }
-
-  const partnerProfitPKR = invoiceAmountPKR - dispatcherAmountPKR - accountsAmountPKR;
 
   return (
     <Layout title="History">
@@ -937,6 +967,31 @@ function History() {
                       required
                     />
                   </div>
+                  <div className="form-group">
+                    <label>Deduct Accounts Fee From *</label>
+                    <select
+                      value={settlementForm.accountsPartnerId}
+                      onChange={(e) =>
+                        setSettlementForm({
+                          ...settlementForm,
+                          accountsPartnerId: e.target.value
+                        })
+                      }
+                      required={accountsAmountPKR > 0}
+                    >
+                      <option value="">Select partner</option>
+                      {partners.map((partner) => (
+                        <option key={partner.id} value={partner.id}>
+                          {partner.name} ({partner.percent}%)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {partnerAllocationError && (
+                    <p className="warning-message" role="alert">
+                      {partnerAllocationError}
+                    </p>
+                  )}
 
                   <div className="settlement-summary">
                     <p>

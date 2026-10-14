@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { BranchContext } from "../context/BranchContext";
 import { API } from "../api";
 import DispatcherSplitEditor from "../components/DispatcherSplitEditor";
 import SettlementEditModal from "../components/SettlementEditModal";
+import {
+  allocatePartnerAmounts,
+  defaultAccountsPartner
+} from "../finance/settlementAllocation";
 import "./Settlements.css";
 import Layout from "../components/Layout.jsx";
 
@@ -23,6 +27,7 @@ const Settlements = () => {
     dispatcherSplits: [],
     accountsValue: "",
     accountsType: "PERCENTAGE",
+    accountsPartnerId: "",
     companyName: "",
     settlementDate: new Date().toISOString().split("T")[0],
     notes: ""
@@ -65,6 +70,7 @@ const Settlements = () => {
     partnerProfit: 0,
     partnerSplits: []
   });
+  const [allocationError, setAllocationError] = useState("");
 
   useEffect(() => {
     if (selectedBranch?.id) {
@@ -105,7 +111,19 @@ const Settlements = () => {
         `${API}/finance/settings/${selectedBranch.id}`,
         auth
       );
-      setPartners(response.data?.partners || []);
+      const fetchedPartners = response.data?.partners || [];
+      setPartners(fetchedPartners);
+      setFormData((previous) => {
+        const selectedPartnerExists = fetchedPartners.some(
+          (partner) => String(partner.id) === String(previous.accountsPartnerId)
+        );
+        return {
+          ...previous,
+          accountsPartnerId: selectedPartnerExists
+            ? previous.accountsPartnerId
+            : defaultAccountsPartner(fetchedPartners)
+        };
+      });
       setDispatchers(response.data?.dispatchers || []);
     } catch (error) {
       console.error("Error fetching partners:", error);
@@ -129,29 +147,43 @@ const Settlements = () => {
     const dispatcherValue = Number(formData.dispatcherValue) || 0;
     const accountsValue = Number(formData.accountsValue) || 0;
 
-    let dispatcherAmount = 0;
-    if (formData.dispatcherType === "PERCENTAGE") {
-      dispatcherAmount = (totalAmount * dispatcherValue) / 100;
-    } else {
-      dispatcherAmount = dispatcherValue;
+    const dispatcherAmount =
+      formData.dispatcherType === "PERCENTAGE"
+        ? (totalAmount * dispatcherValue) / 100
+        : dispatcherValue;
+    const accountsAmount =
+      formData.accountsType === "PERCENTAGE"
+        ? (totalAmount * accountsValue) / 100
+        : accountsValue;
+
+    try {
+      const allocation = allocatePartnerAmounts(
+        totalAmount,
+        dispatcherAmount,
+        accountsAmount,
+        partners,
+        formData.accountsPartnerId
+      );
+      setAllocationError(
+        accountsAmount > 0 && !formData.accountsPartnerId
+          ? "Select the partner who will pay the accounts fee."
+          : ""
+      );
+      setCalculatedAmounts({
+        dispatcherAmount,
+        accountsAmount,
+        partnerProfit: allocation.partnerProfitPKR,
+        partnerSplits: allocation.partnerSplits
+      });
+    } catch (error) {
+      setAllocationError(error.message);
+      setCalculatedAmounts({
+        dispatcherAmount,
+        accountsAmount,
+        partnerProfit: totalAmount - dispatcherAmount - accountsAmount,
+        partnerSplits: []
+      });
     }
-
-    let accountsAmount = 0;
-    if (formData.accountsType === "PERCENTAGE") {
-      accountsAmount = (totalAmount * accountsValue) / 100;
-    } else {
-      accountsAmount = accountsValue;
-    }
-
-    const partnerProfit = totalAmount - dispatcherAmount - accountsAmount;
-    const partnerSplits = partners.map((partner) => ({
-      partnerId: partner.id,
-      name: partner.name,
-      percent: Number(partner.percent || 0),
-      amountPKR: (partnerProfit * Number(partner.percent || 0)) / 100
-    }));
-
-    setCalculatedAmounts({ dispatcherAmount, accountsAmount, partnerProfit, partnerSplits });
   };
 
   const handleInputChange = (e) => {
@@ -187,6 +219,9 @@ const Settlements = () => {
       return alert("Please enter a valid total amount");
     if (formData.dispatcherValue === "") return alert("Please enter dispatcher amount");
     if (formData.accountsValue === "") return alert("Please enter accounts value");
+    if (Number(formData.accountsValue) > 0 && !formData.accountsPartnerId) {
+      return alert("Please select the partner who will pay the accounts fee");
+    }
 
     const splitsTotal = formData.dispatcherSplits.reduce(
       (sum, s) => sum + (Number(s.amount) || 0),
@@ -209,6 +244,7 @@ const Settlements = () => {
           dispatcherSplits: formData.dispatcherSplits,
           accountsValue: Number(formData.accountsValue),
           accountsType: formData.accountsType,
+          accountsPartnerId: formData.accountsPartnerId || null,
           companyName: formData.companyName || "Manual Settlement",
           settlementDate: formData.settlementDate,
           notes: formData.notes
@@ -216,7 +252,10 @@ const Settlements = () => {
         auth
       );
       alert("Settlement created successfully!");
-      setFormData(emptyForm);
+      setFormData({
+        ...emptyForm,
+        accountsPartnerId: defaultAccountsPartner(partners)
+      });
       setShowForm(false);
       fetchSettlements();
     } catch (error) {
@@ -598,7 +637,28 @@ const Settlements = () => {
                         Calculated: {formatCurrency(calculatedAmounts.accountsAmount)}
                       </div>
                     </div>
+                    <div className="form-group">
+                      <label>Deduct Accounts Fee From *</label>
+                      <select
+                        name="accountsPartnerId"
+                        value={formData.accountsPartnerId}
+                        onChange={handleInputChange}
+                        required={calculatedAmounts.accountsAmount > 0}
+                      >
+                        <option value="">Select partner</option>
+                        {partners.map((partner) => (
+                          <option key={partner.id} value={partner.id}>
+                            {partner.name} ({partner.percent}%)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
+                  {allocationError && (
+                    <p className="warning-message" role="alert">
+                      {allocationError}
+                    </p>
+                  )}
                   <div className="notes-group">
                     <label>Notes</label>
                     <textarea

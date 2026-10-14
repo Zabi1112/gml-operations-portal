@@ -1,4 +1,15 @@
+const {
+  allocatePartnerAmounts,
+  defaultAccountsPartnerId
+} = require("../utils/settlementAllocation");
 const prisma = require("../utils/prisma");
+
+const resolveAccountsPartnerId = (partners, requestedId, accountsValue) => {
+  if (requestedId !== null && requestedId !== undefined && requestedId !== "") {
+    return Number(requestedId);
+  }
+  return Number(accountsValue) > 0 ? defaultAccountsPartnerId(partners) : null;
+};
 
 const calculateSettlementAmounts = (
   totalAmountPKR,
@@ -8,7 +19,8 @@ const calculateSettlementAmounts = (
   accountsType,
   partners,
   dispatcherSplitsInput = [],
-  dispatchers = []
+  dispatchers = [],
+  accountsPartnerId = null
 ) => {
   const dispatcherAmountPKR =
     dispatcherType === "ABSOLUTE"
@@ -22,23 +34,16 @@ const calculateSettlementAmounts = (
     accountsAmountPKR = (totalAmountPKR * Number(accountsValue || 0)) / 100;
   }
 
-  const partnerProfitPKR = totalAmountPKR - dispatcherAmountPKR - accountsAmountPKR;
-
-  const partnerSplits = partners.map((partner) => ({
-    partnerId: partner.id,
-    name: partner.name,
-    percent: Number(partner.percent || 0),
-    amountPKR: (partnerProfitPKR * Number(partner.percent || 0)) / 100
-  }));
+  const {partnerProfitPKR,partnerSplits}=allocatePartnerAmounts(totalAmountPKR,dispatcherAmountPKR,accountsAmountPKR,partners,accountsPartnerId);
 
   const cleanedDispatcherSplits = (dispatcherSplitsInput || [])
-    .filter((split) => split.dispatcherId && Number(split.amount) > 0)
+    .filter((split) => split.dispatcherId && Number(split.amount ?? split.amountPKR) > 0)
     .map((split) => {
       const dispatcher = dispatchers.find((d) => d.id === Number(split.dispatcherId));
       return {
         dispatcherId: Number(split.dispatcherId),
         name: dispatcher?.name || split.name || "Dispatcher",
-        amountPKR: Number(split.amount || 0)
+        amountPKR: Number(split.amount ?? split.amountPKR ?? 0)
       };
     });
 
@@ -190,6 +195,16 @@ const clearInvoice = async (req, res) => {
     const accountsType = req.body.accountsType || "PERCENTAGE";
     const accountsValue = Number(req.body.accountsValue ?? branch.accountsPercent ?? 10);
 
+    const accountsPartnerId = resolveAccountsPartnerId(
+      branch.partners,
+      req.body.accountsPartnerId,
+      accountsValue
+    );
+    if (accountsValue > 0 && accountsPartnerId === null) {
+      return res.status(400).json({
+        message: "Select the partner who will pay the accounts fee."
+      });
+    }
     let calc;
     try {
       calc = calculateSettlementAmounts(
@@ -200,7 +215,8 @@ const clearInvoice = async (req, res) => {
         accountsType,
         branch.partners,
         dispatcherSplitsInput,
-        branch.dispatchers
+        branch.dispatchers,
+        accountsPartnerId
       );
     } catch (err) {
       return res.status(400).json({ message: err.message });
@@ -227,6 +243,7 @@ const clearInvoice = async (req, res) => {
         accountsType,
         accountsValue,
         accountsAmountPKR,
+        accountsPartnerId,
 
         partnerProfitPKR,
         partnerSplits,
@@ -281,6 +298,16 @@ const createManualSettlement = async (req, res) => {
       return res.status(400).json({ message: "Total amount must be greater than 0" });
     }
 
+    const accountsPartnerId = resolveAccountsPartnerId(
+      branch.partners,
+      req.body.accountsPartnerId,
+      accountsValue
+    );
+    if (accountsValue > 0 && accountsPartnerId === null) {
+      return res.status(400).json({
+        message: "Select the partner who will pay the accounts fee."
+      });
+    }
     let calc;
     try {
       calc = calculateSettlementAmounts(
@@ -291,7 +318,8 @@ const createManualSettlement = async (req, res) => {
         accountsType,
         branch.partners,
         dispatcherSplitsInput,
-        branch.dispatchers
+        branch.dispatchers,
+        accountsPartnerId
       );
     } catch (err) {
       return res.status(400).json({ message: err.message });
@@ -324,6 +352,7 @@ const createManualSettlement = async (req, res) => {
         accountsType,
         accountsValue,
         accountsAmountPKR,
+        accountsPartnerId,
 
         partnerProfitPKR,
         partnerSplits,
@@ -395,6 +424,15 @@ const updateSettlement = async (req, res) => {
       return res.status(400).json({ message: "Total amount must be greater than 0" });
     }
 
+    const requestedAccountsPartnerId =
+      req.body.accountsPartnerId === undefined
+        ? existing.accountsPartnerId
+        : req.body.accountsPartnerId;
+    const accountsPartnerId = resolveAccountsPartnerId(
+      branch.partners,
+      requestedAccountsPartnerId,
+      accountsValue
+    );
     let calc;
     try {
       calc = calculateSettlementAmounts(
@@ -405,7 +443,8 @@ const updateSettlement = async (req, res) => {
         accountsType,
         branch.partners,
         dispatcherSplitsInput,
-        branch.dispatchers
+        branch.dispatchers,
+        accountsPartnerId
       );
     } catch (err) {
       return res.status(400).json({ message: err.message });
@@ -435,6 +474,7 @@ const updateSettlement = async (req, res) => {
         accountsType,
         accountsValue,
         accountsAmountPKR,
+        accountsPartnerId,
 
         partnerProfitPKR,
         partnerSplits,
@@ -494,6 +534,7 @@ const deleteSettlement = async (req, res) => {
 };
 
 module.exports = {
+  calculateSettlementAmounts,
   getFinanceSettings,
   updateFinanceSettings,
   createPartner,

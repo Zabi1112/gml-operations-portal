@@ -1,9 +1,12 @@
+import { useState } from "react";
 import AccountsOfficeSignature, {waitForAccountsSignature} from "./AccountsOfficeSignature";
 import "./SettlementView.css";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 function SettlementView({ settlement, onClose }) {
+  const [partnerStatement, setPartnerStatement] = useState(null);
+  const [printing, setPrinting] = useState(false);
   if (!settlement) return null;
 
   const partnerSplits = Array.isArray(settlement.partnerSplits)
@@ -27,51 +30,143 @@ function SettlementView({ settlement, onClose }) {
     settlement.accountsType === "ABSOLUTE"
       ? `Accounts (Fixed PKR)`
       : `Accounts (${accountsValue}%)`;
+  const accountsPartner = partnerSplits.find(
+    (partner) => Number(partner.partnerId) === Number(settlement.accountsPartnerId)
+  );
 
   const dispatcherLabel =
     settlement.dispatcherType === "ABSOLUTE"
       ? `Dispatcher (Fixed PKR)`
       : `Dispatcher (${dispatcherValue}%)`;
 
-  const printSettlement = async () => {
-    const element = document.querySelector(".settlement-print");
-    if (!element) return;
+  const printSettlement = async (partner = null) => {
+    setPrinting(true);
+    if (partner) {
+      setPartnerStatement(partner);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    } else {
+      setPartnerStatement(null);
+    }
 
-    try {
-      await waitForAccountsSignature(element);
-    } catch {
-      alert('The accounts office signature could not load. Please refresh and try again.');
+    const element = document.querySelector(".settlement-print");
+    if (!element) {
+      setPrinting(false);
       return;
     }
 
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff"
-    });
+    if (!partner) {
+      try {
+        await waitForAccountsSignature(element);
+      } catch {
+        alert("The accounts office signature could not load. Please refresh and try again.");
+        setPrinting(false);
+        return;
+      }
+    }
 
-    const imgData = canvas.toDataURL("image/png");
-    const pdfWidth = 210;
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+      });
 
-    const pdf = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: [pdfWidth, pdfHeight]
-    });
+      const imgData = canvas.toDataURL("image/png");
+      const pdfWidth = 210;
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`settlement-${settlement.invoiceNumber || "report"}.pdf`);
+      const pdf = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: [pdfWidth, pdfHeight]
+      });
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      const safePartnerName = partner?.name
+        ?.replace(/[^a-z0-9_-]+/gi, "-")
+        .replace(/^-|-$/g, "");
+      pdf.save(
+        partner
+          ? `settlement-${settlement.invoiceNumber || "report"}-${safePartnerName || "partner"}.pdf`
+          : `settlement-${settlement.invoiceNumber || "report"}.pdf`
+      );
+    } finally {
+      setPartnerStatement(null);
+      setPrinting(false);
+    }
   };
 
   return (
     <div className="settlement-view-modal">
       <div className="settlement-view-actions no-print">
         <button onClick={onClose}>Close</button>
-        <button onClick={printSettlement}>Download PDF</button>
+        <button disabled={printing} onClick={() => printSettlement()}>
+          Download Full Settlement PDF
+        </button>
+        {partnerSplits.map((partner, index) => (
+          <button
+            key={partner.partnerId ?? `${partner.name}-${index}`}
+            disabled={printing}
+            onClick={() => printSettlement(partner)}
+          >
+            Download {partner.name || "Partner"} Statement
+          </button>
+        ))}
       </div>
 
       <div className="settlement-print">
+        {partnerStatement ? (
+          <>
+            <div className="settlement-header">
+              <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC logo" />
+              <div>
+                <h1>Partner Settlement Statement</h1>
+                <p>EAST WEST LOGISTICS LLC</p>
+              </div>
+            </div>
+
+            <div className="settlement-info">
+              <div>
+                <strong>Invoice #:</strong> {settlement.invoiceNumber || "-"}
+              </div>
+              <div>
+                <strong>Company:</strong> {settlement.companyName || "-"}
+              </div>
+              <div>
+                <strong>Settlement Date:</strong>{" "}
+                {settlement.clearedAt
+                  ? new Date(settlement.clearedAt).toLocaleDateString()
+                  : settlement.settlementDate
+                  ? new Date(settlement.settlementDate).toLocaleDateString()
+                  : "-"}
+              </div>
+              <div>
+                <strong>Partner:</strong> {partnerStatement.name || "Partner"}
+              </div>
+            </div>
+
+            <h3>Settlement Summary</h3>
+            <table className="settlement-table">
+              <tbody>
+                <tr>
+                  <td>Company Generated</td>
+                  <td>{totalAmountPKR.toLocaleString()} PKR</td>
+                </tr>
+                <tr>
+                  <td>Given to Dispatch</td>
+                  <td>{dispatcherAmountPKR.toLocaleString()} PKR</td>
+                </tr>
+                <tr className="settlement-net-row">
+                  <td>Your Partner Share</td>
+                  <td>
+                    {Number(partnerStatement.amountPKR || 0).toLocaleString()} PKR
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </>
+        ) : (
+          <>
         <div className="settlement-header">
           <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC logo" />
           <div>
@@ -125,7 +220,10 @@ function SettlementView({ settlement, onClose }) {
             </tr>
 
             <tr>
-              <td>{accountsLabel}</td>
+                  <td>
+                    {accountsLabel}
+                    {accountsPartner ? ` - deducted from ${accountsPartner.name}` : ""}
+                  </td>
               <td>{accountsAmountPKR.toLocaleString()}</td>
             </tr>
 
@@ -197,6 +295,8 @@ function SettlementView({ settlement, onClose }) {
         <div className="signature-section">
           <AccountsOfficeSignature />
         </div>
+          </>
+        )}
       </div>
     </div>
   );

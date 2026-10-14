@@ -55,6 +55,8 @@ KEPT (for backward compatibility):
 dispatcherAmount = (totalAmount × dispatcherValue) ÷ 100
 accountsAmount = (totalAmount × accountsValue) ÷ 100
 partnerProfit = totalAmount - dispatcherAmount - accountsAmount
+partner shares are calculated after dispatch; the accounts fee is deducted
+from the partner selected for that settlement
 ```
 
 ### ABSOLUTE Mode
@@ -62,7 +64,15 @@ partnerProfit = totalAmount - dispatcherAmount - accountsAmount
 dispatcherAmount = dispatcherValue (direct use)
 accountsAmount = accountsValue (direct use)
 partnerProfit = totalAmount - dispatcherAmount - accountsAmount
+partner shares are calculated after dispatch; the accounts fee is deducted
+from the partner selected for that settlement
 ```
+
+When exactly one partner has a 70% share, that partner is selected by default.
+The selection can be changed when clearing an invoice, creating a manual
+settlement, or editing a settlement. If no unique 70% partner exists, select
+the accounts-fee partner explicitly. The partner percentages must total 100%
+when an accounts-fee partner is selected.
 
 ## Files Modified
 
@@ -103,8 +113,8 @@ partnerProfit = totalAmount - dispatcherAmount - accountsAmount
 4. Enter total amount
 5. Enter dispatcher % (e.g., 25)
 6. Enter accounts % (e.g., 10)
-7. System calculates partners as remainder
-8. Click "Save Settlement"
+7. Confirm or change the partner paying the accounts fee
+8. Review the partner breakdown and click "Save Settlement"
 
 ### Create Absolute-based Settlement
 1. Go to Settlements page
@@ -113,8 +123,14 @@ partnerProfit = totalAmount - dispatcherAmount - accountsAmount
 4. Enter total amount
 5. Enter fixed dispatcher amount (e.g., 20,000)
 6. Enter fixed accounts amount (e.g., 8,000)
-7. System calculates partners as remainder
-8. Click "Save Settlement"
+7. Confirm or change the partner paying the accounts fee
+8. Review the partner breakdown and click "Save Settlement"
+
+### Download a Partner-Only Statement
+Open the settlement from History and choose "Download [Partner] Statement".
+That PDF contains only the company revenue, total given to dispatch, and that
+partner's own net share; it does not include the accounts amount or any other
+partner's name or share.
 
 ### Record Old Settlement
 Same as above, just set the Settlement Date to when it was originally given

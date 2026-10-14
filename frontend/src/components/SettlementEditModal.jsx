@@ -2,6 +2,10 @@ import { useState } from "react";
 import axios from "axios";
 import { API } from "../api";
 import DispatcherSplitEditor from "./DispatcherSplitEditor";
+import {
+  allocatePartnerAmounts,
+  defaultAccountsPartner
+} from "../finance/settlementAllocation";
 
 function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose, onSaved }) {
   const [form, setForm] = useState({
@@ -17,6 +21,10 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
       : [],
     accountsType: settlement.accountsType || "PERCENTAGE",
     accountsValue: settlement.accountsValue ?? 0,
+    accountsPartnerId:
+      settlement.accountsPartnerId == null
+        ? defaultAccountsPartner(partners)
+        : String(settlement.accountsPartnerId),
     settlementDate: settlement.settlementDate
       ? String(settlement.settlementDate).slice(0, 10)
       : "",
@@ -43,14 +51,25 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
       ? Number(form.accountsValue) || 0
       : (totalAmount * (Number(form.accountsValue) || 0)) / 100;
 
-  const partnerProfit = totalAmount - dispatcherAmount - accountsAmount;
-
-  const partnerSplitsPreview = partners.map((partner) => ({
-    partnerId: partner.id,
-    name: partner.name,
-    percent: Number(partner.percent || 0),
-    amountPKR: (partnerProfit * Number(partner.percent || 0)) / 100
-  }));
+  let partnerProfit = totalAmount - dispatcherAmount - accountsAmount;
+  let partnerSplitsPreview = [];
+  let allocationError = "";
+  try {
+    const allocation = allocatePartnerAmounts(
+      totalAmount,
+      dispatcherAmount,
+      accountsAmount,
+      partners,
+      form.accountsPartnerId
+    );
+    partnerProfit = allocation.partnerProfitPKR;
+    partnerSplitsPreview = allocation.partnerSplits;
+    if (accountsAmount > 0 && !form.accountsPartnerId) {
+      allocationError = "Select the partner who will pay the accounts fee.";
+    }
+  } catch (error) {
+    allocationError = error.message;
+  }
 
   const splitsTotal = form.dispatcherSplits.reduce(
     (sum, s) => sum + (Number(s.amount) || 0),
@@ -60,6 +79,9 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (totalAmount <= 0) return alert("Please enter a valid total amount");
+    if (accountsAmount > 0 && !form.accountsPartnerId) {
+      return alert("Please select the partner who will pay the accounts fee");
+    }
     if (splitsTotal > dispatcherAmount + 1) {
       return alert("Dispatcher split amounts cannot exceed the total dispatcher amount");
     }
@@ -76,6 +98,7 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
           dispatcherSplits: form.dispatcherSplits,
           accountsType: form.accountsType,
           accountsValue: Number(form.accountsValue) || 0,
+          accountsPartnerId: form.accountsPartnerId || null,
           settlementDate: form.settlementDate,
           notes: form.notes
         },
@@ -177,6 +200,28 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
             />
             <div className="amount-preview">Calculated: {formatCurrency(accountsAmount)}</div>
           </div>
+          <div className="form-group">
+            <label>Deduct Accounts Fee From *</label>
+            <select
+              value={form.accountsPartnerId}
+              onChange={(e) =>
+                setForm({ ...form, accountsPartnerId: e.target.value })
+              }
+              required={accountsAmount > 0}
+            >
+              <option value="">Select partner</option>
+              {partners.map((partner) => (
+                <option key={partner.id} value={partner.id}>
+                  {partner.name} ({partner.percent}%)
+                </option>
+              ))}
+            </select>
+          </div>
+          {allocationError && (
+            <p className="warning-message" role="alert">
+              {allocationError}
+            </p>
+          )}
 
           <div className="calculation-summary">
             <h3>Settlement Summary</h3>

@@ -105,6 +105,7 @@ model BranchDispatcher {
 }
 
 model InvoiceSettlement {
+  accountsPartnerId Int?
   id                     Int         @id @default(autoincrement())
 
   branchId               Int
