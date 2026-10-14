@@ -45,6 +45,7 @@ function Layout({ title, children }) {
         {["ADMIN", "MANAGER", "EDITOR"].includes(user?.role) && <button onClick={() => go("/paychecks")}>Paychecks</button>}
         {["ADMIN", "MANAGER"].includes(user?.role) && <button onClick={() => go("/interviews")}>Interviews</button>}
         {["ADMIN", "MANAGER", "EDITOR"].includes(user?.role) && <button onClick={() => go("/sales")}>Sales Department</button>}
+        {["ADMIN", "MANAGER"].includes(user?.role) && <button onClick={() => go("/hr-letters")}>HR Letters</button>}
         <button>Attendance</button>
         <button onClick={() => go("/employees")}>Staff</button>
         <button onClick={() => go("/companies")}>Companies</button>

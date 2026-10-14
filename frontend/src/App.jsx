@@ -1,3 +1,4 @@
+import HRLetters from "./Pages/HRLetters.jsx";
 import PartnerAgreements from "./Pages/PartnerAgreements.jsx";
 import PublicPartnerAgreement from "./Pages/PublicPartnerAgreement.jsx";
 import SalesDepartment from "./Pages/SalesDepartment.jsx";
@@ -30,6 +31,7 @@ function App() {
   return (
     <BranchProvider>
       <Routes>
+        <Route path="/hr-letters" element={token && ["ADMIN", "MANAGER"].includes(user?.role) ? <HRLetters /> : <Navigate to={token ? "/dashboard" : "/login"} />} />
         <Route path="/partner-agreement/:token" element={<PublicPartnerAgreement />} />
         <Route path="/partner-agreements" element={token && user?.role === "ADMIN" ? <PartnerAgreements /> : <Navigate to={token ? "/dashboard" : "/login"} />} />
         <Route path="/sales" element={token && ["ADMIN", "MANAGER", "EDITOR"].includes(user?.role) ? <SalesDepartment /> : <Navigate to="/login" />} />
