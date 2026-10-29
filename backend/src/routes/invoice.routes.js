@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+  getOutstanding,
   createInvoice,
   getInvoices,
   updateInvoice,
@@ -17,6 +18,7 @@ const { branchWriteGuard } = require("../middleware/branchWriteGuard");
 
 router.use(protect, branchWriteGuard);
 
+router.get("/outstanding", getOutstanding);
 router.get("/", getInvoices);
 router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createInvoice);
 router.put("/:id", allowRoles("ADMIN"), updateInvoice);

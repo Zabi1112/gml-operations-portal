@@ -1,8 +1,9 @@
+const payments=require("../utils/invoicePayments");
 const prisma = require("../utils/prisma");
 const { createLoadsSafely } = require("../utils/loadDedup");
 
-const generateInvoiceNumber = async (branchId) => {
-  const count = await prisma.invoice.count({
+const generateInvoiceNumber = async (branchId, db = prisma) => {
+  const count = await db.invoice.count({
     where: { branchId: Number(branchId) }
   });
 
@@ -89,7 +90,7 @@ const calculateInvoice = (data) => {
     truckRateBreakdown,
     accountsFeeTotal,
     grossAmount,
-    netPayable
+    netPayable: Math.round(netPayable*100)/100
   };
 };
 
@@ -109,12 +110,19 @@ const createInvoice = async (req, res) => {
       return res.status(404).json({ message: "Branch not found" });
     }
 
-    const calculated = calculateInvoice(req.body);
+    const invoice = await prisma.$transaction(async tx => {
+    await payments.lockCompany(tx,branchId,req.body.companyId);
+    if(req.body.companyId && !await tx.company.findFirst({where:{id:Number(req.body.companyId),branchId:Number(branchId)}}))payments.fail(400,"Company does not belong to this branch.");
+    const previous = req.body.companyId ? await payments.outstanding(tx,branchId,req.body.companyId) : {items:[],totalUSD:0};
+    if(req.body.companyId && Math.abs(Number(req.body.previousInvoiceAmount||0)-previous.totalUSD)>.005) payments.fail(409,'The company balance changed. Re-fetch the pending balance before saving this invoice.');
+    const calculated = calculateInvoice({...req.body,previousInvoiceAmount:previous.totalUSD,includePreviousInvoiceInNet:true});
+    const currentChargesUSD=(payments.cents(calculated.netPayable)-payments.cents(previous.totalUSD))/100;
+    if(currentChargesUSD<0)payments.fail(400,'Discounts and deductions cannot exceed the new invoice charges.');
 
     const invoiceNumber =
-      req.body.invoiceNumber || (await generateInvoiceNumber(branchId));
+      req.body.invoiceNumber || (await generateInvoiceNumber(branchId,tx));
 
-    const invoice = await prisma.invoice.create({
+    return tx.invoice.create({
       data: {
         branchId: Number(branchId),
         companyId: req.body.companyId ? Number(req.body.companyId) : null,
@@ -160,8 +168,10 @@ const createInvoice = async (req, res) => {
         fineAmount: Number(req.body.fineAmount || 0),
         fineReason: req.body.fineReason || null,
 
-        previousInvoiceAmount: Number(req.body.previousInvoiceAmount || 0),
-        includePreviousInvoiceInNet: Boolean(req.body.includePreviousInvoiceInNet),
+        previousInvoiceAmount: previous.totalUSD,
+        includePreviousInvoiceInNet: previous.totalUSD > 0,
+        currentChargesUSD,
+        carryForward: previous.items,
 
         netPayable: calculated.netPayable,
         notes: req.body.notes || null,
@@ -174,6 +184,8 @@ const createInvoice = async (req, res) => {
         loads: true
       }
     });
+
+    },{timeout:30000});
 
     // Save manual loads that don't already exist (smart deduplication)
     const loadSaveResults = await createLoadsSafely(
@@ -222,7 +234,7 @@ const createInvoice = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    res.status(error.status || 500).json({
       message: error.message || "Server error"
     });
   }
@@ -259,10 +271,10 @@ const getInvoices = async (req, res) => {
       }
     });
 
-    res.json(invoices);
+    res.json(await payments.decorate(prisma,invoices));
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    res.status(error.status || 500).json({
       message: error.message || "Server error"
     });
   }
@@ -292,10 +304,10 @@ const getInvoicesByBranch = async (req, res) => {
       }
     });
 
-    res.json(invoices);
+    res.json(await payments.decorate(prisma,invoices));
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    res.status(error.status || 500).json({
       message: error.message || "Server error"
     });
   }
@@ -305,17 +317,23 @@ const updateInvoice = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existing = await prisma.invoice.findUnique({
-      where: { id: Number(id) }
+    let existing = await prisma.invoice.findUnique({
+      where: { id: Number(id) },include:{loads:true}
     });
 
     if (!existing) {
       return res.status(404).json({ message: "Invoice not found" });
     }
 
-    const calculated = calculateInvoice(req.body);
-
     const invoice = await prisma.$transaction(async (tx) => {
+    await payments.lockCompany(tx,existing.branchId,existing.companyId);
+    const fresh=await tx.invoice.findUnique({where:{id:Number(id)},include:{loads:true}});
+    if(!fresh)payments.fail(404,"Invoice not found");
+    await payments.assertMutable(tx,fresh);
+    existing=fresh;
+    const calculated = calculateInvoice({...existing,...req.body,previousInvoiceAmount:existing.previousInvoiceAmount,includePreviousInvoiceInNet:existing.includePreviousInvoiceInNet});
+
+    if(calculated.netPayable-(existing.includePreviousInvoiceInNet?existing.previousInvoiceAmount:0)<0)payments.fail(400,"Deductions cannot exceed new charges.");
       await tx.invoiceLoad.deleteMany({ where: { invoiceId: Number(id) } });
 
       return tx.invoice.update({
@@ -366,15 +384,11 @@ const updateInvoice = async (req, res) => {
           fineAmount: Number(req.body.fineAmount ?? existing.fineAmount),
           fineReason: req.body.fineReason ?? existing.fineReason,
 
-          previousInvoiceAmount: Number(
-            req.body.previousInvoiceAmount ?? existing.previousInvoiceAmount
-          ),
-          includePreviousInvoiceInNet:
-            req.body.includePreviousInvoiceInNet !== undefined
-              ? Boolean(req.body.includePreviousInvoiceInNet)
-              : existing.includePreviousInvoiceInNet,
+          previousInvoiceAmount: existing.previousInvoiceAmount,
+          includePreviousInvoiceInNet: existing.includePreviousInvoiceInNet,
 
           netPayable: calculated.netPayable,
+          ...(existing.currentChargesUSD !== null ? {currentChargesUSD:(payments.cents(calculated.netPayable)-payments.cents(existing.previousInvoiceAmount))/100} : {}),
           notes: req.body.notes ?? existing.notes,
 
           loads: {
@@ -393,7 +407,7 @@ const updateInvoice = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    res.status(error.status || 500).json({
       message: error.message || "Server error"
     });
   }
@@ -415,15 +429,14 @@ const deleteInvoice = async (req, res) => {
       return res.status(404).json({ message: "Invoice not found" });
     }
 
-    // Delete related invoice loads first
-    await prisma.invoiceLoad.deleteMany({
-      where: { invoiceId: Number(id) }
-    });
-
-    // Delete the invoice
-    await prisma.invoice.delete({
-      where: { id: Number(id) }
-    });
+    await prisma.$transaction(async tx=>{
+      await payments.lockCompany(tx,invoice.branchId,invoice.companyId);
+      const fresh=await tx.invoice.findUnique({where:{id:Number(id)}});
+      if(!fresh)payments.fail(404,'Invoice not found');
+      await payments.assertMutable(tx,fresh);
+      await tx.invoiceLoad.deleteMany({where:{invoiceId:Number(id)}});
+      await tx.invoice.delete({where:{id:Number(id)}});
+    },{timeout:30000});
 
     res.status(200).json({
       message: "Invoice deleted successfully",
@@ -431,11 +444,13 @@ const deleteInvoice = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message || "Server error" });
+    res.status(error.status || 500).json({ message: error.message || "Server error" });
   }
 };
 
+const getOutstanding = async (req,res) => {try {const branchId=Number(req.query.branchId),companyId=Number(req.query.companyId);if(!Number.isSafeInteger(branchId)||branchId<1||!Number.isSafeInteger(companyId)||companyId<1)return res.status(400).json({message:'Choose a branch and company.'});res.json(await payments.outstanding(prisma,branchId,companyId));}catch(error){res.status(error.status||500).json({message:error.status?error.message:'Unable to load pending balance.'});}};
 module.exports = {
+  getOutstanding,
   calculateInvoice,
   createInvoice,
   getInvoices,

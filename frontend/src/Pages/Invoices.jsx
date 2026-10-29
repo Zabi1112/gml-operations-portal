@@ -70,6 +70,7 @@ function Invoices() {
     ]
   };
 
+  const [balanceLoading,setBalanceLoading]=useState(false),[balanceError,setBalanceError]=useState(""),[balanceRefresh,setBalanceRefresh]=useState(0);
   const [companies, setCompanies] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [previewInvoice, setPreviewInvoice] = useState(null);
@@ -94,6 +95,7 @@ function Invoices() {
     setPreviewInvoice(null);
   }, [selectedBranch]);
 
+  useEffect(()=>{if(!form.companyId||!selectedBranch?.id)return;const controller=new AbortController();setBalanceLoading(true);setBalanceError('');axios.get(API+'/invoices/outstanding',{...auth,params:{branchId:selectedBranch.id,companyId:form.companyId},signal:controller.signal}).then(({data})=>setForm(f=>({...f,previousInvoiceAmount:data.totalUSD,includePreviousInvoiceInNet:true,carryForward:data.items}))).catch(e=>{if(!controller.signal.aborted)setBalanceError(e.response?.data?.message||'Could not fetch pending balance.');}).finally(()=>{if(!controller.signal.aborted)setBalanceLoading(false);});return()=>controller.abort();},[form.companyId,selectedBranch?.id,balanceRefresh]);
   const selectedCompany = companies.find(
     (c) => c.id === Number(form.companyId)
   );
@@ -111,6 +113,7 @@ function Invoices() {
 
     setForm((prev) => ({
       ...prev,
+      previousInvoiceAmount:0,includePreviousInvoiceInNet:true,carryForward:[],
       companyId: company.id,
       companyName: company.companyName || "",
       ownerName: company.ownerName || "",
@@ -410,6 +413,7 @@ function Invoices() {
           : []
     };
 
+    if(balanceLoading||balanceError)return alert(balanceError||"Wait for the pending balance to load.");
     setPreviewInvoice(invoice);
   };
 
@@ -763,33 +767,7 @@ function Invoices() {
             />
           </div>
 
-          <div className="form-group">
-            <label>Previous Invoice Amount $</label>
-            <input
-              type="number"
-              value={form.previousInvoiceAmount}
-              onChange={(e) =>
-                setForm({ ...form, previousInvoiceAmount: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                checked={form.includePreviousInvoiceInNet}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    includePreviousInvoiceInNet: e.target.checked
-                  })
-                }
-              />
-              Add Previous Invoice To Net
-            </label>
-          </div>
-
+          <div className="form-group"><label>Previous unpaid balance $ (automatic)</label><input readOnly value={Number(form.previousInvoiceAmount||0).toFixed(2)}/><button type="button" onClick={()=>setBalanceRefresh(v=>v+1)} disabled={balanceLoading||!form.companyId}>Refresh pending balance</button><small>{balanceLoading?'Loading pending balance...':balanceError||'Added automatically. Payments are counted once, against their original invoices.'}</small></div>
           <div className="form-group">
             <label>Notes</label>
             <input

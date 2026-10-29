@@ -1,3 +1,4 @@
+import {createPartnerStatementPdf,loadAccountsSignature} from "../finance/partnerStatementPdf";
 import { useState } from "react";
 import AccountsOfficeSignature, {waitForAccountsSignature} from "./AccountsOfficeSignature";
 import "./SettlementView.css";
@@ -40,6 +41,7 @@ function SettlementView({ settlement, onClose }) {
       : `Dispatcher (${dispatcherValue}%)`;
 
   const printSettlement = async (partner = null) => {
+    if(partner){setPrinting(true);try{const doc=createPartnerStatementPdf(settlement,partner,{signature:await loadAccountsSignature()});doc.save(`settlement-${settlement.id}-${String(partner.name||"partner").replace(/[^a-z0-9_-]+/gi,"-")}.pdf`);}catch(error){alert(error.message||"Unable to create partner PDF");}finally{setPrinting(false);}return;}
     setPrinting(true);
     if (partner) {
       setPartnerStatement(partner);

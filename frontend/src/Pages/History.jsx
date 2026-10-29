@@ -175,6 +175,8 @@ function History() {
   const openClearInvoice = (invoice) => {
     setClearInvoiceData(invoice);
     setSettlementForm({
+      amountReceivedUSD: invoice.outstandingAmountUSD ?? invoice.netPayable,
+      paymentRequestId:crypto.randomUUID(),
       usdRate: "",
       dispatcherPercent: selectedBranch?.dispatcherPercent ?? 25,
       dispatcherType: "PERCENTAGE",
@@ -216,7 +218,8 @@ function History() {
       const res = await axios.post(
         `${API}/finance/clear-invoice/${clearInvoiceData.id}`,
         {
-          invoiceAmountUSD: Number(clearInvoiceData.netPayable || 0),
+          amountReceivedUSD:Number(settlementForm.amountReceivedUSD),
+          paymentRequestId:settlementForm.paymentRequestId,
           usdRate: Number(settlementForm.usdRate || 0),
           dispatcherValue: Number(settlementForm.dispatcherPercent || 0),
           dispatcherType: settlementForm.dispatcherType,
@@ -229,7 +232,7 @@ function History() {
         auth
       );
 
-      alert("Invoice cleared successfully");
+      alert("Payment recorded successfully");
       closeClearInvoice();
       loadInvoiceHistory();
       loadSettlements();
@@ -401,7 +404,7 @@ function History() {
     );
   };
 
-  const invoiceAmountUSD = Number(clearInvoiceData?.netPayable || 0);
+  const invoiceAmountUSD = Number(settlementForm.amountReceivedUSD || 0);
   const usdRate = Number(settlementForm.usdRate || 0);
   const invoiceAmountPKR = invoiceAmountUSD * usdRate;
   const dispatcherPercent = Number(settlementForm.dispatcherPercent || 0);
@@ -615,12 +618,12 @@ function History() {
                             {new Date(invoice.invoiceEnd).toLocaleDateString()}
                           </td>
                           <td>{invoice.truckNumbers || "-"}</td>
-                          <td>${Number(invoice.netPayable || 0).toFixed(2)}</td>
+                          <td>${Number(invoice.netPayable || 0).toFixed(2)}<small style={{display:"block"}}>Due: ${Number(invoice.outstandingAmountUSD ?? invoice.netPayable).toFixed(2)}</small></td>
                           <td>
                             {invoice.isCleared ? (
-                              <span className="status-cleared">Cleared</span>
+                              <span className="status-cleared">{invoice.balanceTransferredToInvoiceId ? "Carried forward" : "Paid"}</span>
                             ) : (
-                              <span className="status-pending">Pending</span>
+                              <span className="status-pending">{invoice.paymentStatus === "PARTIAL" ? "Partially paid" : "Pending"}</span>
                             )}
                           </td>
                           <td>
@@ -638,7 +641,7 @@ function History() {
                           </td>
                           {isAdmin && (
                             <td>
-                              {invoice.isCleared ? (
+                              {settlement && !invoice.balanceTransferredToInvoiceId ? (
                                 <button
                                   onClick={() => {
                                     if (!settlement) {
@@ -662,7 +665,7 @@ function History() {
                                 disabled={invoice.isCleared || selectedBranch?.isActive === false}
                                 onClick={() => openClearInvoice(invoice)}
                               >
-                                {invoice.isCleared ? "Cleared" : "Clear"}
+                                {invoice.balanceTransferredToInvoiceId ? "Carried forward" : invoice.isCleared ? "Paid" : "Record payment"}
                               </button>
                             </td>
                           )}
@@ -855,7 +858,9 @@ function History() {
           {clearInvoiceData && (
             <div className="settlement-modal">
               <div className="settlement-box">
-                <h2>Clear Invoice</h2>
+                <h2>Record Invoice Payment</h2>
+                <p>Outstanding: ${Number(clearInvoiceData.outstandingAmountUSD ?? clearInvoiceData.netPayable).toFixed(2)}</p>
+                <p>Only this payment is settled. Any unpaid amount stays pending for the next invoice.</p>
 
                 <p>
                   <strong>Invoice:</strong>{" "}
@@ -866,11 +871,14 @@ function History() {
                   {clearInvoiceData.companyName || "-"}
                 </p>
                 <p>
-                  <strong>Invoice Amount USD:</strong> $
+                  <strong>Payment Amount USD:</strong> $
                   {invoiceAmountUSD.toFixed(2)}
                 </p>
 
                 <form onSubmit={submitClearInvoice}>
+                  <div className="form-group">
+                <label>Amount received (USD)<input type="number" min="0.01" step="0.01" max={clearInvoiceData.outstandingAmountUSD ?? clearInvoiceData.netPayable} required value={settlementForm.amountReceivedUSD} onChange={e=>setSettlementForm({...settlementForm,amountReceivedUSD:e.target.value})}/></label>
+                  </div>
                   <div className="form-group">
                     <label>USD Rate</label>
                     <input
@@ -1026,7 +1034,7 @@ function History() {
                   </div>
 
                   <div className="settlement-actions">
-                    <button type="submit">Save Settlement</button>
+                    <button type="submit">Record payment</button>
                     <button type="button" onClick={closeClearInvoice}>
                       Cancel
                     </button>
@@ -1293,6 +1301,7 @@ function History() {
                     <label>Previous Invoice Amount $</label>
                     <input
                       type="number"
+                      readOnly
                       value={editForm.previousInvoiceAmount}
                       onChange={(e) =>
                         setEditForm({
@@ -1307,6 +1316,7 @@ function History() {
                     <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <input
                         type="checkbox"
+                        disabled
                         checked={editForm.includePreviousInvoiceInNet}
                         onChange={(e) =>
                           setEditForm({

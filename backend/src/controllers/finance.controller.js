@@ -1,3 +1,4 @@
+const payments=require("../utils/invoicePayments");
 const {
   allocatePartnerAmounts,
   defaultAccountsPartnerId
@@ -168,25 +169,35 @@ const clearInvoice = async (req, res) => {
   try {
     const invoiceId = Number(req.params.invoiceId);
 
-    const invoice = await prisma.invoice.findUnique({
+    const result=await prisma.$transaction(async tx=>{
+    const initial=await tx.invoice.findUnique({where:{id:invoiceId}});
+    if(!initial)payments.fail(404,"Invoice not found");
+    await payments.lockCompany(tx,initial.branchId,initial.companyId);
+    const requestId=req.body.paymentRequestId;
+    if(typeof requestId!=="string"||! /^[a-f0-9-]{36}$/i.test(requestId))payments.fail(400,"Payment request ID is required. Refresh and try again.");
+    const prior=await tx.invoiceSettlement.findUnique({where:{paymentRequestId:requestId}});
+    if(prior){if(prior.invoiceId!==invoiceId)payments.fail(409,"Payment request already used.");return prior;}
+    const invoice = await tx.invoice.findUnique({
       where: { id: invoiceId }
     });
 
-    if (!invoice) return res.status(404).json({ message: "Invoice not found" });
+    if (!invoice) payments.fail(404,"Invoice not found");
     if (invoice.isCleared) {
-      return res.status(400).json({ message: "Invoice already cleared" });
+      payments.fail(400,"Invoice already paid");
     }
 
-    const branch = await prisma.branch.findUnique({
+    const branch = await tx.branch.findUnique({
       where: { id: invoice.branchId },
       include: { partners: true, dispatchers: true }
     });
 
-    if (!branch) return res.status(404).json({ message: "Branch not found" });
+    if (!branch)payments.fail(404,"Branch not found");
 
-    const invoiceAmountUSD = Number(req.body.invoiceAmountUSD || invoice.netPayable || 0);
+    const invoiceAmountUSD = Number(req.body.amountReceivedUSD);
+    const paymentAllocations=payments.paymentPlan(invoice,await payments.companyRows(tx,invoice),invoiceAmountUSD);
     const usdRate = Number(req.body.usdRate || 0);
-    const totalAmountPKR = usdRate > 0 ? invoiceAmountUSD * usdRate : Number(req.body.totalAmountPKR || 0);
+    if(!Number.isFinite(usdRate)||usdRate<=0)payments.fail(400,"Enter a valid USD to PKR rate.");
+    const totalAmountPKR = payments.cents(invoiceAmountUSD * usdRate)/100;
 
     const dispatcherType = req.body.dispatcherType || "PERCENTAGE";
     const dispatcherValue = Number(req.body.dispatcherValue ?? branch.dispatcherPercent ?? 25);
@@ -201,9 +212,7 @@ const clearInvoice = async (req, res) => {
       accountsValue
     );
     if (accountsValue > 0 && accountsPartnerId === null) {
-      return res.status(400).json({
-        message: "Select the partner who will pay the accounts fee."
-      });
+      payments.fail(400,"Select the partner who will pay the accounts fee.");
     }
     let calc;
     try {
@@ -219,12 +228,14 @@ const clearInvoice = async (req, res) => {
         accountsPartnerId
       );
     } catch (err) {
-      return res.status(400).json({ message: err.message });
+      payments.fail(400,err.message);
     }
     const { dispatcherAmountPKR, accountsAmountPKR, partnerProfitPKR, partnerSplits, dispatcherSplits } = calc;
 
-    const settlement = await prisma.invoiceSettlement.create({
+    const settlement = await tx.invoiceSettlement.create({
       data: {
+        paymentAllocations,
+        paymentRequestId:requestId,
         branchId: invoice.branchId,
         invoiceId: invoice.id,
         invoiceNumber: invoice.invoiceNumber,
@@ -254,21 +265,18 @@ const clearInvoice = async (req, res) => {
       }
     });
 
-    await prisma.invoice.update({
-      where: { id: invoice.id },
-      data: {
-        isCleared: true,
-        clearedAt: new Date()
-      }
-    });
+    for(const allocation of paymentAllocations)await tx.invoice.update({where:{id:allocation.invoiceId},data:{paidAmountUSD:{increment:allocation.amountUSD}}});
+    await payments.refreshFlags(tx,invoice);
+    return settlement;
+    },{timeout:30000});
 
     res.status(201).json({
-      message: "Invoice cleared successfully",
-      settlement
+      message: "Payment recorded successfully",
+      settlement:result
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(error.status||500).json({ message: error.status?error.message:"Unable to record payment" });
   }
 };
 
@@ -401,6 +409,7 @@ const updateSettlement = async (req, res) => {
     });
 
     if (!existing) return res.status(404).json({ message: "Settlement not found" });
+    if(existing.paymentAllocations)return res.status(409).json({message:"This settlement records a payment. Delete it to reverse the payment, then record the corrected amount."});
 
     const branch = await prisma.branch.findUnique({
       where: { id: existing.branchId },
@@ -512,16 +521,30 @@ const deleteSettlement = async (req, res) => {
       return res.status(404).json({ message: "Settlement not found" });
     }
 
-    if (settlement.invoiceId) {
-      await prisma.invoice.update({
-        where: { id: settlement.invoiceId },
-        data: { isCleared: false, clearedAt: null }
-      });
+    if (settlement.paymentAllocations) {
+      await prisma.$transaction(async tx=>{
+        const invoice=await tx.invoice.findUnique({where:{id:settlement.invoiceId}});
+        if(!invoice)payments.fail(409,'Payment invoice not found.');
+        await payments.lockCompany(tx,invoice.branchId,invoice.companyId);
+        const current=await tx.invoiceSettlement.findUnique({where:{id:settlement.id}});if(!current)return;
+        for(const item of current.paymentAllocations)await tx.invoice.update({where:{id:item.invoiceId},data:{paidAmountUSD:{decrement:item.amountUSD}}});
+        await tx.invoiceSettlement.delete({where:{id:current.id}});await payments.refreshFlags(tx,invoice);
+      },{timeout:30000});
+      return res.json({message:'Payment reversed and balances restored',id:settlement.id});
     }
-
-    await prisma.invoiceSettlement.delete({
-      where: { id: Number(id) }
-    });
+    await prisma.$transaction(async tx=>{
+      if(settlement.invoiceId){
+        const invoice=await tx.invoice.findUnique({where:{id:settlement.invoiceId}});
+        if(!invoice)payments.fail(409,'Invoice not found');
+        await payments.lockCompany(tx,invoice.branchId,invoice.companyId);
+        const current=await tx.invoiceSettlement.findUnique({where:{id:settlement.id}});
+        if(!current)return;
+        if(invoice.currentChargesUSD!==null)payments.fail(409,'This legacy settlement requires balance reconciliation before reversal.');
+        await tx.invoice.update({where:{id:invoice.id},data:{paidAmountUSD:0}});
+        await tx.invoiceSettlement.delete({where:{id:current.id}});
+        await payments.refreshFlags(tx,invoice);
+      }else await tx.invoiceSettlement.delete({where:{id:settlement.id}});
+    },{timeout:30000});
 
     res.status(200).json({
       message: "Settlement deleted successfully",

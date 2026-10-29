@@ -105,6 +105,8 @@ model BranchDispatcher {
 }
 
 model InvoiceSettlement {
+  paymentAllocations Json?
+  paymentRequestId String? @unique
   accountsPartnerId Int?
   id                     Int         @id @default(autoincrement())
 
@@ -264,6 +266,10 @@ model SalarySlip {
 }
 
 model Invoice {
+  balanceTransferredToInvoiceId Int?
+  currentChargesUSD Float?
+  paidAmountUSD Float @default(0)
+  carryForward Json?
   id                          Int         @id @default(autoincrement())
   branchId                    Int
   branch                      Branch      @relation(fields: [branchId], references: [id], onDelete: Cascade)

@@ -192,7 +192,7 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
 
           <div>
             <span>Status</span>
-            <strong>{invoice.isCleared ? "Cleared" : "Pending"}</strong>
+            <strong>{invoice.balanceTransferredToInvoiceId ? "Balance carried forward" : invoice.isCleared ? "Paid" : invoice.paymentStatus === "PARTIAL" ? "Partially paid" : "Pending"}</strong>
           </div>
 
           <div>
@@ -306,6 +306,8 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
           </>
         )}
 
+        {invoice.balanceTransferredToInvoiceId && <p style={{margin:"16px 32px"}}>Historical balance consolidated into a later invoice. This is not a payment receipt.</p>}
+        {!invoice.balanceTransferredToInvoiceId && invoice.outstandingAmountUSD !== undefined && <p style={{margin:"16px 32px"}}>Paid / allocated: ${Number(invoice.receivedAmountUSD||0).toFixed(2)} &middot; Outstanding: ${Number(invoice.outstandingAmountUSD).toFixed(2)}</p>}
         <div className="invoice-summary-grid">
           <div className="summary-card">
             <span>Total Load Amount</span>
@@ -352,7 +354,7 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
             </tr>
 
             <tr>
-              <td>Previous Invoice Amount {invoice.includePreviousInvoiceInNet ? "(Added)" : "(Reference)"}</td>
+              <td>Previous unpaid balance {invoice.includePreviousInvoiceInNet ? "(Added)" : "(Reference)"}</td>
               <td>${Number(invoice.previousInvoiceAmount || 0).toFixed(2)}</td>
             </tr>
 
