@@ -1,8 +1,9 @@
+import {buildEmploymentLetter,employmentLetterTypes,isHiringLetter} from './employmentLetters.js';
 ﻿export function localDate() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-export const initialLetter = () => ({kind:'INTERNSHIP',documentType:'APPOINTMENT',name:'',position:'Sales & Dispatch Intern',issueDate:localDate(),joiningDate:'',duration:'3',durationUnit:'months',paid:false,amount:'',currency:'PKR',payFrequency:'month',location:'',hours:'',training:'Truck Dispatching, Sales, and Professional Communication',assessment:true,signatoryName:'',signatoryTitle:'Human Resources Department',extraTerms:'',customBody:''});
+export const initialLetter = () => ({kind:'INTERNSHIP',documentType:'APPOINTMENT',name:'',position:'Sales & Dispatch Intern',issueDate:localDate(),joiningDate:'',duration:'3',durationUnit:'months',paid:false,amount:'',currency:'PKR',payFrequency:'month',location:'',hours:'',training:'Truck Dispatching, Sales, and Professional Communication',assessment:true,signatoryName:'',signatoryTitle:'Human Resources Department',extraTerms:'',customBody:'',details:'',effectiveDate:'',incidentDate:'',reviewDate:'',endDate:'',warningLevel:'Written warning',requiredAction:'',finalPayDetails:''});
 export function formatLetterDate(value) {
   const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(value||'');
   if(!match) return '';
@@ -12,8 +13,10 @@ export function formatLetterDate(value) {
 }
 export function buildLetter(form) {
   const f={...form,name:String(form.name||'').trim(),position:String(form.position||'').trim()};
-  if(!['INTERNSHIP','JOB'].includes(f.kind)||!['APPOINTMENT','OFFER'].includes(f.documentType)) throw new Error('Choose a valid letter type.');
+  if(!['INTERNSHIP','JOB'].includes(f.kind)||!employmentLetterTypes.some(([type])=>type===f.documentType)) throw new Error('Choose a valid letter type.');
   if(!f.name||!f.position) throw new Error('Enter the recipient name and position.');
+  if(!formatLetterDate(f.issueDate)) throw new Error('Enter a valid issue date.');
+  if(!isHiringLetter(f.documentType)) return buildEmploymentLetter(f,formatLetterDate);
   if(!formatLetterDate(f.issueDate)||!formatLetterDate(f.joiningDate)) throw new Error('Enter valid issue and joining dates.');
   const internship=f.kind==='INTERNSHIP';
   if(internship&&(!/^\d+$/.test(String(f.duration))||Number(f.duration)<1||Number(f.duration)>60||!['weeks','months'].includes(f.durationUnit))) throw new Error('Enter an internship duration of 1 to 60 weeks or months.');

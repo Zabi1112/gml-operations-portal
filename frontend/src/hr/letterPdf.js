@@ -1,6 +1,6 @@
 ﻿import {jsPDF} from 'jspdf';
 export function createLetterPdf(letter,logo) {
- const doc=new jsPDF({unit:'pt',format:'a4'}),W=595.28,H=841.89,M=44,usable=W-2*M;
+ const doc=new jsPDF({unit:'pt',format:'a4',compress:true}),W=595.28,H=841.89,M=44,usable=W-2*M;
  const navy=[10,49,83],orange=[239,95,22];let y=0;
  const font=(size=10.5,bold=false,color=[25,34,48])=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.setTextColor(...color);};
  function frame(first=false){
