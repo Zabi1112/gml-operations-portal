@@ -136,6 +136,7 @@
   margin: 5px 0;
   color: #334155;
   font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .company-block.right {
@@ -292,6 +293,21 @@
   color: white;
   font-weight: 900;
   font-size: 15px;
+}
+
+.summary-table .payment-row td {
+  font-weight: 800;
+}
+
+.summary-table .received-row td {
+  background: #fffaf6;
+  color: #334155;
+}
+
+.summary-table .remaining-row td {
+  background: #fff1e6;
+  color: #9a3412;
+  font-size: 14px;
 }
 
 .payment-details-block {

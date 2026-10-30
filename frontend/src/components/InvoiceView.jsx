@@ -11,7 +11,7 @@ const invoiceAddresses = {
   },
   pakistan: {
     label: "Pakistan",
-    address: "Office#1 3rd floor Al rehmat Plaza Haji Pura chowk Wazirabad"
+    address: "Office #1, 3rd Floor, Al Rehmat Plaza, Haji Pura Chowk, Wazirabad"
   }
 };
 
@@ -93,6 +93,10 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
   };
 
   const loads = invoice.loads || [];
+  const receivedAmount = Number(invoice.receivedAmountUSD || 0);
+  const remainingPayable = Number(
+    invoice.outstandingAmountUSD ?? invoice.netPayable ?? 0
+  );
 
   return (
     <div className="invoice-modal">
@@ -287,18 +291,6 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
         )}
 
         {invoice.balanceTransferredToInvoiceId && <p style={{margin:"16px 32px"}}>Historical balance consolidated into a later invoice. This is not a payment receipt.</p>}
-        {!invoice.balanceTransferredToInvoiceId && invoice.outstandingAmountUSD !== undefined && (
-          <div className="invoice-payment-balance">
-            <div>
-              <span>Paid Amount</span>
-              <strong>${Number(invoice.receivedAmountUSD || 0).toFixed(2)}</strong>
-            </div>
-            <div>
-              <span>Remaining Balance</span>
-              <strong>${Number(invoice.outstandingAmountUSD).toFixed(2)}</strong>
-            </div>
-          </div>
-        )}
         <div className="invoice-summary-grid">
           <div className="summary-card">
             <span>Total Load Amount</span>
@@ -368,6 +360,18 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
               <td>Net Payable</td>
               <td>${Number(invoice.netPayable || 0).toFixed(2)}</td>
             </tr>
+            {!invoice.balanceTransferredToInvoiceId && (
+              <>
+                <tr className="payment-row received-row">
+                  <td>Received Amount</td>
+                  <td>${receivedAmount.toFixed(2)}</td>
+                </tr>
+                <tr className="payment-row remaining-row">
+                  <td>Remaining Payable</td>
+                  <td>${remainingPayable.toFixed(2)}</td>
+                </tr>
+              </>
+            )}
           </tbody>
         </table>
 
