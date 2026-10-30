@@ -2,6 +2,7 @@ import {groupInvoiceLoads} from "../invoices/groupLoads";
 import axios from "axios";
 import { useState } from "react";
 import { API } from "../api";
+import { getInvoicePaymentRecords } from "../finance/invoicePaymentRecords";
 import "./InvoiceView.css";
 
 const invoiceAddresses = {
@@ -103,13 +104,10 @@ const InvoiceView = ({
   const remainingPayable = Number(
     invoice.outstandingAmountUSD ?? invoice.netPayable ?? 0
   );
-  const invoicePaymentSettlements = paymentSettlements
-    .filter((settlement) => Number(settlement.invoiceId) === Number(invoice.id))
-    .sort(
-      (first, second) =>
-        new Date(second.settlementDate || second.createdAt).getTime() -
-        new Date(first.settlementDate || first.createdAt).getTime()
-    );
+  const invoicePaymentSettlements = getInvoicePaymentRecords(
+    invoice.id,
+    paymentSettlements
+  );
 
   return (
     <div className="invoice-modal">
@@ -404,7 +402,7 @@ const InvoiceView = ({
                   <tr key={settlement.id}>
                     <td>{formatDate(settlement.settlementDate || settlement.createdAt)}</td>
                     <td>{settlement.paymentMethod || "-"}</td>
-                    <td>${Number(settlement.invoiceAmountUSD || 0).toFixed(2)}</td>
+                    <td>${Number(settlement.amountReceivedUSD || 0).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
