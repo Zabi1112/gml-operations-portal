@@ -310,6 +310,21 @@
   font-size: 14px;
 }
 
+.invoice-payment-history {
+  margin-bottom: 24px;
+}
+
+.invoice-payment-history .summary-table th {
+  background: #fff1e6;
+  color: #9a3412;
+  text-align: left;
+}
+
+.invoice-payment-history .summary-table td:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .payment-details-block {
   margin: 28px 32px 24px;
   display: flex;

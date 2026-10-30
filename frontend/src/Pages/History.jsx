@@ -38,6 +38,7 @@ function History() {
   };
 
   const isAdmin = user?.role === "ADMIN";
+  const canViewSettlements = isAdmin || user?.role === "MANAGER";
 
   const [activeTab, setActiveTab] = useState(isAdmin ? "salary" : "invoice");
 
@@ -140,7 +141,7 @@ function History() {
   };
 
   const loadSettlements = async () => {
-    if (!selectedBranch?.id || !isAdmin) {
+    if (!selectedBranch?.id || !canViewSettlements) {
       setSettlements([]);
       return;
     }
@@ -497,7 +498,7 @@ function History() {
               Load Report History
             </button>
 
-            {isAdmin && (
+            {canViewSettlements && (
               <button
                 className={activeTab === "settlement" ? "active" : ""}
                 onClick={() => setActiveTab("settlement")}
@@ -627,7 +628,7 @@ function History() {
                       <th>Status</th>
                       <th>Created</th>
                       <th>View</th>
-                      {isAdmin && <th>Settlement</th>}
+                      {canViewSettlements && <th>Settlement</th>}
                       {isAdmin && <th>Clear</th>}
                       {isAdmin && <th>Delete</th>}
                     </tr>
@@ -672,7 +673,7 @@ function History() {
                               </button>
                             )}
                           </td>
-                          {isAdmin && (
+                          {canViewSettlements && (
                             <td>
                               {settlement && !invoice.balanceTransferredToInvoiceId ? (
                                 <button
@@ -809,7 +810,7 @@ function History() {
             </>
           )}
 
-          {activeTab === "settlement" && isAdmin && (
+          {activeTab === "settlement" && canViewSettlements && (
             <div className="history-table">
               <table>
                 <thead>
@@ -825,7 +826,7 @@ function History() {
                     <th>Cleared By</th>
                     <th>Payment Method</th>
                     <th>Cleared Date</th>
-                    <th>Actions</th>
+                    {isAdmin && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -860,25 +861,27 @@ function History() {
                       <td>
                         {formatClearanceDate(settlement.settlementDate || settlement.clearedAt || settlement.createdAt)}
                       </td>
-                      <td style={{ display: "flex", gap: "5px" }}>
-                        <button onClick={() => setSelectedSettlement(settlement)}>
-                          View / Print
-                        </button>
-                        <button disabled={selectedBranch?.isActive === false} onClick={() => setEditingSettlement(settlement)}>
-                          {settlement.paymentMethod ? "Edit Details" : "Add Payment Details"}
-                        </button>
-                        <button
-                          disabled={selectedBranch?.isActive === false} className="delete-btn"
-                          onClick={() => handleDeleteSettlement(settlement.id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
+                      {isAdmin && (
+                        <td style={{ display: "flex", gap: "5px" }}>
+                          <button onClick={() => setSelectedSettlement(settlement)}>
+                            View / Print
+                          </button>
+                          <button disabled={selectedBranch?.isActive === false} onClick={() => setEditingSettlement(settlement)}>
+                            {settlement.paymentMethod ? "Edit Details" : "Add Payment Details"}
+                          </button>
+                          <button
+                            disabled={selectedBranch?.isActive === false} className="delete-btn"
+                            onClick={() => handleDeleteSettlement(settlement.id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                   {settlements.length === 0 && (
                     <tr>
-                      <td colSpan="12">No settlement history found.</td>
+                      <td colSpan={isAdmin ? 12 : 11}>No settlement history found.</td>
                     </tr>
                   )}
                 </tbody>
@@ -1440,6 +1443,7 @@ function History() {
           {selectedInvoice && (
             <InvoiceView
               invoice={selectedInvoice}
+              paymentSettlements={canViewSettlements ? settlements : []}
               onClose={() => setSelectedInvoice(null)}
             />
           )}

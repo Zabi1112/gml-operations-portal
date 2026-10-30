@@ -726,6 +726,7 @@ const Settlements = () => {
                     <th>Company/Reference</th>
                     <th>Total Amount</th>
                     <th>Type</th>
+                    <th>Payment Method</th>
                     <th>Dispatcher</th>
                     <th>Accounts</th>
                     <th>Partner Profit</th>
@@ -748,6 +749,7 @@ const Settlements = () => {
                           {settlement.amountType || "MANUAL"}
                         </span>
                       </td>
+                      <td>{settlement.paymentMethod || "-"}</td>
                       <td>{formatCurrency(settlement.dispatcherAmountPKR)}</td>
                       <td>{formatCurrency(settlement.accountsAmountPKR)}</td>
                       <td>{formatCurrency(settlement.partnerProfitPKR)}</td>
@@ -755,7 +757,11 @@ const Settlements = () => {
                       {isAdmin && (
                         <td>
                           <button className="btn-secondary" disabled={selectedBranch?.isActive === false} onClick={() => setEditingSettlement(settlement)}>
-                            Edit
+                            {settlement.invoiceId
+                              ? settlement.paymentMethod
+                                ? "Edit Payment Details"
+                                : "Add Payment Details"
+                              : "Edit"}
                           </button>
                         </td>
                       )}

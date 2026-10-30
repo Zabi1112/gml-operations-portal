@@ -15,7 +15,13 @@ const invoiceAddresses = {
   }
 };
 
-const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
+const InvoiceView = ({
+  invoice,
+  onClose,
+  onSaved,
+  isPreview = false,
+  paymentSettlements = []
+}) => {
   const [addressSelection, setAddressSelection] = useState({ invoice, key: "usa" });
   const addressKey =
     addressSelection.invoice === invoice ? addressSelection.key : "usa";
@@ -97,6 +103,13 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
   const remainingPayable = Number(
     invoice.outstandingAmountUSD ?? invoice.netPayable ?? 0
   );
+  const invoicePaymentSettlements = paymentSettlements
+    .filter((settlement) => Number(settlement.invoiceId) === Number(invoice.id))
+    .sort(
+      (first, second) =>
+        new Date(second.settlementDate || second.createdAt).getTime() -
+        new Date(first.settlementDate || first.createdAt).getTime()
+    );
 
   return (
     <div className="invoice-modal">
@@ -374,6 +387,30 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
             )}
           </tbody>
         </table>
+
+        {invoicePaymentSettlements.length > 0 && (
+          <div className="invoice-payment-history">
+            <h3 className="section-title">Payment Records</h3>
+            <table className="summary-table">
+              <thead>
+                <tr>
+                  <th>Clearance Date</th>
+                  <th>Payment Method</th>
+                  <th>Amount Received</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoicePaymentSettlements.map((settlement) => (
+                  <tr key={settlement.id}>
+                    <td>{formatDate(settlement.settlementDate || settlement.createdAt)}</td>
+                    <td>{settlement.paymentMethod || "-"}</td>
+                    <td>${Number(settlement.invoiceAmountUSD || 0).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {invoice.notes && (
           <div className="invoice-notes">
