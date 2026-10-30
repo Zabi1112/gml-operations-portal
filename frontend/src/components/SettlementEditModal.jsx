@@ -8,6 +8,11 @@ import {
 } from "../finance/settlementAllocation";
 
 function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose, onSaved }) {
+  const savedPaymentMethod = settlement.paymentMethod || "";
+  const savedCustomMethod = savedPaymentMethod.startsWith("Other: ")
+    ? savedPaymentMethod.slice("Other: ".length)
+    : "";
+  const knownPaymentMethods = ["Remitly", "Wire Transfer", "PayPal"];
   const [form, setForm] = useState({
     companyName: settlement.companyName || "",
     totalAmountPKR: settlement.totalAmountPKR ?? 0,
@@ -27,7 +32,21 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
         : String(settlement.accountsPartnerId),
     settlementDate: settlement.settlementDate
       ? String(settlement.settlementDate).slice(0, 10)
-      : "",
+      : settlement.clearedAt
+        ? String(settlement.clearedAt).slice(0, 10)
+        : settlement.createdAt
+          ? String(settlement.createdAt).slice(0, 10)
+          : "",
+    paymentMethod: knownPaymentMethods.includes(savedPaymentMethod)
+      ? savedPaymentMethod
+      : savedPaymentMethod
+        ? "Other"
+        : "",
+    otherPaymentMethod: savedCustomMethod || (
+      savedPaymentMethod && !knownPaymentMethods.includes(savedPaymentMethod)
+        ? savedPaymentMethod
+        : ""
+    ),
     notes: settlement.notes || ""
   });
   const [saving, setSaving] = useState(false);
@@ -78,6 +97,28 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (settlement.invoiceId) {
+      try {
+        setSaving(true);
+        const res = await axios.patch(
+          `${API}/finance/settlements/${settlement.id}`,
+          {
+            paymentMethod: form.paymentMethod,
+            otherPaymentMethod: form.otherPaymentMethod,
+            settlementDate: form.settlementDate
+          },
+          auth
+        );
+        alert("Invoice payment details updated successfully!");
+        onSaved(res.data?.settlement);
+      } catch (error) {
+        alert(error.response?.data?.message || "Error updating invoice payment details");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     if (totalAmount <= 0) return alert("Please enter a valid total amount");
     if (accountsAmount > 0 && !form.accountsPartnerId) {
       return alert("Please select the partner who will pay the accounts fee");
@@ -112,6 +153,72 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
       setSaving(false);
     }
   };
+
+  if (settlement.invoiceId) {
+    return (
+      <div className="settlement-modal">
+        <div className="settlement-box wide-box">
+          <h2>Add / Edit Invoice Payment Details</h2>
+          <p>
+            <strong>Invoice:</strong> {settlement.invoiceNumber || "-"}
+            {" · "}
+            <strong>Company:</strong> {settlement.companyName || "-"}
+            {" · "}
+            <strong>Received:</strong> ${Number(settlement.invoiceAmountUSD || 0).toFixed(2)}
+          </p>
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="edit-invoice-payment-method">Payment Method *</label>
+              <select
+                id="edit-invoice-payment-method"
+                value={form.paymentMethod}
+                onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
+                required
+              >
+                <option value="">Select payment method</option>
+                {knownPaymentMethods.map((method) => (
+                  <option key={method} value={method}>{method}</option>
+                ))}
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {form.paymentMethod === "Other" && (
+              <div className="form-group">
+                <label htmlFor="edit-invoice-other-payment-method">Other payment method *</label>
+                <input
+                  id="edit-invoice-other-payment-method"
+                  value={form.otherPaymentMethod}
+                  onChange={(e) => setForm({ ...form, otherPaymentMethod: e.target.value })}
+                  maxLength={100}
+                  required
+                />
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="edit-invoice-clearance-date">Clearance Date *</label>
+              <input
+                id="edit-invoice-clearance-date"
+                type="date"
+                value={form.settlementDate}
+                onChange={(e) => setForm({ ...form, settlementDate: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="settlement-actions">
+              <button type="submit" disabled={saving}>
+                {saving ? "Saving..." : "Save Payment Details"}
+              </button>
+              <button type="button" onClick={onClose}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="settlement-modal">

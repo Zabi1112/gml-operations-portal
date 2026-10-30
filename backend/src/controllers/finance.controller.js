@@ -415,6 +415,29 @@ const updateSettlement = async (req, res) => {
     });
 
     if (!existing) return res.status(404).json({ message: "Settlement not found" });
+    if (
+      Object.prototype.hasOwnProperty.call(req.body, "paymentMethod") ||
+      Object.prototype.hasOwnProperty.call(req.body, "settlementDate")
+    ) {
+      if (!existing.invoiceId) {
+        return res.status(400).json({
+          message: "Payment details can only be updated for invoice settlements"
+        });
+      }
+      const { paymentMethod, settlementDate } = payments.validatePaymentDetails(
+        req.body.paymentMethod,
+        req.body.otherPaymentMethod,
+        req.body.settlementDate
+      );
+      const updatedSettlement = await prisma.invoiceSettlement.update({
+        where: { id },
+        data: { paymentMethod, settlementDate }
+      });
+      return res.json({
+        message: "Invoice payment details updated successfully",
+        settlement: updatedSettlement
+      });
+    }
     if(existing.paymentAllocations)return res.status(409).json({message:"This settlement records a payment. Delete it to reverse the payment, then record the corrected amount."});
 
     const branch = await prisma.branch.findUnique({
@@ -507,7 +530,9 @@ const updateSettlement = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(error.status || 500).json({
+      message: error.status ? error.message : "Server error"
+    });
   }
 };
 
