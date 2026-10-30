@@ -29,3 +29,23 @@ test('invoice settlements also prevent editing even when payment totals are inco
  const db={invoice:{findMany:async()=>[invoice]},invoiceSettlement:{count:async()=>1}};
  await assert.rejects(()=>p.assertEditable(db,invoice),/cannot be edited/);
 });
+test('legacy invoice without carry-forward allocations does not treat included previous balance as paid',async()=>{
+ const invoice={
+  ...row(1,1073.5),
+  netPayable:2136,
+  currentChargesUSD:1073.5,
+  previousInvoiceAmount:1062.5,
+  includePreviousInvoiceInNet:true,
+  carryForward:null,
+  companyId:9,
+  branchId:2
+ };
+ assert.equal(p.ownDue(invoice),213600);
+ assert.deepEqual(p.paymentPlan(invoice,[invoice],2136),[{invoiceId:1,amountUSD:2136}]);
+ const [decorated]=await p.decorate({invoice:{findMany:async()=>[]}},[invoice]);
+ assert.equal(decorated.paymentStatus,'PENDING');
+ assert.equal(decorated.receivedAmountUSD,0);
+ assert.equal(decorated.outstandingAmountUSD,2136);
+ const db={invoice:{findMany:async()=>[invoice]},invoiceSettlement:{count:async()=>0}};
+ await assert.doesNotReject(()=>p.assertEditable(db,invoice));
+});

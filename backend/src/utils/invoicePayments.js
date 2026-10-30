@@ -14,7 +14,17 @@ function validatePaymentDetails(method,otherMethod,date){
  if(parsed.getUTCFullYear()!==year||parsed.getUTCMonth()!==month-1||parsed.getUTCDate()!==day)fail(400,'Enter a valid clearance date.');
  return {paymentMethod,settlementDate:parsed};
 }
-const ownDue=i=>Math.max(0,cents(i.currentChargesUSD??i.netPayable)-cents(i.paidAmountUSD));
+const ownDue=i=>{
+ const untrackedPreviousBalance=
+  i.currentChargesUSD!==null&&
+  i.currentChargesUSD!==undefined&&
+  !Array.isArray(i.carryForward)&&
+  i.includePreviousInvoiceInNet
+   ? cents(i.previousInvoiceAmount)
+   : 0;
+ const due=i.currentChargesUSD??i.netPayable;
+ return Math.max(0,cents(due)+untrackedPreviousBalance-cents(i.paidAmountUSD));
+};
 function allocationsFor(invoice,rows){const byId=new Map(rows.map(r=>[r.id,r]));const sources=Array.isArray(invoice.carryForward)?invoice.carryForward:[];return [...sources.map(s=>({invoiceId:s.invoiceId,amountCents:Math.min(cents(s.amountUSD),byId.has(s.invoiceId)?ownDue(byId.get(s.invoiceId)):0)})),{invoiceId:invoice.id,amountCents:ownDue(invoice)}].filter(s=>s.amountCents>0);}
 function paymentPlan(invoice,rows,received){let remaining=cents(received);if(!Number.isFinite(Number(received))||Math.abs(Number(received)*100-remaining)>0.00001||!Number.isSafeInteger(remaining)||remaining<=0)fail(400,'Enter a positive amount received.');const sources=allocationsFor(invoice,rows),due=sources.reduce((sum,s)=>sum+s.amountCents,0);if(remaining>due)fail(400,'Amount received exceeds this invoice outstanding balance. Refresh and check the balance.');const plan=[];for(const s of sources){const amount=Math.min(remaining,s.amountCents);if(amount)plan.push({invoiceId:s.invoiceId,amountUSD:amount/100});remaining-=amount;}return plan;}
 async function companyRows(db,invoice){return db.invoice.findMany({where:invoice.companyId?{branchId:invoice.branchId,companyId:invoice.companyId}:{id:invoice.id},orderBy:[{createdAt:'asc'},{id:'asc'}]});}
