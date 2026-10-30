@@ -6,6 +6,13 @@ import "./SettlementView.css";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
+const formatSettlementDate = (value) => {
+  if (!value) return "-";
+  const dateOnly = typeof value === "string" ? /^(\d{4}-\d{2}-\d{2})/.exec(value)?.[1] : null;
+  const date = dateOnly ? new Date(`${dateOnly}T00:00:00`) : new Date(value);
+  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString();
+};
+
 function SettlementView({ settlement, onClose }) {
   const [partnerStatement, setPartnerStatement] = useState(null);
   const [printing, setPrinting] = useState(false);
@@ -136,12 +143,11 @@ function SettlementView({ settlement, onClose }) {
                 <strong>Company:</strong> {settlement.companyName || "-"}
               </div>
               <div>
-                <strong>Settlement Date:</strong>{" "}
-                {settlement.clearedAt
-                  ? new Date(settlement.clearedAt).toLocaleDateString()
-                  : settlement.settlementDate
-                  ? new Date(settlement.settlementDate).toLocaleDateString()
-                  : "-"}
+                <strong>Clearance Date:</strong>{" "}
+                {formatSettlementDate(settlement.settlementDate || settlement.clearedAt)}
+              </div>
+              <div>
+                <strong>Payment Method:</strong> {settlement.paymentMethod || "-"}
               </div>
               <div>
                 <strong>Partner:</strong> {partnerStatement.name || "Partner"}
@@ -189,12 +195,11 @@ function SettlementView({ settlement, onClose }) {
             <strong>Cleared By:</strong> {settlement.clearedBy || "-"}
           </div>
           <div>
-            <strong>Cleared Date:</strong>{" "}
-            {settlement.clearedAt
-              ? new Date(settlement.clearedAt).toLocaleString()
-              : settlement.settlementDate
-              ? new Date(settlement.settlementDate).toLocaleString()
-              : "-"}
+            <strong>Clearance Date:</strong>{" "}
+            {formatSettlementDate(settlement.settlementDate || settlement.clearedAt)}
+          </div>
+          <div>
+            <strong>Payment Method:</strong> {settlement.paymentMethod || "-"}
           </div>
         </div>
 

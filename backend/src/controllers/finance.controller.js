@@ -195,6 +195,11 @@ const clearInvoice = async (req, res) => {
 
     const invoiceAmountUSD = Number(req.body.amountReceivedUSD);
     const paymentAllocations=payments.paymentPlan(invoice,await payments.companyRows(tx,invoice),invoiceAmountUSD);
+    const { paymentMethod, settlementDate } = payments.validatePaymentDetails(
+      req.body.paymentMethod,
+      req.body.otherPaymentMethod,
+      req.body.settlementDate
+    );
     const usdRate = Number(req.body.usdRate || 0);
     if(!Number.isFinite(usdRate)||usdRate<=0)payments.fail(400,"Enter a valid USD to PKR rate.");
     const totalAmountPKR = payments.cents(invoiceAmountUSD * usdRate)/100;
@@ -236,6 +241,7 @@ const clearInvoice = async (req, res) => {
       data: {
         paymentAllocations,
         paymentRequestId:requestId,
+        paymentMethod,
         branchId: invoice.branchId,
         invoiceId: invoice.id,
         invoiceNumber: invoice.invoiceNumber,
@@ -260,7 +266,7 @@ const clearInvoice = async (req, res) => {
         partnerSplits,
 
         clearedBy: req.user?.name || req.user?.email || "Admin",
-        settlementDate: new Date(),
+        settlementDate,
         notes: req.body.notes || null
       }
     });

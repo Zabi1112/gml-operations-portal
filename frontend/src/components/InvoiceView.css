@@ -218,6 +218,35 @@
   font-weight: 800;
 }
 
+.invoice-payment-balance {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 32px 24px;
+}
+
+.invoice-payment-balance div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #ead6c8;
+  border-radius: 10px;
+  background: #fffaf6;
+}
+
+.invoice-payment-balance span {
+  color: #786253;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.invoice-payment-balance strong {
+  color: #b84316;
+  font-variant-numeric: tabular-nums;
+}
+
 .invoice-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

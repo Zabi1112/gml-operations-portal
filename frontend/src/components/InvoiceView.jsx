@@ -287,7 +287,18 @@ const InvoiceView = ({ invoice, onClose, onSaved, isPreview = false }) => {
         )}
 
         {invoice.balanceTransferredToInvoiceId && <p style={{margin:"16px 32px"}}>Historical balance consolidated into a later invoice. This is not a payment receipt.</p>}
-        {!invoice.balanceTransferredToInvoiceId && invoice.outstandingAmountUSD !== undefined && <p style={{margin:"16px 32px"}}>Paid / allocated: ${Number(invoice.receivedAmountUSD||0).toFixed(2)} &middot; Outstanding: ${Number(invoice.outstandingAmountUSD).toFixed(2)}</p>}
+        {!invoice.balanceTransferredToInvoiceId && invoice.outstandingAmountUSD !== undefined && (
+          <div className="invoice-payment-balance">
+            <div>
+              <span>Paid Amount</span>
+              <strong>${Number(invoice.receivedAmountUSD || 0).toFixed(2)}</strong>
+            </div>
+            <div>
+              <span>Remaining Balance</span>
+              <strong>${Number(invoice.outstandingAmountUSD).toFixed(2)}</strong>
+            </div>
+          </div>
+        )}
         <div className="invoice-summary-grid">
           <div className="summary-card">
             <span>Total Load Amount</span>

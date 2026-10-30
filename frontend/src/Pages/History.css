@@ -125,6 +125,8 @@
   background: white;
   width: 100%;
   max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
   border-radius: 12px;
   padding: 24px;
 }
@@ -149,6 +151,24 @@
   padding: 11px;
   border: 1px solid #ead6c8;
   border-radius: 8px;
+}
+
+.settlement-box .form-group select {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #ead6c8;
+  border-radius: 8px;
+  background: white;
+}
+
+.payment-details-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.payment-details-fields .form-group {
+  min-width: 0;
 }
 
 .settlement-summary {

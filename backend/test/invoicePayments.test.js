@@ -2,4 +2,12 @@ const test=require('node:test'),assert=require('node:assert/strict');const p=req
 const row=(id,amount,paid=0,carry=[])=>({id,currentChargesUSD:amount,paidAmountUSD:paid,netPayable:amount+carry.reduce((s,i)=>s+i.amountUSD,0),carryForward:carry});
 test('partial receipts carry only remaining original charges across several invoices',async()=>{const first=row(1,1000,400),second=row(2,200,0,[{invoiceId:1,amountUSD:600}]);let rows=[first,second];assert.deepEqual(p.paymentPlan(second,rows,300),[{invoiceId:1,amountUSD:300}]);first.paidAmountUSD+=300;const db={invoice:{findMany:async()=>rows}};assert.equal((await p.outstanding(db,1,1)).totalUSD,500);const third=row(3,100,0,(await p.outstanding(db,1,1)).items);rows.push(third);assert.equal(third.netPayable,600);assert.deepEqual(p.paymentPlan(third,rows,600),[{invoiceId:1,amountUSD:300},{invoiceId:2,amountUSD:200},{invoiceId:3,amountUSD:100}]);first.paidAmountUSD=1000;assert.equal((await p.decorate(db,[second]))[0].outstandingAmountUSD,200);});
 test('reject overpayment, invalid values and fractional cents',()=>{const i=row(1,100);for(const v of [0,-1,101,NaN,Infinity,0.001,1.234])assert.throws(()=>p.paymentPlan(i,[i],v));assert.deepEqual(p.paymentPlan(i,[i],99.99),[{invoiceId:1,amountUSD:99.99}]);});
+test('payment method and clearance date are required and validated',()=>{
+ const details=p.validatePaymentDetails('Remitly','', '2026-10-30');
+ assert.equal(details.paymentMethod,'Remitly');
+ assert.equal(details.settlementDate.toISOString(),'2026-10-30T00:00:00.000Z');
+ assert.equal(p.validatePaymentDetails('Other','Cash deposit','2026-10-30').paymentMethod,'Other: Cash deposit');
+ for(const [method,other,date] of [['', '', '2026-10-30'],['Unknown','','2026-10-30'],['Other',' ','2026-10-30'],['Other','x'.repeat(101),'2026-10-30'],['PayPal','','2026-02-30']])assert.throws(()=>p.validatePaymentDetails(method,other,date));
+});
+test('invoice decoration exposes paid and remaining amounts for re-downloaded partial invoices',async()=>{const i=row(1,100,35);const [result]=await p.decorate({invoice:{findMany:async()=>[]}},[i]);assert.equal(result.paymentStatus,'PARTIAL');assert.equal(result.receivedAmountUSD,35);assert.equal(result.outstandingAmountUSD,65);});
 test('reconciled old invoice is transferred, never presented as a cash receipt',async()=>{const i={...row(1,0),netPayable:500,balanceTransferredToInvoiceId:2};const [result]=await p.decorate({},[i]);assert.equal(result.paymentStatus,'CARRIED_FORWARD');assert.equal(result.receivedAmountUSD,0);assert.equal(result.outstandingAmountUSD,0);});

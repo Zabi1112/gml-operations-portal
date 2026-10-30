@@ -51,6 +51,10 @@ This system is designed to manage:
 - Auto dispatch amount calculation
 - Printable invoice view
 - Invoice history support
+- Partial payment tracking with payment method and clearance date
+- Invoice downloads show the paid amount and outstanding balance
+
+Before deploying payment-method tracking, run `npm run invoice:payment-details` from `backend/` to add its database column.
 
 ---
 

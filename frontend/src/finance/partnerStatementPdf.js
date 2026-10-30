@@ -28,7 +28,8 @@ export function createPartnerStatementPdf(settlement,partner,assets={}) {
  header(true);section('STATEMENT DETAILS');
  row('Invoice / reference',settlement.invoiceNumber||'Manual settlement');
  row('Client company',settlement.companyName||'-');row('Prepared for',partner.name||'Partner');
- row('Settlement date',String(settlement.settlementDate||settlement.clearedAt||'').slice(0,10)||'-');
+ row('Clearance date',String(settlement.settlementDate||settlement.clearedAt||'').slice(0,10)||'-');
+ if(settlement.paymentMethod)row('Payment method',settlement.paymentMethod);
  section('RECEIPTS & DISPATCH');
  if(Number(settlement.invoiceAmountUSD)>0)row('Amount received (USD)',money(settlement.invoiceAmountUSD,'USD'));
  if(Number(settlement.usdRate)>0)row('Exchange rate', '1 USD = '+money(settlement.usdRate));

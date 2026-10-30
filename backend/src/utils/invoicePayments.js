@@ -1,5 +1,19 @@
 ﻿const cents=v=>Math.round(Number(v||0)*100);
 const fail=(status,message)=>{throw Object.assign(new Error(message),{status});};
+const paymentMethods=new Set(['Remitly','Wire Transfer','PayPal']);
+function validatePaymentDetails(method,otherMethod,date){
+ if(typeof method!=='string')fail(400,'Choose how the payment was received.');
+ let paymentMethod=method;
+ if(method==='Other'){
+  if(typeof otherMethod!=='string'||!otherMethod.trim()||otherMethod.trim().length>100)fail(400,'Enter the other payment method (up to 100 characters).');
+  paymentMethod='Other: '+otherMethod.trim();
+ }else if(!paymentMethods.has(method))fail(400,'Choose a valid payment method.');
+ if(typeof date!=='string'||!/^(\d{4})-(\d{2})-(\d{2})$/.test(date))fail(400,'Enter a valid clearance date.');
+ const [year,month,day]=date.split('-').map(Number);
+ const parsed=new Date(Date.UTC(year,month-1,day));
+ if(parsed.getUTCFullYear()!==year||parsed.getUTCMonth()!==month-1||parsed.getUTCDate()!==day)fail(400,'Enter a valid clearance date.');
+ return {paymentMethod,settlementDate:parsed};
+}
 const ownDue=i=>Math.max(0,cents(i.currentChargesUSD??i.netPayable)-cents(i.paidAmountUSD));
 function allocationsFor(invoice,rows){const byId=new Map(rows.map(r=>[r.id,r]));const sources=Array.isArray(invoice.carryForward)?invoice.carryForward:[];return [...sources.map(s=>({invoiceId:s.invoiceId,amountCents:Math.min(cents(s.amountUSD),byId.has(s.invoiceId)?ownDue(byId.get(s.invoiceId)):0)})),{invoiceId:invoice.id,amountCents:ownDue(invoice)}].filter(s=>s.amountCents>0);}
 function paymentPlan(invoice,rows,received){let remaining=cents(received);if(!Number.isFinite(Number(received))||Math.abs(Number(received)*100-remaining)>0.00001||!Number.isSafeInteger(remaining)||remaining<=0)fail(400,'Enter a positive amount received.');const sources=allocationsFor(invoice,rows),due=sources.reduce((sum,s)=>sum+s.amountCents,0);if(remaining>due)fail(400,'Amount received exceeds this invoice outstanding balance. Refresh and check the balance.');const plan=[];for(const s of sources){const amount=Math.min(remaining,s.amountCents);if(amount)plan.push({invoiceId:s.invoiceId,amountUSD:amount/100});remaining-=amount;}return plan;}
@@ -9,4 +23,4 @@ async function outstanding(db,branchId,companyId){const rows=await db.invoice.fi
 async function decorate(db,invoices){if(!invoices.length)return invoices;const ids=[...new Set(invoices.flatMap(i=>Array.isArray(i.carryForward)?i.carryForward.map(s=>s.invoiceId):[]))];const sources=ids.length?await db.invoice.findMany({where:{id:{in:ids}}}):[];return invoices.map(i=>{const remaining=allocationsFor(i,[...sources,i]).reduce((sum,s)=>sum+s.amountCents,0)/100;return {...i,outstandingAmountUSD:remaining,receivedAmountUSD:i.balanceTransferredToInvoiceId?0:Math.max(0,cents(i.netPayable)-cents(remaining))/100,isCleared:remaining===0,paymentStatus:i.balanceTransferredToInvoiceId?'CARRIED_FORWARD':remaining===0?'PAID':remaining<Number(i.netPayable)?'PARTIAL':'PENDING'};});}
 async function refreshFlags(db,invoice){const rows=await companyRows(db,invoice);for(const i of rows){const cleared=allocationsFor(i,rows).length===0;if(cleared!==i.isCleared)await db.invoice.update({where:{id:i.id},data:{isCleared:cleared,clearedAt:cleared?new Date():null}});}}
 async function assertMutable(db,invoice){const rows=await companyRows(db,invoice);const referenced=rows.some(i=>i.balanceTransferredToInvoiceId===invoice.id||(Array.isArray(i.carryForward)&&i.carryForward.some(s=>s.invoiceId===invoice.id)));const settlements=await db.invoiceSettlement.count({where:{invoiceId:invoice.id}});if((invoice.currentChargesUSD!==null&&invoice.currentChargesUSD!==undefined&&!Array.isArray(invoice.carryForward))||invoice.balanceTransferredToInvoiceId||cents(invoice.paidAmountUSD)>0||settlements||referenced)fail(409,'This invoice has payments or is carried into a later invoice. Reverse its payments or remove the later unpaid invoice before changing it.');}
-module.exports={cents,ownDue,allocationsFor,paymentPlan,companyRows,lockCompany,outstanding,decorate,refreshFlags,assertMutable,fail};
+module.exports={cents,ownDue,allocationsFor,paymentPlan,companyRows,lockCompany,outstanding,decorate,refreshFlags,assertMutable,validatePaymentDetails,fail};

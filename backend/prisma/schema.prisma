@@ -138,6 +138,7 @@ model InvoiceSettlement {
   clearedBy              String?
   clearedAt              DateTime    @default(now())
   settlementDate         DateTime?
+  paymentMethod          String?
   notes                  String?
 
   createdAt              DateTime    @default(now())

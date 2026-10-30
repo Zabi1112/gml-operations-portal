@@ -12,6 +12,22 @@ import { allocatePartnerAmounts, defaultAccountsPartner } from "../finance/settl
 import { BranchContext } from "../context/BranchContext.jsx";
 import "./History.css";
 
+const localDateInput = () => {
+  const date = new Date();
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0")
+  ].join("-");
+};
+
+const formatClearanceDate = (value) => {
+  if (!value) return "-";
+  const dateOnly = typeof value === "string" ? /^(\d{4}-\d{2}-\d{2})/.exec(value)?.[1] : null;
+  const date = dateOnly ? new Date(`${dateOnly}T00:00:00`) : new Date(value);
+  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString();
+};
+
 function History() {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
@@ -47,6 +63,8 @@ function History() {
   const [clearInvoiceData, setClearInvoiceData] = useState(null);
 
   const [settlementForm, setSettlementForm] = useState({
+    amountReceivedUSD: "",
+    paymentRequestId: "",
     usdRate: "",
     dispatcherPercent: "",
     dispatcherType: "PERCENTAGE",
@@ -54,6 +72,9 @@ function History() {
     accountsValue: "",
     accountsType: "PERCENTAGE",
     accountsPartnerId: "",
+    paymentMethod: "",
+    otherPaymentMethod: "",
+    settlementDate: localDateInput(),
     notes: ""
   });
 
@@ -184,6 +205,9 @@ function History() {
       accountsValue: selectedBranch?.accountsPercent ?? 10,
       accountsType: "PERCENTAGE",
       accountsPartnerId: defaultAccountsPartner(partners),
+      paymentMethod: "",
+      otherPaymentMethod: "",
+      settlementDate: localDateInput(),
       notes: ""
     });
   };
@@ -220,6 +244,9 @@ function History() {
         {
           amountReceivedUSD:Number(settlementForm.amountReceivedUSD),
           paymentRequestId:settlementForm.paymentRequestId,
+          paymentMethod:settlementForm.paymentMethod,
+          otherPaymentMethod:settlementForm.otherPaymentMethod,
+          settlementDate:settlementForm.settlementDate,
           usdRate: Number(settlementForm.usdRate || 0),
           dispatcherValue: Number(settlementForm.dispatcherPercent || 0),
           dispatcherType: settlementForm.dispatcherType,
@@ -618,7 +645,13 @@ function History() {
                             {new Date(invoice.invoiceEnd).toLocaleDateString()}
                           </td>
                           <td>{invoice.truckNumbers || "-"}</td>
-                          <td>${Number(invoice.netPayable || 0).toFixed(2)}<small style={{display:"block"}}>Due: ${Number(invoice.outstandingAmountUSD ?? invoice.netPayable).toFixed(2)}</small></td>
+                          <td>
+                            ${Number(invoice.netPayable || 0).toFixed(2)}
+                            <small style={{display:"block"}}>
+                              Paid: ${Number(invoice.receivedAmountUSD || 0).toFixed(2)}
+                              {" · "}Due: ${Number(invoice.outstandingAmountUSD ?? invoice.netPayable).toFixed(2)}
+                            </small>
+                          </td>
                           <td>
                             {invoice.isCleared ? (
                               <span className="status-cleared">{invoice.balanceTransferredToInvoiceId ? "Carried forward" : "Paid"}</span>
@@ -631,7 +664,7 @@ function History() {
                           </td>
                           <td style={{ display: "flex", gap: "5px" }}>
                             <button onClick={() => setSelectedInvoice(invoice)}>
-                              View
+                              View / Download
                             </button>
                             {isAdmin && (
                               <button disabled={selectedBranch?.isActive === false} onClick={() => openEditInvoice(invoice)}>
@@ -790,6 +823,7 @@ function History() {
                     <th>Accounts</th>
                     <th>Partner Profit</th>
                     <th>Cleared By</th>
+                    <th>Payment Method</th>
                     <th>Cleared Date</th>
                     <th>Actions</th>
                   </tr>
@@ -822,12 +856,9 @@ function History() {
                         {Number(settlement.partnerProfitPKR || 0).toLocaleString()}
                       </td>
                       <td>{settlement.clearedBy || "-"}</td>
+                      <td>{settlement.paymentMethod || "-"}</td>
                       <td>
-                        {settlement.clearedAt
-                          ? new Date(settlement.clearedAt).toLocaleDateString()
-                          : settlement.createdAt
-                          ? new Date(settlement.createdAt).toLocaleDateString()
-                          : "-"}
+                        {formatClearanceDate(settlement.settlementDate || settlement.clearedAt || settlement.createdAt)}
                       </td>
                       <td style={{ display: "flex", gap: "5px" }}>
                         <button onClick={() => setSelectedSettlement(settlement)}>
@@ -847,7 +878,7 @@ function History() {
                   ))}
                   {settlements.length === 0 && (
                     <tr>
-                      <td colSpan="11">No settlement history found.</td>
+                      <td colSpan="12">No settlement history found.</td>
                     </tr>
                   )}
                 </tbody>
@@ -876,6 +907,55 @@ function History() {
                 </p>
 
                 <form onSubmit={submitClearInvoice}>
+                  <div className="payment-details-fields">
+                    <div className="form-group">
+                      <label htmlFor="payment-method">Payment method</label>
+                      <select
+                        id="payment-method"
+                        value={settlementForm.paymentMethod}
+                        onChange={e => setSettlementForm({
+                          ...settlementForm,
+                          paymentMethod: e.target.value,
+                          otherPaymentMethod: ""
+                        })}
+                        required
+                      >
+                        <option value="">Select payment method</option>
+                        <option value="Remitly">Remitly</option>
+                        <option value="Wire Transfer">Wire Transfer</option>
+                        <option value="PayPal">PayPal</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="clearance-date">Clearance date</label>
+                      <input
+                        id="clearance-date"
+                        type="date"
+                        value={settlementForm.settlementDate}
+                        onChange={e => setSettlementForm({
+                          ...settlementForm,
+                          settlementDate: e.target.value
+                        })}
+                        required
+                      />
+                    </div>
+                    {settlementForm.paymentMethod === "Other" && (
+                      <div className="form-group">
+                        <label htmlFor="other-payment-method">Other payment method</label>
+                        <input
+                          id="other-payment-method"
+                          value={settlementForm.otherPaymentMethod}
+                          onChange={e => setSettlementForm({
+                            ...settlementForm,
+                            otherPaymentMethod: e.target.value
+                          })}
+                          maxLength={100}
+                          required
+                        />
+                      </div>
+                    )}
+                  </div>
                   <div className="form-group">
                 <label>Amount received (USD)<input type="number" min="0.01" step="0.01" max={clearInvoiceData.outstandingAmountUSD ?? clearInvoiceData.netPayable} required value={settlementForm.amountReceivedUSD} onChange={e=>setSettlementForm({...settlementForm,amountReceivedUSD:e.target.value})}/></label>
                   </div>
