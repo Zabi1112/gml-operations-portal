@@ -389,6 +389,9 @@ const updateInvoice = async (req, res) => {
 
           netPayable: calculated.netPayable,
           ...(existing.currentChargesUSD !== null ? {currentChargesUSD:(payments.cents(calculated.netPayable)-payments.cents(existing.previousInvoiceAmount))/100} : {}),
+          paidAmountUSD: 0,
+          isCleared: false,
+          clearedAt: null,
           notes: req.body.notes ?? existing.notes,
 
           loads: {
