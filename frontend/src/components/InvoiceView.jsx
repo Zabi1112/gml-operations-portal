@@ -11,7 +11,7 @@ const invoiceAddresses = {
   },
   pakistan: {
     label: "Pakistan",
-    address: "Office#1 3rd floor Al rehmat Plaza Haji Pura chowk nad"
+    address: "Office#1 3rd floor Al rehmat Plaza Haji Pura chowk Wazirabad"
   }
 };
 
