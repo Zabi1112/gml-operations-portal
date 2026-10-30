@@ -636,6 +636,24 @@ function History() {
                   <tbody>
                     {invoices.map((invoice) => {
                       const settlement = findSettlementByInvoiceId(invoice.id);
+                      const carriesForwardFromInvoice = invoices.some(
+                        (candidate) =>
+                          Number(candidate.id) !== Number(invoice.id) &&
+                          Array.isArray(candidate.carryForward) &&
+                          candidate.carryForward.some(
+                            (item) =>
+                              Number(item.invoiceId) === Number(invoice.id) &&
+                              Number(item.amountUSD) > 0
+                          )
+                      );
+                      const canEditInvoice =
+                        !invoice.balanceTransferredToInvoiceId &&
+                        !carriesForwardFromInvoice &&
+                        !settlement &&
+                        Number(invoice.receivedAmountUSD || 0) === 0 &&
+                        !["PARTIAL", "PAID", "CARRIED_FORWARD"].includes(
+                          invoice.paymentStatus
+                        );
                       return (
                         <tr key={invoice.id}>
                           <td>{invoice.invoiceNumber || "-"}</td>
@@ -667,7 +685,7 @@ function History() {
                             <button onClick={() => setSelectedInvoice(invoice)}>
                               View / Download
                             </button>
-                            {isAdmin && (
+                            {isAdmin && canEditInvoice && (
                               <button disabled={selectedBranch?.isActive === false} onClick={() => openEditInvoice(invoice)}>
                                 Edit
                               </button>

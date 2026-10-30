@@ -23,4 +23,14 @@ async function outstanding(db,branchId,companyId){const rows=await db.invoice.fi
 async function decorate(db,invoices){if(!invoices.length)return invoices;const ids=[...new Set(invoices.flatMap(i=>Array.isArray(i.carryForward)?i.carryForward.map(s=>s.invoiceId):[]))];const sources=ids.length?await db.invoice.findMany({where:{id:{in:ids}}}):[];return invoices.map(i=>{const remaining=allocationsFor(i,[...sources,i]).reduce((sum,s)=>sum+s.amountCents,0)/100;return {...i,outstandingAmountUSD:remaining,receivedAmountUSD:i.balanceTransferredToInvoiceId?0:Math.max(0,cents(i.netPayable)-cents(remaining))/100,isCleared:remaining===0,paymentStatus:i.balanceTransferredToInvoiceId?'CARRIED_FORWARD':remaining===0?'PAID':remaining<Number(i.netPayable)?'PARTIAL':'PENDING'};});}
 async function refreshFlags(db,invoice){const rows=await companyRows(db,invoice);for(const i of rows){const cleared=allocationsFor(i,rows).length===0;if(cleared!==i.isCleared)await db.invoice.update({where:{id:i.id},data:{isCleared:cleared,clearedAt:cleared?new Date():null}});}}
 async function assertMutable(db,invoice){const rows=await companyRows(db,invoice);const referenced=rows.some(i=>i.balanceTransferredToInvoiceId===invoice.id||(Array.isArray(i.carryForward)&&i.carryForward.some(s=>s.invoiceId===invoice.id)));const settlements=await db.invoiceSettlement.count({where:{invoiceId:invoice.id}});if((invoice.currentChargesUSD!==null&&invoice.currentChargesUSD!==undefined&&!Array.isArray(invoice.carryForward))||invoice.balanceTransferredToInvoiceId||cents(invoice.paidAmountUSD)>0||settlements||referenced)fail(409,'This invoice has payments or is carried into a later invoice. Reverse its payments or remove the later unpaid invoice before changing it.');}
-module.exports={cents,ownDue,allocationsFor,paymentPlan,companyRows,lockCompany,outstanding,decorate,refreshFlags,assertMutable,validatePaymentDetails,fail};
+async function assertEditable(db,invoice){
+ const rows=await companyRows(db,invoice);
+ const carriedForward=rows.some(i=>
+  i.balanceTransferredToInvoiceId===invoice.id||
+  (Array.isArray(i.carryForward)&&i.carryForward.some(s=>Number(s.invoiceId)===Number(invoice.id)&&cents(s.amountUSD)>0))
+ );
+ const settlements=await db.invoiceSettlement.count({where:{invoiceId:invoice.id}});
+ if(invoice.balanceTransferredToInvoiceId||cents(invoice.paidAmountUSD)>0||settlements||carriedForward)
+  fail(409,'Invoices with recorded payments or balances carried into another invoice cannot be edited.');
+}
+module.exports={cents,ownDue,allocationsFor,paymentPlan,companyRows,lockCompany,outstanding,decorate,refreshFlags,assertMutable,assertEditable,validatePaymentDetails,fail};

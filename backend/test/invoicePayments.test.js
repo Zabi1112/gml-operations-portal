@@ -11,3 +11,21 @@ test('payment method and clearance date are required and validated',()=>{
 });
 test('invoice decoration exposes paid and remaining amounts for re-downloaded partial invoices',async()=>{const i=row(1,100,35);const [result]=await p.decorate({invoice:{findMany:async()=>[]}},[i]);assert.equal(result.paymentStatus,'PARTIAL');assert.equal(result.receivedAmountUSD,35);assert.equal(result.outstandingAmountUSD,65);});
 test('reconciled old invoice is transferred, never presented as a cash receipt',async()=>{const i={...row(1,0),netPayable:500,balanceTransferredToInvoiceId:2};const [result]=await p.decorate({},[i]);assert.equal(result.paymentStatus,'CARRIED_FORWARD');assert.equal(result.receivedAmountUSD,0);assert.equal(result.outstandingAmountUSD,0);});
+test('unpaid invoices with pending balances remain editable',async()=>{
+ const invoice={...row(2,200,0,[{invoiceId:1,amountUSD:50}]),companyId:9,branchId:3};
+ const db={invoice:{findMany:async()=>[invoice]},invoiceSettlement:{count:async()=>0}};
+ await assert.doesNotReject(()=>p.assertEditable(db,invoice));
+});
+test('paid invoices and balances carried into later invoices cannot be edited',async()=>{
+ const paid={...row(1,100,20),companyId:9,branchId:3};
+ const carried={...row(1,100),companyId:9,branchId:3};
+ const later={...row(2,50,0,[{invoiceId:1,amountUSD:100}]),companyId:9,branchId:3};
+ const db={invoice:{findMany:async()=>[carried,later]},invoiceSettlement:{count:async()=>0}};
+ await assert.rejects(()=>p.assertEditable(db,paid),/cannot be edited/);
+ await assert.rejects(()=>p.assertEditable(db,carried),/cannot be edited/);
+});
+test('invoice settlements also prevent editing even when payment totals are inconsistent',async()=>{
+ const invoice={...row(1,100),companyId:9,branchId:3};
+ const db={invoice:{findMany:async()=>[invoice]},invoiceSettlement:{count:async()=>1}};
+ await assert.rejects(()=>p.assertEditable(db,invoice),/cannot be edited/);
+});

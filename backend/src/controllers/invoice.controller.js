@@ -329,7 +329,7 @@ const updateInvoice = async (req, res) => {
     await payments.lockCompany(tx,existing.branchId,existing.companyId);
     const fresh=await tx.invoice.findUnique({where:{id:Number(id)},include:{loads:true}});
     if(!fresh)payments.fail(404,"Invoice not found");
-    await payments.assertMutable(tx,fresh);
+    await payments.assertEditable(tx,fresh);
     existing=fresh;
     const calculated = calculateInvoice({...existing,...req.body,previousInvoiceAmount:existing.previousInvoiceAmount,includePreviousInvoiceInNet:existing.includePreviousInvoiceInNet});
 
