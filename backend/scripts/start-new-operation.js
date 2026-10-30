@@ -39,7 +39,7 @@ async function main() {
     assert.equal(before.isActive, true);
     await tx.branch.update({ where: { id: original.id }, data: { isActive: false } });
     const current = await tx.branch.create({ data: {
-      branchName: newName, location: "Wazirabad", phone: "(409) 248-2002",
+      branchName: newName, location: "Wazirabad", phone: "+92 344 6060933",
       email: "info@eastandwestlogistics.com", dispatcherPercent: 0, accountsPercent: 0
     }, include });
     const after = await tx.branch.findUnique({ where: { id: original.id }, include });

@@ -33,12 +33,12 @@ export function buildLetter(form) {
   if(f.hours.trim()) fields.push(['Working hours',f.hours.trim()]);
   const opening=f.documentType==='OFFER'?'We are pleased to offer you':'We are pleased to confirm your appointment to';
   let paragraphs=internship?[
-    `${f.documentType==='OFFER'?'We are pleased to offer you an internship opportunity as':'We are pleased to confirm your appointment as'} ${f.position} at East West Logistics LLC${f.assessment?' under our Internship-to-Employment Program':''}.`,
+    `${f.documentType==='OFFER'?'We are pleased to offer you an internship opportunity as':'We are pleased to confirm your appointment as'} ${f.position} at EASTWEST Logistics${f.assessment?' under our Internship-to-Employment Program':''}.`,
     `Your internship will be for a period of ${duration} and will ${paid?`include a stipend of ${compensation}`:'be unpaid'}.${f.training.trim()?` During this period, you will receive practical training in ${f.training.trim()}.`:''}`
-  ]:[`${opening} the position of ${f.position} at East West Logistics LLC, starting on ${formatLetterDate(f.joiningDate)}.`,`Your salary will be ${compensation}.`];
+  ]:[`${opening} the position of ${f.position} at EASTWEST Logistics, starting on ${formatLetterDate(f.joiningDate)}.`,`Your salary will be ${compensation}.`];
   if(internship&&f.assessment) paragraphs.push('Upon completion of your internship, you will be required to pass a Dispatch and Communication Assessment to qualify for employment. If you do not pass, you may continue your internship and retake the assessment after one month.',`You may also request to take the assessment before completing the ${duration} internship. If you successfully pass and a position is available, you may be offered employment immediately without completing the remaining internship period.`,'Successful candidates will receive a separate Employment Confirmation Letter, outlining their position and compensation terms.');
   if(f.extraTerms.trim()) paragraphs.push(...f.extraTerms.trim().split(/\n\s*\n/));
-  paragraphs.push('We welcome you to East West Logistics LLC and wish you success in your professional journey.');
+  paragraphs.push('We welcome you to EASTWEST Logistics and wish you success in your professional journey.');
   if(f.customBody.trim()) paragraphs=f.customBody.trim().split(/\n\s*\n/);
   if(paragraphs.join('\n').length>12000) throw new Error('Keep the letter body within 12,000 characters.');
   return {title,fields,paragraphs,name:f.name,signatoryName:f.signatoryName.trim(),signatoryTitle:f.signatoryTitle.trim()||'Human Resources Department',acceptance:`I, ${f.name}, accept this ${internship?'internship':'employment'} ${f.documentType==='OFFER'?'offer':'appointment'} and its stated terms.`,filename:`${internship?'internship':'employment'}-${f.documentType.toLowerCase()}-${f.name.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'letter'}.pdf`};

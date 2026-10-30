@@ -290,7 +290,7 @@ function DailyReport() {
 
           <div className="daily-print-area">
             <div className="daily-print-header">
-              <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC logo" />
+              <img src="/east-west-logo.png" alt="EASTWEST Logistics logo" />
 
               <div>
                 <h1>Daily Load Report</h1>

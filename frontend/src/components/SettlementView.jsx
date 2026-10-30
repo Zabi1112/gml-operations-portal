@@ -121,10 +121,10 @@ function SettlementView({ settlement, onClose }) {
         {partnerStatement ? (
           <>
             <div className="settlement-header">
-              <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC logo" />
+              <img src="/east-west-logo.png" alt="EASTWEST Logistics logo" />
               <div>
                 <h1>Partner Settlement Statement</h1>
-                <p>EAST WEST LOGISTICS LLC</p>
+                <p>EASTWEST Logistics</p>
               </div>
             </div>
 
@@ -171,10 +171,10 @@ function SettlementView({ settlement, onClose }) {
         ) : (
           <>
         <div className="settlement-header">
-          <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC logo" />
+          <img src="/east-west-logo.png" alt="EASTWEST Logistics logo" />
           <div>
             <h1>Invoice Settlement</h1>
-            <p>EAST WEST LOGISTICS LLC</p>
+            <p>EASTWEST Logistics</p>
           </div>
         </div>
 

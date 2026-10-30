@@ -7,10 +7,10 @@ export function createLetterPdf(letter,logo) {
   doc.setFillColor(...navy);doc.rect(0,0,W,12,'F');doc.setFillColor(...orange);doc.triangle(0,12,86,12,0,84,'F');
   if(first){
    let hasLogo=false;if(logo)try{const p=doc.getImageProperties(logo),scale=Math.min(100/p.width,85/p.height);doc.addImage(logo,p.fileType,M,30,p.width*scale,p.height*scale);hasLogo=true;}catch{/* Keep the text letterhead if logo loading fails. */}
-   const x=hasLogo?M+110:M;font(22,true,navy);doc.text('EAST WEST',x,57);font(16,true,orange);doc.text('LOGISTICS LLC',x,78);font(8,true,navy);doc.text('TRUCK DISPATCHING & SOLUTIONS',x,96);
-   font(8.5,false,navy);doc.text(['(409) 248-2002','info@eastandwestlogistics.com','www.eastandwestlogistics.com','Human Resources Department'],W-M,43,{align:'right',lineHeightFactor:1.55});
+   const x=hasLogo?M+110:M;font(22,true,navy);doc.text('EASTWEST',x,57);font(16,true,orange);doc.text('LOGISTICS',x,78);font(8,true,navy);doc.text('TRUCK DISPATCHING & SOLUTIONS',x,96);
+   font(8.5,false,navy);doc.text(['(409) 248-2002','+92 344 6060933','info@eastandwestlogistics.com','www.eastandwestlogistics.com','Human Resources Department'],W-M,43,{align:'right',lineHeightFactor:1.55});
    doc.setFillColor(...navy);doc.rect(0,128,W,36,'F');font(16,true,[255,255,255]);doc.text(letter.title,M,151);doc.setFillColor(...orange);doc.rect(0,164,W,4,'F');y=192;
-  }else{font(10,true,navy);doc.text('EAST WEST LOGISTICS LLC | HUMAN RESOURCES',M,40);font(9);doc.text(letter.title+' - continued',M,57);y=80;}
+  }else{font(10,true,navy);doc.text('EASTWEST LOGISTICS | HUMAN RESOURCES',M,40);font(9);doc.text(letter.title+' - continued',M,57);y=80;}
  }
  const ensure=height=>{if(y+height>H-74){doc.addPage();frame();}};
  function paragraph(text){font();for(const line of doc.splitTextToSize(text,usable)){ensure(14);font();doc.text(line,M,y);y+=14;}y+=8;}
@@ -18,7 +18,7 @@ export function createLetterPdf(letter,logo) {
  for(const [label,value] of letter.fields){font();const lines=doc.splitTextToSize(value,usable-130);ensure(Math.max(17,lines.length*13+4));font(10,true,navy);doc.text(label,M,y);font(10);doc.text(lines,M+130,y);y+=Math.max(17,lines.length*13+4);}
  y+=12;paragraph('Dear '+letter.name+',');for(const p of letter.paragraphs)paragraph(p);
  font();const acceptanceLines=doc.splitTextToSize(letter.acceptance,usable/2-22);
- font(9);const signerLines=[letter.signatoryName,letter.signatoryTitle,'East West Logistics LLC'].filter(Boolean).flatMap(text=>doc.splitTextToSize(text,205));
+ font(9);const signerLines=[letter.signatoryName,letter.signatoryTitle,'EASTWEST Logistics'].filter(Boolean).flatMap(text=>doc.splitTextToSize(text,205));
  const signatureHeight=22+Math.max(45,acceptanceLines.length*14+12)+Math.max(48,29+signerLines.length*12);ensure(signatureHeight);
  paragraph('Best regards,');const top=y;const right=M+usable/2+18;
  font();doc.text(acceptanceLines,right,top);doc.setDrawColor(80,96,112);doc.setLineWidth(.6);

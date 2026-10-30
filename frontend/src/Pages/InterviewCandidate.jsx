@@ -55,7 +55,7 @@ function CandidateAssessment({ token }) {
     } catch (e) { setError(e.message === "Failed to fetch" ? "Cannot reach the server. Your responses are still here; check your connection and retry." : e.message); }
     finally { setBusy(false); setSending(false); }
   }
-  return <main className="iv-shell"><header className="iv-header"><img src="/east-west-logo.png" alt="East West Logistics" /><div><span className="iv-eyebrow">EAST WEST LOGISTICS</span><strong>Communication assessment</strong></div><span className="iv-demo">CANDIDATE ASSESSMENT</span></header>
+  return <main className="iv-shell"><header className="iv-header"><img src="/east-west-logo.png" alt="EASTWEST Logistics" /><div><span className="iv-eyebrow">EASTWEST LOGISTICS</span><strong>Communication assessment</strong></div><span className="iv-demo">CANDIDATE ASSESSMENT</span></header>
     <div className="iv-wrap"><p className="iv-preview-note">Your responses are private to the hiring team. Speaking recordings are deleted after review; scores, written responses, and feedback remain until the team deletes your assessment.</p>
     {stage === "loading" && <section className="iv-card"><h1>Loading your invitation...</h1></section>}
     {stage === "unavailable" && <section className="iv-card"><h1>Unable to open this invitation</h1><p>Ask the hiring team to check your link, or try again if your connection was interrupted.</p><button onClick={() => window.location.reload()}>Try again</button></section>}

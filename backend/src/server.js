@@ -28,7 +28,7 @@ app.use(["/pay-statements", "/api/pay-statements"], express.json({ limit: "256kb
 app.use(express.json());
 
 app.get(["/", "/api"], (req, res) => {
-  res.json({ message: "EAST WEST LOGISTICS LLC Portal Backend Running" });
+  res.json({ message: "EASTWEST Logistics Portal Backend Running" });
 });
 
 console.log("ROUTES CHECK", {

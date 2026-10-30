@@ -3,6 +3,7 @@ import axios from "axios";
 import { API } from "../api";
 import Layout from "../components/Layout.jsx";
 import { BranchContext } from "../context/BranchContext.jsx";
+import { summarizePartnerEarnings } from "../finance/partnerEarnings.js";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -13,8 +14,19 @@ function Dashboard() {
     useContext(BranchContext);
 
   const [showForm, setShowForm] = useState(false);
-  const [settlementData, setSettlementData] = useState({ branchId: null, rows: [] });
+  const [settlementData, setSettlementData] = useState({
+    branchId: null,
+    rows: [],
+    partners: [],
+    error: ""
+  });
   const settlements = settlementData.branchId === selectedBranch?.id ? settlementData.rows : [];
+  const branchPartners =
+    settlementData.branchId === selectedBranch?.id
+      ? settlementData.partners
+      : [];
+  const financeError =
+    settlementData.branchId === selectedBranch?.id ? settlementData.error : "";
 
   const [branchForm, setBranchForm] = useState({
     branchName: "",
@@ -33,14 +45,29 @@ function Dashboard() {
     if (!canEdit || !selectedBranch?.id) return;
     const branchId = selectedBranch.id;
     const controller = new AbortController();
-    axios.get(API + "/finance/settlements?branchId=" + branchId, {
-      headers: { Authorization: "Bearer " + token },
-      signal: controller.signal
-    }).then(({ data }) => {
-      setSettlementData({ branchId, rows: data || [] });
-    }).catch(error => {
-      if (!axios.isCancel(error)) setSettlementData({ branchId, rows: [] });
-    });
+    const request = { headers: { Authorization: "Bearer " + token }, signal: controller.signal };
+    Promise.all([
+      axios.get(API + "/finance/settlements?branchId=" + branchId, request),
+      axios.get(API + "/finance/settings/" + branchId, request)
+    ])
+      .then(([settlementResponse, settingsResponse]) => {
+        setSettlementData({
+          branchId,
+          rows: settlementResponse.data || [],
+          partners: settingsResponse.data.partners || [],
+          error: ""
+        });
+      })
+      .catch(error => {
+        if (!axios.isCancel(error)) {
+          setSettlementData({
+            branchId,
+            rows: [],
+            partners: [],
+            error: error.response?.data?.message || "Could not load partner earnings."
+          });
+        }
+      });
     return () => controller.abort();
   }, [canEdit, selectedBranch?.id, token]);
 
@@ -99,28 +126,7 @@ function Dashboard() {
     0
   );
 
-  const partnerTotals = {};
-
-  settlements.forEach((settlement) => {
-    const splits = Array.isArray(settlement.partnerSplits)
-      ? settlement.partnerSplits
-      : [];
-
-    splits.forEach((partner) => {
-      const name = partner.name || "Unknown Partner";
-
-      if (!partnerTotals[name]) {
-        partnerTotals[name] = 0;
-      }
-
-      partnerTotals[name] += Number(partner.amountPKR || 0);
-    });
-  });
-
-  const partnerRows = Object.entries(partnerTotals).map(([name, amount]) => ({
-    name,
-    amount
-  }));
+  const partnerRows = summarizePartnerEarnings(settlements, branchPartners);
 
   return (
     <Layout title="Dashboard">
@@ -307,6 +313,11 @@ function Dashboard() {
 
                   <div className="partner-earning-box">
                     <h3>Partner Earnings</h3>
+                    {financeError && (
+                      <p className="warning-message" role="alert">
+                        {financeError}
+                      </p>
+                    )}
 
                     <table className="partner-earning-table">
                       <thead>

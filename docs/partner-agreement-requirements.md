@@ -5,7 +5,7 @@ Implemented: Contracts > Partner agreements (ADMIN only). Existing carrier agree
 ## Confirmed commercial terms
 
 - Pennsylvania; actual LLC members with restricted dispatch-only economic interests, not a non-member commission arrangement.
-- Separate LLC legal name defaults to EASTWESTLOGISTICSLLC; exact registered name and formation status are entered before issuance.
+- Company name defaults to EASTWEST Logistics; formation status and registration details are entered before issuance.
 - Managing member: 85% dispatching interest; runs the office, team and dispatch and bears office expenses.
 - Silent member: 15% dispatching interest; no ordinary operational authority or automatic portal access. Statutory information/approval rights are preserved.
 - On a collected $1,000 dispatch-service invoice: $250 dispatcher allocation, $112.50 silent member distribution, $637.50 managing member portion before office expenses. Not carrier gross load revenue or unpaid invoice totals.

@@ -18,14 +18,14 @@ async function downloadAgreement(agreement) {
   const pages = doc.getNumberOfPages();
   for (let i = 1; i <= pages; i++) {
     doc.setPage(i); doc.setFontSize(8);
-    doc.text("EastWestLogisticsLLC | EWL-" + agreement.id + " | " + i + "/" + pages, 48, 817);
+    doc.text("EASTWEST Logistics | EWL-" + agreement.id + " | " + i + "/" + pages, 48, 817);
   }
   doc.save("EWL-Agreement-" + agreement.id + ".pdf");
 }
 export default function AgreementDocument({ agreement }) {
   const [error, setError] = useState("");
   return <article className="agreement-document">
-    <header className="agreement-brand"><img src="/east-west-logo.png" alt="EastWestLogisticsLLC" /><div><strong>EastWestLogisticsLLC</strong><p>Freight Dispatch Agreement</p></div></header>
+    <header className="agreement-brand"><img src="/east-west-logo.png" alt="EASTWEST Logistics" /><div><strong>EASTWEST Logistics</strong><p>Freight Dispatch Agreement</p></div></header>
     <div className="contract-actions"><span className={"contract-status status-" + agreement.status.toLowerCase()}>{agreement.status}</span><button type="button" onClick={() => downloadAgreement(agreement).catch(() => setError("PDF could not be downloaded. Please try again."))}>Download PDF</button></div>
     {error && <p role="alert" className="contract-error">{error}</p>}
     <div className="agreement-text">{agreement.termsText}</div>

@@ -72,7 +72,7 @@ function BranchContracts({ branch }) {
     <p>Create an agreement for an existing company or a new carrier. Clients can review and sign without a portal account.</p>
     {error && <p role="alert" className="contract-error">{error}</p>}
     {notice && <p role="status" className="contract-notice">{notice}</p>}
-    {branch.isActive && <section className="contract-card"><h3>New dispatch agreement</h3><p>Issued by <strong>EastWestLogisticsLLC</strong> &middot; Owner: <strong>Zeeshan Cheema</strong></p>
+    {branch.isActive && <section className="contract-card"><h3>New dispatch agreement</h3><p>Issued by <strong>EASTWEST Logistics</strong> &middot; Owner: <strong>Zeeshan Cheema</strong></p>
       <form onSubmit={create}>
         <div className="contract-grid">
           <label>Existing company (optional)<select value={form.companyId} onChange={chooseCompany}><option value="">New / enter manually</option>{companies.map(company => <option key={company.id} value={company.id}>{company.companyName}</option>)}</select></label>

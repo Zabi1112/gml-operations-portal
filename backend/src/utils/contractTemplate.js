@@ -1,4 +1,4 @@
-const COMPANY = "EastWestLogisticsLLC";
+const COMPANY = "EASTWEST Logistics";
 const OWNER = "Zeeshan Cheema";
 function contractText({ companyName, companyMC, ratePercent, seats, effectiveDate }) {
   return `FREIGHT DISPATCH AGREEMENT
@@ -50,7 +50,7 @@ Changes require written agreement. Invalid clauses will not affect the rest of t
 Company Information
 ${COMPANY} is an independent LLC owned and operated by ${OWNER}.
 5 Hillcrest Dr, Downingtown, PA 19335
-info@eastandwestlogistics.com | (409) 248-2002
+info@eastandwestlogistics.com | (409) 248-2002 | +92 344 6060933
 https://eastandwestlogistics.com/
 
 Dispatcher Representative: ${OWNER}

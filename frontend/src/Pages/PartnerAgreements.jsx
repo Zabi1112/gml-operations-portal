@@ -9,7 +9,7 @@ import '../contracts/contracts.css';
 import '../contracts/partners.css';
 const auth = () => ({headers:{Authorization:'Bearer '+localStorage.getItem('token')}});
 const errorText = e => e.response?.data?.message || 'Unable to connect. Please try again.';
-const initial = {companyName:'EASTWESTLOGISTICSLLC',managerName:'',silentName:'',managerEmail:'',silentEmail:'',address:'5 Hillcrest Dr, Downingtown, PA 19335',effectiveDate:new Date().toLocaleDateString('en-CA'),formationStatus:'PLANNED',formationDate:'',entityNumber:'',payoutDays:'',filingCosts:'',contributions:'',additionalTerms:''};
+const initial = {companyName:'EASTWEST Logistics',managerName:'',silentName:'',managerEmail:'',silentEmail:'',address:'5 Hillcrest Dr, Downingtown, PA 19335',effectiveDate:new Date().toLocaleDateString('en-CA'),formationStatus:'PLANNED',formationDate:'',entityNumber:'',payoutDays:'',filingCosts:'',contributions:'',additionalTerms:''};
 function BranchPartners({branch}) {
  const [form,setForm]=useState(initial),[items,setItems]=useState([]),[record,setRecord]=useState(null),[draft,setDraft]=useState(null),[reviewed,setReviewed]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[cancelId,setCancelId]=useState(null),[identity,setIdentity]=useState(null);
  const refresh=useCallback(async () => { const {data}=await axios.get(API+'/partner-agreements',{...auth(),params:{branchId:branch.id}});setItems(data); },[branch.id]);

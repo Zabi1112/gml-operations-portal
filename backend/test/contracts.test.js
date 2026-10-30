@@ -27,7 +27,7 @@ test("new agreement snapshots supplied terms and new company identity", async ()
   const { service } = fixture();
   const agreement = await service.create(input, 7);
   assert.match(agreement.token, /^[a-f0-9]{64}$/);
-  assert.match(agreement.termsText, /EastWestLogisticsLLC/);
+  assert.match(agreement.termsText, /EASTWEST Logistics/);
   assert.match(agreement.termsText, /Zeeshan Cheema/);
   assert.match(agreement.termsText, /4% weekly/);
   assert.doesNotMatch(agreement.termsText, /Black Matter|Sagheer|Wyoming|30-1327737|Already Delivered/);

@@ -15,7 +15,7 @@ Generate client links on the deployed portal so the URL uses https://portal.east
 
 Adapted from https://github.com/Zabi1112/Carrier-Agreement-Form (create.html, index.html, success.html and rejected.html).
 
-Company: EastWestLogisticsLLC. Owner / dispatcher representative: Zeeshan Cheema. The old Black Matter LLC, Wyoming registration, EIN and Cash App payment instructions were removed. The template no longer asserts that the carrier documents were already delivered. The other supplied terms were preserved, including the original applicable-State wording.
+Company: EASTWEST Logistics. Owner / dispatcher representative: Zeeshan Cheema. The old Black Matter LLC, Wyoming registration, EIN and Cash App payment instructions were removed. The template no longer asserts that the carrier documents were already delivered. The other supplied terms were preserved, including the original applicable-State wording.
 
 Template source: backend/src/utils/contractTemplate.js. Each issued agreement stores a complete terms snapshot, template version and SHA-256 digest. Later template changes do not alter issued or signed agreements. Correct a pending agreement by cancelling it and creating a replacement.
 

@@ -11,6 +11,7 @@
   max-width: 980px;
   margin: 0 auto 15px;
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
 }
@@ -23,6 +24,24 @@
   color: white;
   cursor: pointer;
   font-weight: 700;
+}
+
+.invoice-address-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.invoice-address-choice select {
+  padding: 9px;
+  border: 1px solid #d5b9a8;
+  border-radius: 8px;
+  background: white;
+  color: #334155;
+  font: inherit;
 }
 
 .invoice-print {

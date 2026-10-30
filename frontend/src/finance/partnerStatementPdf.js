@@ -11,10 +11,10 @@ export function createPartnerStatementPdf(settlement,partner,assets={}) {
   if(first){
    if(assets.logo)image(assets.logo,M,29,76,76);
    const x=assets.logo?M+86:M;
-   font(20,true,navy);doc.text('EAST WEST',x,54);font(14,true,orange);doc.text('LOGISTICS LLC',x,74);font(7,true,navy);doc.text('TRUCK DISPATCHING & SOLUTIONS',x,91);
-   font(8,false,navy);doc.text(['(409) 248-2002','info@eastandwestlogistics.com','www.eastandwestlogistics.com','Accounts Office'],W-M,42,{align:'right',lineHeightFactor:1.7});
+   font(20,true,navy);doc.text('EASTWEST',x,54);font(14,true,orange);doc.text('LOGISTICS',x,74);font(7,true,navy);doc.text('TRUCK DISPATCHING & SOLUTIONS',x,91);
+   font(8,false,navy);doc.text(['(409) 248-2002','+92 344 6060933','info@eastandwestlogistics.com','www.eastandwestlogistics.com','Accounts Office'],W-M,42,{align:'right',lineHeightFactor:1.7});
    doc.setFillColor(...navy);doc.rect(0,122,W,39,'F');font(17,true,[255,255,255]);doc.text('PARTNER SETTLEMENT STATEMENT',M,147);doc.setFillColor(...orange);doc.rect(0,161,W,4,'F');y=189;
-  }else{font(11,true,navy);doc.text('EAST WEST LOGISTICS LLC',M,39);font(9);doc.text('Partner Settlement Statement - continued',M,56);y=83;}
+  }else{font(11,true,navy);doc.text('EASTWEST Logistics',M,39);font(9);doc.text('Partner Settlement Statement - continued',M,56);y=83;}
  }
  const ensure=h=>{if(y+h>bottom){doc.addPage();header();}};
  function section(title){ensure(58);doc.setFillColor(237,242,247);doc.roundedRect(M,y-13,usable,25,3,3,'F');doc.setFillColor(...orange);doc.rect(M,y-13,3,25,'F');font(10,true,navy);doc.text(title,M+12,y+3);y+=33;}

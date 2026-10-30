@@ -40,7 +40,7 @@ export default function PublicAgreement() {
       {agreement.status === "REJECTED" && <section className="contract-notice"><h1>Agreement rejected</h1><p>Your response has been recorded. Contact the dispatch team if you wish to discuss a new agreement.</p></section>}
       {agreement.status === "CANCELLED" && <section className="contract-notice"><h1>Agreement cancelled</h1><p>This link is closed for signing. Contact the dispatch team for a new agreement.</p></section>}
       {agreement.status === "PENDING" && !agreement.canRespond && <p className="contract-notice">This agreement belongs to an archived operation and is closed for signing.</p>}
-      {agreement.canRespond && <header><p className="contract-eyebrow">EAST WEST LOGISTICS</p><h1>Review your dispatch agreement</h1><p>Please read the agreement below before signing on behalf of {agreement.companyName}.</p></header>}
+      {agreement.canRespond && <header><p className="contract-eyebrow">EASTWEST Logistics</p><h1>Review your dispatch agreement</h1><p>Please read the agreement below before signing on behalf of {agreement.companyName}.</p></header>}
       <AgreementDocument agreement={agreement} />
       {agreement.canRespond && <form className="contract-card" onSubmit={e => { e.preventDefault(); respond("sign"); }}>
         <h2>Sign for {agreement.companyName}</h2>
@@ -51,6 +51,6 @@ export default function PublicAgreement() {
         {rejecting && <div className="contract-notice"><p>Reject this agreement? This will close the link for signing.</p><div className="contract-actions"><button type="button" disabled={busy} onClick={() => respond("reject")}>Confirm rejection</button><button type="button" className="contract-secondary" disabled={busy} onClick={() => setRejecting(false)}>Go back</button></div></div>}
       </form>}
     </>}
-    <footer>EastWestLogisticsLLC &middot; Zeeshan Cheema<br /><a href="mailto:info@eastandwestlogistics.com">info@eastandwestlogistics.com</a> &middot; <a href="tel:+14092482002">(409) 248-2002</a></footer>
+    <footer>EASTWEST Logistics &middot; Zeeshan Cheema<br /><a href="mailto:info@eastandwestlogistics.com">info@eastandwestlogistics.com</a> &middot; <a href="tel:+14092482002">(409) 248-2002</a> &middot; <a href="tel:+923446060933">+92 344 6060933</a></footer>
   </div></main>;
 }

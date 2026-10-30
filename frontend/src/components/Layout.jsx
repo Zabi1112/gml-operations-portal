@@ -22,7 +22,7 @@ function Layout({ title, children }) {
   return (
     <div className="dashboard">
       <aside className="sidebar">
-        <img src="/east-west-logo.png" alt="EAST WEST LOGISTICS LLC" className="sidebar-logo" />
+        <img src="/east-west-logo.png" alt="EASTWEST Logistics" className="sidebar-logo" />
 
         <button onClick={() => go("/dashboard")}>Dashboard</button>
         {user?.role === "ADMIN" && (
@@ -66,7 +66,7 @@ function Layout({ title, children }) {
       <main className="content">
         <div className="topbar">
           <div>
-            <p className="company-name">EAST WEST LOGISTICS LLC</p>
+            <p className="company-name">EASTWEST Logistics</p>
             <h2>{title}</h2>
             <p>
               Welcome, {user?.name} — {user?.role}
