@@ -24,6 +24,11 @@ async function decodeSnapshot(response,mc){
  if(outcome)return outcome;
  if(response.status===400&&typeof body?.message==='string'&&/^list index out of range[.!]?$/i.test(body.message.trim()))throw providerError('Provider could not parse this carrier snapshot.',{quarantine:true});
  if(!response.ok)throw providerError('Provider rejected the lookup (HTTP '+response.status+'); this MC has not been skipped.');
- try{return classifyCarrier(body,mc);}catch{throw providerError('Unrecognized carrier response; this MC has not been skipped.');}
+ try{return classifyCarrier(body,mc);}catch(error){
+  if(error.message==='UNRECOGNIZED_RESPONSE'){
+   throw providerError('Provider returned an unrecognized carrier snapshot; retrying before sending this MC to review.',{quarantine:true});
+  }
+  throw providerError('Unable to classify provider response; this MC has not been skipped.');
+ }
 }
 module.exports={decodeSnapshot,recordOutcome};
