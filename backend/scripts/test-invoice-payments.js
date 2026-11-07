@@ -40,6 +40,16 @@ async function main(){if(!process.argv.includes('--run'))throw new Error('Use --
  assert.equal(response.status,201,JSON.stringify(response.body));assert.equal(response.body.invoice.netPayable,2606.5);assert.equal(response.body.invoice.carryForward.length,1);
  assert.equal((await p.outstanding(tx,b.id,legacyCompany.id)).totalUSD,2606.5);
  console.log('PASS: legacy 4,106.50 invoice - 2,000 receipt = 2,106.50, next invoice adds that balance once.');
+
+ const safetyCompany=await tx.company.create({data:{id:-200000005,branchId:b.id,companyName:'SAVE SAFETY TEST'}});
+ const safeBody={branchId:b.id,companyId:safetyCompany.id,companyName:'SAVE SAFETY TEST',invoiceStart:'2026-11-01',invoiceEnd:'2026-11-07',billingType:'FIXED',fixedMonthlyRate:200,selectedTruckCount:2,previousInvoiceAmount:0,loads:[],createRequestId:randomUUID()};
+ response=await call('createInvoice',{body:safeBody});assert.equal(response.status,201,JSON.stringify(response.body));const saved=response.body.invoice;
+ response=await call('createInvoice',{body:safeBody});assert.equal(response.status,201,JSON.stringify(response.body));assert.equal(response.body.invoice.id,saved.id,'Retried saves must return original invoice');
+ assert.equal(await tx.invoice.count({where:{companyId:safetyCompany.id}}),1);
+ response=await call('updateInvoice',{params:{id:saved.id},body:{address:'Updated address only'}});assert.equal(response.status,200,JSON.stringify(response.body));assert.equal(response.body.invoice.netPayable,400,'Address edit must not reset fixed charges');
+ response=await call('deleteInvoice',{params:{id:saved.id}});assert.equal(response.status,200,JSON.stringify(response.body));
+ response=await call('createInvoice',{body:{...safeBody,createRequestId:randomUUID()}});assert.equal(response.status,201,JSON.stringify(response.body));assert.notEqual(response.body.invoice.invoiceNumber,saved.invoiceNumber,'Automatic numbers must not be reused after deletion');
+ console.log('PASS: retried save returns one invoice, metadata edits preserve fixed charges, deleted automatic numbers are not reused.');
  console.log('PASS: database partial receipts, idempotent retry, carry allocation, settlement on actual cash, and reversal.');throw rollback;
  },{timeout:120000});}
 main().catch(e=>{if(e!==rollback){console.error('Payment integration failed:',e.message);process.exitCode=1;}else console.log('All integration fixtures rolled back.');}).finally(()=>db.$disconnect());

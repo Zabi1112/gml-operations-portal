@@ -1,6 +1,6 @@
 import {groupInvoiceLoads} from "../invoices/groupLoads";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { API } from "../api";
 import { getInvoicePaymentRecords } from "../finance/invoicePaymentRecords";
 import "./InvoiceView.css";
@@ -23,6 +23,8 @@ const InvoiceView = ({
   isPreview = false,
   paymentSettlements = []
 }) => {
+  const saveState=useRef(null);
+  const [saving,setSaving]=useState(false);
   const [addressSelection, setAddressSelection] = useState({ invoice, key: "usa" });
   const addressKey =
     addressSelection.invoice === invoice ? addressSelection.key : "usa";
@@ -38,9 +40,15 @@ const InvoiceView = ({
 
   const saveInvoice = async () => {
     if (!isPreview || invoice.id) return invoice;
-
-    const res = await axios.post(`${API}/invoices`, invoice, auth);
-    return res.data.invoice;
+    if(saveState.current?.invoice!==invoice)saveState.current={invoice,requestId:crypto.randomUUID(),saved:null,promise:null};
+    const state=saveState.current;
+    if(state.saved)return state.saved;
+    if(state.promise)return state.promise;
+    setSaving(true);
+    state.promise=axios.post(API+'/invoices',{...invoice,createRequestId:state.requestId},auth)
+      .then(res=>{state.saved=res.data.invoice;return state.saved;})
+      .finally(()=>{state.promise=null;setSaving(false);});
+    return state.promise;
   };
 
   const handleSave = async () => {
@@ -112,8 +120,8 @@ const InvoiceView = ({
   return (
     <div className="invoice-modal">
       <div className="invoice-actions no-print">
-        <button onClick={onClose}>Close / Edit</button>
-        {isPreview && <button onClick={handleSave}>Save to History</button>}
+        <button disabled={saving} onClick={onClose}>Close / Edit</button>
+        {isPreview && <button disabled={saving} onClick={handleSave}>Save to History</button>}
         <label className="invoice-address-choice">
           Company address
           <select
@@ -129,7 +137,7 @@ const InvoiceView = ({
             ))}
           </select>
         </label>
-        <button onClick={handlePrint}>Download PDF</button>
+        <button disabled={saving} onClick={handlePrint}>Download PDF</button>
       </div>
 
       <div className="invoice-print">

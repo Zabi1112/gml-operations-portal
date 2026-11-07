@@ -39,6 +39,7 @@ model User {
 }
 
 model Branch {
+  invoiceSequence Int @default(0)
   salesExportPreference SalesExportPreference?
   quoConnection QuoConnection?
   quoCampaigns QuoCampaign[]
@@ -267,6 +268,7 @@ model SalarySlip {
 }
 
 model Invoice {
+  createRequestId String? @unique
   balanceTransferredToInvoiceId Int?
   currentChargesUSD Float?
   paidAmountUSD Float @default(0)

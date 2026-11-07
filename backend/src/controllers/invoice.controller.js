@@ -1,17 +1,19 @@
+const {validateInvoice,validateLoadOwners}=require('../utils/invoiceValidation');
 const payments=require("../utils/invoicePayments");
 const prisma = require("../utils/prisma");
 const { createLoadsSafely } = require("../utils/loadDedup");
 
 const generateInvoiceNumber = async (branchId, db = prisma) => {
-  const count = await db.invoice.count({
-    where: { branchId: Number(branchId) }
-  });
-
-  const nextNumber = count + 1;
-  return `INV-${String(nextNumber).padStart(5, "0")}`;
+  const branch=await db.branch.findUnique({where:{id:Number(branchId)}});
+  const rows=await db.invoice.findMany({where:{branchId:Number(branchId)},select:{invoiceNumber:true}});
+  const highest=rows.reduce((max,i)=>{const m=/^INV-(\d+)$/.exec(i.invoiceNumber||'');return m?Math.max(max,Number(m[1])):max;},branch.invoiceSequence||0);
+  if(!Number.isSafeInteger(highest)||highest>=2147483646)payments.fail(400,'Invoice number sequence is too large.');
+  const nextNumber=highest+1;
+  await db.branch.update({where:{id:Number(branchId)},data:{invoiceSequence:nextNumber}});
+  return 'INV-'+String(nextNumber).padStart(5,'0');
 };
 
-const calculateInvoice = (data) => {
+const calculateInvoice = (data, fixedFallback = null) => {
   const loads = data.loads || [];
   const billingType = data.billingType || "PERCENTAGE";
 
@@ -57,7 +59,7 @@ const calculateInvoice = (data) => {
             (sum, truck) => sum + Number(truck.rate || 0),
             0
           )
-        : fixedMonthlyRate * selectedTruckCount
+        : data.selectedTruckCount === undefined && fixedFallback !== null ? fixedFallback : fixedMonthlyRate * selectedTruckCount
       : 0;
 
   if (billingType === "FIXED") {
@@ -97,6 +99,9 @@ const calculateInvoice = (data) => {
 const createInvoice = async (req, res) => {
   try {
     const { branchId } = req.body;
+    validateInvoice(req.body);
+    const requestId=req.body.createRequestId;
+    if(requestId!==undefined&&(typeof requestId!=="string"||! /^[a-f0-9-]{36}$/i.test(requestId)))payments.fail(400,"Invalid save request. Refresh the invoice preview.");
 
     if (!branchId) {
       return res.status(400).json({ message: "branchId is required" });
@@ -111,8 +116,11 @@ const createInvoice = async (req, res) => {
     }
 
     const invoice = await prisma.$transaction(async tx => {
+    await payments.lockCompany(tx,branchId,0);
     await payments.lockCompany(tx,branchId,req.body.companyId);
+    if(requestId){const prior=await tx.invoice.findUnique({where:{createRequestId:requestId},include:{loads:true}});if(prior){if(prior.branchId!==Number(branchId)||prior.companyId!==(req.body.companyId?Number(req.body.companyId):null))payments.fail(409,"Save request already used for another invoice.");return prior;}}
     if(req.body.companyId && !await tx.company.findFirst({where:{id:Number(req.body.companyId),branchId:Number(branchId)}}))payments.fail(400,"Company does not belong to this branch.");
+    await validateLoadOwners(tx,req.body);
     const previous = req.body.companyId ? await payments.outstanding(tx,branchId,req.body.companyId) : {items:[],totalUSD:0};
     if(req.body.companyId && Math.abs(Number(req.body.previousInvoiceAmount||0)-previous.totalUSD)>.005) payments.fail(409,'The company balance changed. Re-fetch the pending balance before saving this invoice.');
     const calculated = calculateInvoice({...req.body,previousInvoiceAmount:previous.totalUSD,includePreviousInvoiceInNet:true});
@@ -120,10 +128,12 @@ const createInvoice = async (req, res) => {
     if(currentChargesUSD<0)payments.fail(400,'Discounts and deductions cannot exceed the new invoice charges.');
 
     const invoiceNumber =
-      req.body.invoiceNumber || (await generateInvoiceNumber(branchId,tx));
+      req.body.invoiceNumber?.trim() || (await generateInvoiceNumber(branchId,tx));
 
+    if(req.body.invoiceNumber && await tx.invoice.findFirst({where:{branchId:Number(branchId),companyId:req.body.companyId?Number(req.body.companyId):null,invoiceNumber:req.body.invoiceNumber.trim()}}))payments.fail(409,"This company already has that invoice number. Choose a new number.");
     return tx.invoice.create({
       data: {
+        createRequestId:requestId||null,
         branchId: Number(branchId),
         companyId: req.body.companyId ? Number(req.body.companyId) : null,
 
@@ -216,7 +226,7 @@ const createInvoice = async (req, res) => {
 
         source: "MANUAL"
       }))
-    );
+    ).catch(()=>({created:[],duplicates:[],errors:[{message:'Invoice saved, but copying loads to the load register failed.'}]}));
 
     res.status(201).json({
       message: "Invoice created successfully",
@@ -326,12 +336,18 @@ const updateInvoice = async (req, res) => {
     }
 
     const invoice = await prisma.$transaction(async (tx) => {
+    await payments.lockCompany(tx,existing.branchId,0);
     await payments.lockCompany(tx,existing.branchId,existing.companyId);
     const fresh=await tx.invoice.findUnique({where:{id:Number(id)},include:{loads:true}});
     if(!fresh)payments.fail(404,"Invoice not found");
     await payments.assertEditable(tx,fresh);
     existing=fresh;
-    const calculated = calculateInvoice({...existing,...req.body,previousInvoiceAmount:existing.previousInvoiceAmount,includePreviousInvoiceInNet:existing.includePreviousInvoiceInNet});
+    const input={...existing,...req.body,branchId:existing.branchId,companyId:existing.companyId,previousInvoiceAmount:existing.previousInvoiceAmount,includePreviousInvoiceInNet:existing.includePreviousInvoiceInNet};
+    validateInvoice(input);
+    await validateLoadOwners(tx,input);
+    if(input.billingType==='FIXED'&&!input.truckRateBreakdown?.length&&input.selectedTruckCount===undefined&&(existing.billingType!=='FIXED'||Number(input.fixedMonthlyRate)!==existing.fixedMonthlyRate))payments.fail(400,'Provide truck rates or a truck count when changing fixed billing.');
+    if(req.body.invoiceNumber && req.body.invoiceNumber.trim()!==existing.invoiceNumber && await tx.invoice.findFirst({where:{branchId:existing.branchId,companyId:existing.companyId,invoiceNumber:req.body.invoiceNumber.trim(),id:{not:existing.id}}}))payments.fail(409,'This company already has that invoice number.');
+    const calculated = calculateInvoice(input,existing.billingType==='FIXED'?existing.fixedBillingAmount:null);
 
     if(calculated.netPayable-(existing.includePreviousInvoiceInNet?existing.previousInvoiceAmount:0)<0)payments.fail(400,"Deductions cannot exceed new charges.");
       await tx.invoiceLoad.deleteMany({ where: { invoiceId: Number(id) } });
@@ -354,7 +370,7 @@ const updateInvoice = async (req, res) => {
           truckNumbers: req.body.truckNumbers ?? existing.truckNumbers,
           driverNames: req.body.driverNames ?? existing.driverNames,
 
-          invoiceNumber: req.body.invoiceNumber ?? existing.invoiceNumber,
+          invoiceNumber: req.body.invoiceNumber?.trim() || existing.invoiceNumber,
           invoiceStart: req.body.invoiceStart
             ? new Date(req.body.invoiceStart)
             : existing.invoiceStart,
@@ -373,10 +389,7 @@ const updateInvoice = async (req, res) => {
           totalLoadAmount: calculated.totalLoadAmount,
           totalDispatchAmount: calculated.totalDispatchAmount,
           fixedBillingAmount: calculated.fixedBillingAmount,
-          truckRateBreakdown:
-            calculated.truckRateBreakdown.length > 0
-              ? calculated.truckRateBreakdown
-              : existing.truckRateBreakdown,
+          truckRateBreakdown: calculated.truckRateBreakdown,
           grossAmount: calculated.grossAmount,
 
           discountAmount: Number(req.body.discountAmount ?? existing.discountAmount),
