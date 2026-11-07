@@ -558,6 +558,7 @@ const deleteSettlement = async (req, res) => {
         if(!invoice)payments.fail(409,'Payment invoice not found.');
         await payments.lockCompany(tx,invoice.branchId,invoice.companyId);
         const current=await tx.invoiceSettlement.findUnique({where:{id:settlement.id}});if(!current)return;
+        payments.assertPaymentTarget(invoice,await payments.companyRows(tx,invoice));
         for(const item of current.paymentAllocations)await tx.invoice.update({where:{id:item.invoiceId},data:{paidAmountUSD:{decrement:item.amountUSD}}});
         await tx.invoiceSettlement.delete({where:{id:current.id}});await payments.refreshFlags(tx,invoice);
       },{timeout:30000});
@@ -583,7 +584,7 @@ const deleteSettlement = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message || "Server error" });
+    res.status(error.status||500).json({ message: error.message || "Server error" });
   }
 };
 

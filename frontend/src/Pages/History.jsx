@@ -668,6 +668,7 @@ function History() {
                             ${Number(invoice.netPayable || 0).toFixed(2)}
                             <small style={{display:"block"}}>
                               Paid: ${Number(invoice.receivedAmountUSD || 0).toFixed(2)}
+                              {invoice.paymentStatus === "CARRIED_FORWARD" && <span style={{display:"block"}}>Balance is on {invoice.paymentTargetInvoiceNumber || "the latest invoice"}. Record further payments there.</span>}
                               {" · "}Due: ${Number(invoice.outstandingAmountUSD ?? invoice.netPayable).toFixed(2)}
                             </small>
                           </td>
@@ -675,7 +676,7 @@ function History() {
                             {invoice.isCleared ? (
                               <span className="status-cleared">{invoice.balanceTransferredToInvoiceId ? "Carried forward" : "Paid"}</span>
                             ) : (
-                              <span className="status-pending">{invoice.paymentStatus === "PARTIAL" ? "Partially paid" : "Pending"}</span>
+                              <span className="status-pending">{invoice.paymentStatus === "CARRIED_FORWARD" ? "Carried forward" : invoice.paymentStatus === "PARTIAL" ? "Partially paid" : "Pending"}</span>
                             )}
                           </td>
                           <td>
@@ -713,11 +714,11 @@ function History() {
                           {isAdmin && (
                             <td>
                               <button
-                                className={invoice.isCleared ? "disabled-btn" : ""}
-                                disabled={invoice.isCleared || selectedBranch?.isActive === false}
+                                className={invoice.canRecordPayment === false || invoice.isCleared ? "disabled-btn" : ""}
+                                disabled={invoice.canRecordPayment === false || invoice.isCleared || selectedBranch?.isActive === false}
                                 onClick={() => openClearInvoice(invoice)}
                               >
-                                {invoice.balanceTransferredToInvoiceId ? "Carried forward" : invoice.isCleared ? "Paid" : "Record payment"}
+                                {invoice.paymentStatus === "CARRIED_FORWARD" ? "Use latest invoice" : invoice.isCleared ? "Paid" : "Record payment"}
                               </button>
                             </td>
                           )}

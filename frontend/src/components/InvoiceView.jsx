@@ -187,7 +187,7 @@ const InvoiceView = ({
 
           <div>
             <span>Status</span>
-            <strong>{invoice.balanceTransferredToInvoiceId ? "Balance carried forward" : invoice.isCleared ? "Paid" : invoice.paymentStatus === "PARTIAL" ? "Partially paid" : "Pending"}</strong>
+            <strong>{invoice.paymentStatus === "CARRIED_FORWARD" ? "Balance carried forward" : invoice.isCleared ? "Paid" : invoice.paymentStatus === "PARTIAL" ? "Partially paid" : "Pending"}</strong>
           </div>
 
           <div>
@@ -301,7 +301,7 @@ const InvoiceView = ({
           </>
         )}
 
-        {invoice.balanceTransferredToInvoiceId && <p style={{margin:"16px 32px"}}>Historical balance consolidated into a later invoice. This is not a payment receipt.</p>}
+        {invoice.paymentStatus === "CARRIED_FORWARD" && <p style={{margin:"16px 32px"}}>Balance carried forward to {invoice.paymentTargetInvoiceNumber || "the latest company invoice"}. Record further payments on that invoice. This is not a payment receipt.</p>}
         <div className="invoice-summary-grid">
           <div className="summary-card">
             <span>Total Load Amount</span>
@@ -371,7 +371,7 @@ const InvoiceView = ({
               <td>Net Payable</td>
               <td>${Number(invoice.netPayable || 0).toFixed(2)}</td>
             </tr>
-            {!invoice.balanceTransferredToInvoiceId && (
+            {invoice.paymentStatus !== "CARRIED_FORWARD" && (
               <>
                 <tr className="payment-row received-row">
                   <td>Received Amount</td>

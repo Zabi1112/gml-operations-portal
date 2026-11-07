@@ -49,3 +49,29 @@ test('legacy invoice without carry-forward allocations does not treat included p
  const db={invoice:{findMany:async()=>[invoice]},invoiceSettlement:{count:async()=>0}};
  await assert.doesNotReject(()=>p.assertEditable(db,invoice));
 });
+
+test('reconciled balances never add the previous invoice twice or revive transferred debt',async()=>{
+ const historical={...row(10,0),netPayable:2530,carryForward:null,includePreviousInvoiceInNet:true,previousInvoiceAmount:1800,balanceTransferredToInvoiceId:11};
+ const current={...row(11,4106.5,2000),carryForward:null,includePreviousInvoiceInNet:true,previousInvoiceAmount:2530};
+ assert.equal(p.ownDue(historical),0);assert.equal(p.ownDue(current),210650);
+ const result=await p.outstanding({invoice:{findMany:async()=>[historical,current]}},2,8);
+ assert.equal(result.totalUSD,2106.5);assert.deepEqual(result.items,[{invoiceId:11,invoiceNumber:undefined,amountUSD:2106.5}]);
+});
+test('latest invoice is the only payment target, even when history is filtered',async()=>{
+ const old={...row(1,4106.5,2000),companyId:8,branchId:2,invoiceNumber:'005',createdAt:'2026-10-25'};
+ const next={...row(2,200,0,[{invoiceId:1,amountUSD:2106.5}]),companyId:8,branchId:2,invoiceNumber:'006',createdAt:'2026-11-07'};
+ assert.throws(()=>p.paymentPlan(old,[old,next],100),e=>e.status===409&&e.message.includes('006'));
+ assert.deepEqual(p.paymentPlan(next,[old,next],100),[{invoiceId:1,amountUSD:100}]);
+ const [display]=await p.decorate({invoice:{findMany:async()=>[old,next]}},[old]);
+ assert.equal(display.canRecordPayment,false);assert.equal(display.paymentStatus,'CARRIED_FORWARD');assert.equal(display.outstandingAmountUSD,0);assert.equal(display.carriedForwardAmountUSD,2106.5);assert.equal(display.receivedAmountUSD,2000);assert.equal(display.paymentTargetInvoiceId,2);
+});
+test('several invoice generations preserve exactly one copy of each original remaining charge',async()=>{
+ const first={...row(1,4106.5,2000),companyId:8,branchId:2,carryForward:null,previousInvoiceAmount:2530,includePreviousInvoiceInNet:true};let rows=[first];const db={invoice:{findMany:async()=>rows}};
+ const next={...row(2,500,0,(await p.outstanding(db,2,8)).items),companyId:8,branchId:2};rows.push(next);
+ for(const item of p.paymentPlan(next,rows,1000))rows.find(i=>i.id===item.invoiceId).paidAmountUSD+=item.amountUSD;
+ const third={...row(3,300,0,(await p.outstanding(db,2,8)).items),companyId:8,branchId:2};rows.push(third);
+ assert.equal(third.netPayable,1906.5);assert.equal((await p.outstanding(db,2,8)).totalUSD,1906.5);
+ assert.throws(()=>p.paymentPlan(next,rows,1),e=>e.status===409);
+ for(const item of p.paymentPlan(third,rows,1906.5))rows.find(i=>i.id===item.invoiceId).paidAmountUSD+=item.amountUSD;
+ assert.equal((await p.outstanding(db,2,8)).totalUSD,0);
+});

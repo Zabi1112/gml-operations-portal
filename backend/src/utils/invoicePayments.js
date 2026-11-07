@@ -14,23 +14,51 @@ function validatePaymentDetails(method,otherMethod,date){
  if(parsed.getUTCFullYear()!==year||parsed.getUTCMonth()!==month-1||parsed.getUTCDate()!==day)fail(400,'Enter a valid clearance date.');
  return {paymentMethod,settlementDate:parsed};
 }
+// A legacy invoice without allocation snapshots already includes its previous
+// balance in netPayable. Adding that balance again double-bills the customer.
 const ownDue=i=>{
- const untrackedPreviousBalance=
-  i.currentChargesUSD!==null&&
-  i.currentChargesUSD!==undefined&&
-  !Array.isArray(i.carryForward)&&
-  i.includePreviousInvoiceInNet
-   ? cents(i.previousInvoiceAmount)
-   : 0;
- const due=i.currentChargesUSD??i.netPayable;
- return Math.max(0,cents(due)+untrackedPreviousBalance-cents(i.paidAmountUSD));
+ if(i.balanceTransferredToInvoiceId)return 0;
+ const charges=Array.isArray(i.carryForward)?(i.currentChargesUSD??i.netPayable):i.netPayable;
+ return Math.max(0,cents(charges)-cents(i.paidAmountUSD));
 };
+function latestInvoice(invoice,rows){
+ if(!invoice.companyId)return invoice;
+ return rows.filter(i=>i.companyId===invoice.companyId&&i.branchId===invoice.branchId)
+  .reduce((latest,i)=>{
+   const time=Date.parse(i.createdAt)||0,other=Date.parse(latest.createdAt)||0;
+   return time>other||(time===other&&i.id>latest.id)?i:latest;
+  },invoice);
+}
+function assertPaymentTarget(invoice,rows){
+ const target=latestInvoice(invoice,rows);
+ if(invoice.balanceTransferredToInvoiceId||target.id!==invoice.id)
+  fail(409,'Record this payment on the latest company invoice '+(target.invoiceNumber||('#'+target.id))+'. The older balance has already been carried forward.');
+ return target;
+}
 function allocationsFor(invoice,rows){const byId=new Map(rows.map(r=>[r.id,r]));const sources=Array.isArray(invoice.carryForward)?invoice.carryForward:[];return [...sources.map(s=>({invoiceId:s.invoiceId,amountCents:Math.min(cents(s.amountUSD),byId.has(s.invoiceId)?ownDue(byId.get(s.invoiceId)):0)})),{invoiceId:invoice.id,amountCents:ownDue(invoice)}].filter(s=>s.amountCents>0);}
-function paymentPlan(invoice,rows,received){let remaining=cents(received);if(!Number.isFinite(Number(received))||Math.abs(Number(received)*100-remaining)>0.00001||!Number.isSafeInteger(remaining)||remaining<=0)fail(400,'Enter a positive amount received.');const sources=allocationsFor(invoice,rows),due=sources.reduce((sum,s)=>sum+s.amountCents,0);if(remaining>due)fail(400,'Amount received exceeds this invoice outstanding balance. Refresh and check the balance.');const plan=[];for(const s of sources){const amount=Math.min(remaining,s.amountCents);if(amount)plan.push({invoiceId:s.invoiceId,amountUSD:amount/100});remaining-=amount;}return plan;}
+function paymentPlan(invoice,rows,received){assertPaymentTarget(invoice,rows);let remaining=cents(received);if(!Number.isFinite(Number(received))||Math.abs(Number(received)*100-remaining)>0.00001||!Number.isSafeInteger(remaining)||remaining<=0)fail(400,'Enter a positive amount received.');const sources=allocationsFor(invoice,rows),due=sources.reduce((sum,s)=>sum+s.amountCents,0);if(remaining>due)fail(400,'Amount received exceeds this invoice outstanding balance. Refresh and check the balance.');const plan=[];for(const s of sources){const amount=Math.min(remaining,s.amountCents);if(amount)plan.push({invoiceId:s.invoiceId,amountUSD:amount/100});remaining-=amount;}return plan;}
 async function companyRows(db,invoice){return db.invoice.findMany({where:invoice.companyId?{branchId:invoice.branchId,companyId:invoice.companyId}:{id:invoice.id},orderBy:[{createdAt:'asc'},{id:'asc'}]});}
 async function lockCompany(db,branchId,companyId){await db.$executeRawUnsafe('SELECT pg_advisory_xact_lock($1::integer,$2::integer)',Number(branchId),Number(companyId||0));}
 async function outstanding(db,branchId,companyId){const rows=await db.invoice.findMany({where:{branchId:Number(branchId),companyId:Number(companyId)},orderBy:[{createdAt:'asc'},{id:'asc'}]});const items=rows.filter(i=>ownDue(i)>0).map(i=>({invoiceId:i.id,invoiceNumber:i.invoiceNumber,amountUSD:ownDue(i)/100}));return {items,totalUSD:items.reduce((sum,i)=>sum+cents(i.amountUSD),0)/100};}
-async function decorate(db,invoices){if(!invoices.length)return invoices;const ids=[...new Set(invoices.flatMap(i=>Array.isArray(i.carryForward)?i.carryForward.map(s=>s.invoiceId):[]))];const sources=ids.length?await db.invoice.findMany({where:{id:{in:ids}}}):[];return invoices.map(i=>{const remaining=allocationsFor(i,[...sources,i]).reduce((sum,s)=>sum+s.amountCents,0)/100;return {...i,outstandingAmountUSD:remaining,receivedAmountUSD:i.balanceTransferredToInvoiceId?0:Math.max(0,cents(i.netPayable)-cents(remaining))/100,isCleared:remaining===0,paymentStatus:i.balanceTransferredToInvoiceId?'CARRIED_FORWARD':remaining===0?'PAID':remaining<Number(i.netPayable)?'PARTIAL':'PENDING'};});}
+async function decorate(db,invoices){
+ if(!invoices.length)return invoices;
+ const ids=[...new Set(invoices.flatMap(i=>Array.isArray(i.carryForward)?i.carryForward.map(s=>s.invoiceId):[]))];
+ const scopes=[...new Map(invoices.filter(i=>i.companyId).map(i=>[i.branchId+':'+i.companyId,{branchId:i.branchId,companyId:i.companyId}])).values()];
+ const where=[...scopes,...(ids.length?[{id:{in:ids}}]:[])];
+ const related=where.length?await db.invoice.findMany({where:{OR:where}}):[];
+ const rows=[...new Map([...related,...invoices].map(i=>[i.id,i])).values()];
+ return invoices.map(i=>{
+  const remaining=allocationsFor(i,rows).reduce((sum,s)=>sum+s.amountCents,0)/100;
+  const target=latestInvoice(i,rows),moved=!!i.balanceTransferredToInvoiceId||(target.id!==i.id&&remaining>0);
+  return {...i,outstandingAmountUSD:moved?0:remaining,
+   carriedForwardAmountUSD:moved?remaining:0,
+   paymentTargetInvoiceId:target.id,paymentTargetInvoiceNumber:target.invoiceNumber,
+   canRecordPayment:!moved&&target.id===i.id&&remaining>0,
+   receivedAmountUSD:i.balanceTransferredToInvoiceId?0:Math.max(0,cents(i.netPayable)-cents(remaining))/100,
+   isCleared:!moved&&remaining===0,
+   paymentStatus:moved?'CARRIED_FORWARD':remaining===0?'PAID':remaining<Number(i.netPayable)?'PARTIAL':'PENDING'};
+ });
+}
 async function refreshFlags(db,invoice){const rows=await companyRows(db,invoice);for(const i of rows){const cleared=allocationsFor(i,rows).length===0;if(cleared!==i.isCleared)await db.invoice.update({where:{id:i.id},data:{isCleared:cleared,clearedAt:cleared?new Date():null}});}}
 async function assertMutable(db,invoice){const rows=await companyRows(db,invoice);const referenced=rows.some(i=>i.balanceTransferredToInvoiceId===invoice.id||(Array.isArray(i.carryForward)&&i.carryForward.some(s=>s.invoiceId===invoice.id)));const settlements=await db.invoiceSettlement.count({where:{invoiceId:invoice.id}});if((invoice.currentChargesUSD!==null&&invoice.currentChargesUSD!==undefined&&!Array.isArray(invoice.carryForward))||invoice.balanceTransferredToInvoiceId||cents(invoice.paidAmountUSD)>0||settlements||referenced)fail(409,'This invoice has payments or is carried into a later invoice. Reverse its payments or remove the later unpaid invoice before changing it.');}
 async function assertEditable(db,invoice){
@@ -43,4 +71,4 @@ async function assertEditable(db,invoice){
  if(invoice.balanceTransferredToInvoiceId||cents(invoice.paidAmountUSD)>0||settlements||carriedForward)
   fail(409,'Invoices with recorded payments or balances carried into another invoice cannot be edited.');
 }
-module.exports={cents,ownDue,allocationsFor,paymentPlan,companyRows,lockCompany,outstanding,decorate,refreshFlags,assertMutable,assertEditable,validatePaymentDetails,fail};
+module.exports={latestInvoice,assertPaymentTarget,cents,ownDue,allocationsFor,paymentPlan,companyRows,lockCompany,outstanding,decorate,refreshFlags,assertMutable,assertEditable,validatePaymentDetails,fail};
