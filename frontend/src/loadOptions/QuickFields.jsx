@@ -1,11 +1,21 @@
 import {useEffect,useRef,useState} from 'react';
 import {API} from '../api';
 import {findLocations} from './routing';
-import {scheduleText} from './schedule';
+import {scheduleText,departureText} from './schedule';
+export function DepartureField({value,onChange}){
+ const [custom,setCustom]=useState(!['Today','Tomorrow'].includes(value));
+ return <div><label>Leaving when?<select value={custom?'date':value} onChange={e=>{setCustom(e.target.value==='date');onChange(e.target.value==='date'?'':e.target.value);}}><option>Today</option><option>Tomorrow</option><option value="date">Choose date</option></select></label>{custom&&<label>Departure date<input type="date" value={value} onChange={e=>onChange(e.target.value)}/></label>}{custom&&value&&<small>{departureText(value)}</small>}</div>;
+}
+function TimeField({label,value,onChange}){
+ const hour=value?String(Number(value.slice(0,2))%12||12).padStart(2,'0'):'';
+ const minute=value?value.slice(3):'00',period=value&&Number(value.slice(0,2))>=12?'PM':'AM';
+ function change(h,m,p){if(!h){onChange('');return;}onChange(String(Number(h)%12+(p==='PM'?12:0)).padStart(2,'0')+':'+m);}
+ return <div><span className="lo-time-label">{label}</span><div className="lo-time"><select aria-label={label+' hour'} value={hour} onChange={e=>change(e.target.value,minute,period)}><option value="">Hour</option>{Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')).map(h=><option key={h}>{h}</option>)}</select><select aria-label={label+' minute'} value={minute} onChange={e=>change(hour||'12',e.target.value,period)}>{Array.from({length:60},(_,i)=>String(i).padStart(2,'0')).map(m=><option key={m}>{m}</option>)}</select><select aria-label={label+' AM or PM'} value={period} onChange={e=>change(hour||'12',minute,e.target.value)}><option>AM</option><option>PM</option></select></div></div>;
+}
 export function ScheduleField({label,value,onChange}){
  const [s,setS]=useState({mode:'manual',date:'',start:'',end:''});
  function change(k,v){const next={...s,[k]:v};setS(next);if(next.mode!=='manual')onChange(scheduleText(next));}
- return <fieldset className="lo-schedule"><legend>{label}</legend><div className="lo-grid"><label>Time type<select value={s.mode} onChange={e=>change('mode',e.target.value)}>{[['manual','Custom text'],['appointment','Appointment (one time)'],['window','Between two times'],['after','Anytime after'],['before','Before a time'],['any','Anytime'],['fcfs','First come, first served']].map(([v,t])=><option key={v} value={v}>{t}</option>)}</select></label>{s.mode!=='manual'&&<label>Date (optional)<input type="date" value={s.date} onChange={e=>change('date',e.target.value)}/></label>}{!['manual','any','fcfs'].includes(s.mode)&&<label>{s.mode==='window'?'From':'Time'}<input type="time" value={s.start} onChange={e=>change('start',e.target.value)}/></label>}{s.mode==='window'&&<label>Until<input type="time" value={s.end} onChange={e=>change('end',e.target.value)}/></label>}</div><label>Schedule text<input value={value} readOnly={s.mode!=='manual'} onChange={e=>onChange(e.target.value)}/></label><small>Use the facility's local time. Overnight windows are labeled.</small></fieldset>;
+ return <fieldset className="lo-schedule"><legend>{label}</legend><div className="lo-grid"><label>Time type<select value={s.mode} onChange={e=>change('mode',e.target.value)}>{[['manual','Custom text'],['appointment','Appointment (one time)'],['window','Between two times'],['after','Anytime after'],['before','Before a time'],['any','Anytime'],['fcfs','First come, first served']].map(([v,t])=><option key={v} value={v}>{t}</option>)}</select></label>{s.mode!=='manual'&&<label>Date (optional)<input type="date" value={s.date} onChange={e=>change('date',e.target.value)}/></label>}{!['manual','any','fcfs'].includes(s.mode)&&<TimeField label={s.mode==='window'?'From':'Time'} value={s.start} onChange={v=>change('start',v)}/>}{s.mode==='window'&&<TimeField label="Until" value={s.end} onChange={v=>change('end',v)}/>}</div><label>Schedule text<input value={value} readOnly={s.mode!=='manual'} onChange={e=>onChange(e.target.value)}/></label><small>Use the facility's local time. Overnight windows are labeled.</small></fieldset>;
 }
 export function LocationField({name,label,value,onChange,onSelect,apiKey}){
  const [mode,setMode]=useState('address'),[state,setState]=useState(''),[city,setCity]=useState(''),[states,setStates]=useState([]),[cities,setCities]=useState([]),[results,setResults]=useState([]),[busy,setBusy]=useState(false),[error,setError]=useState('');const version=useRef(0);
