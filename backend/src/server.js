@@ -46,7 +46,9 @@ console.log("ROUTES CHECK", {
   financeRoutes: typeof financeRoutes
 });
 
+const loadOptionRouting=require("./routes/loadOptionRouting.routes").createRoutingRouter();
 const registerRoutes = (prefix = "") => {
+  app.use(`${prefix}/load-option-routing`,loadOptionRouting);
   app.use(`${prefix}/quo`, require("./routes/quo.routes"));
   app.use(`${prefix}/sales`, require("./routes/sales.routes"));
   app.use(`${prefix}/pay-statements`, payStatementRoutes);

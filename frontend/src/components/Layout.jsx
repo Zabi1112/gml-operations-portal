@@ -3,7 +3,7 @@ import OperationNotice from "./OperationNotice.jsx";
 import { BranchContext } from "../context/BranchContext.jsx";
 import "../Pages/Dashboard.css";
 
-function Layout({ title, children }) {
+function Layout({ title, children, allowNoBranch = false }) {
   const user = JSON.parse(localStorage.getItem("user"));
   const { selectedBranch } = useContext(BranchContext);
 
@@ -29,6 +29,7 @@ function Layout({ title, children }) {
           <button onClick={() => go("/salary-slips")}>Salary Slips</button>
         )}
 
+        <button onClick={() => go("/load-options")}>Load Options</button>
         <button onClick={() => go("/load-reports")}>Load Reports</button>
         {(user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "EDITOR") && (
           <button onClick={() => go("/daily-report")}>Daily Report</button>
@@ -83,7 +84,7 @@ function Layout({ title, children }) {
 
         <OperationNotice />
 
-        {!selectedBranch && title !== "Dashboard" ? (
+        {!selectedBranch && !allowNoBranch && title !== "Dashboard" ? (
           <div className="warning-message">
             Please select a branch from Dashboard first.
           </div>

@@ -68,6 +68,7 @@ function Login() {
         <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
+        <a href="/load-options" style={{display:"block",textAlign:"center",marginTop:20,color:"#b34312",fontWeight:600}}>Create Load Option without signing in</a>
       </form>
     </div>
   );
