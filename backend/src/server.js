@@ -48,6 +48,7 @@ console.log("ROUTES CHECK", {
 
 const loadOptionRouting=require("./routes/loadOptionRouting.routes").createRoutingRouter();
 const registerRoutes = (prefix = "") => {
+  app.use(`${prefix}/load-option-directory`,require('./routes/loadOptionDirectory.routes').createDirectoryRouter());
   app.use(`${prefix}/load-option-routing`,loadOptionRouting);
   app.use(`${prefix}/quo`, require("./routes/quo.routes"));
   app.use(`${prefix}/sales`, require("./routes/sales.routes"));

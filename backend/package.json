@@ -21,6 +21,7 @@
     "@prisma/client": "^6.15.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
+    "country-state-city": "^3.2.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "google-libphonenumber": "^3.2.48",
