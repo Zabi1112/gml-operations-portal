@@ -13,16 +13,11 @@ test('partner PDF gross excludes received invoice fees in USD and PKR without ex
  await task.destroy();
 });
 
-test('only a fee recipient sees their own allocation and combined total',async()=>{
- const settlement={invoiceAmountUSD:2500,totalAmountPKR:700000,usdRate:280,paymentAllocations:[{amountUSD:2500,accountsFeeUSD:260}],partnerSplits:[{name:'PRIVATE OTHER',accountsFeeReceivedPKR:44800}]};
- for(const receives of [true,false]){
-  const partner=receives?{name:'Selected',normalSharePKR:1000,accountsFeeReceivedUSD:100,accountsFeeReceivedPKR:28000,amountPKR:29000}:{name:'Unselected',amountPKR:1000};
-  const doc=createPartnerStatementPdf(settlement,partner);
-  const task=getDocument({data:new Uint8Array(doc.output('arraybuffer')),useSystemFonts:true});const pdf=await task.promise;let text='';
-  for(let n=1;n<=pdf.numPages;n++)for(const item of (await (await pdf.getPage(n)).getTextContent()).items)text+=item.str+' ';
-  assert.match(text,/2,240.00 USD/);assert.doesNotMatch(text,/PRIVATE OTHER|44,800.00/);
-  if(receives){assert.match(text,/Normal partner share/);assert.match(text,/Your accounts fee allocation/);assert.match(text,/28,000.00 PKR/);assert.match(text,/29,000.00 PKR/);assert.match(text,/TOTAL RECEIVED/);}
-  else{assert.doesNotMatch(text,/accounts fee allocation|28,000.00|TOTAL RECEIVED/);assert.match(text,/YOUR NET SETTLEMENT/);}
-  await task.destroy();
- }
+
+test('partner PDF never includes Accounts Team names or payments',async()=>{
+ const doc=createPartnerStatementPdf({invoiceAmountUSD:2500,totalAmountPKR:700000,usdRate:280,accountsAmountPKR:72800,paymentAllocations:[{accountsFeeUSD:260,accountsTeamSplits:[{name:'PRIVATE TEAM MEMBER',amountPKR:72800}]}]},{name:'Partner',amountPKR:100000});
+ const task=getDocument({data:new Uint8Array(doc.output('arraybuffer')),useSystemFonts:true});const pdf=await task.promise;let text='';
+ for(let n=1;n<=pdf.numPages;n++)for(const item of (await (await pdf.getPage(n)).getTextContent()).items)text+=item.str+' ';
+ assert.match(text,/2,240.00 USD/);assert.match(text,/100,000.00 PKR/);
+ assert.doesNotMatch(text,/PRIVATE TEAM|72,800.00|accounts fee allocation/);await task.destroy();
 });

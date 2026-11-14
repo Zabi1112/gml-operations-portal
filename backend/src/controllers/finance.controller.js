@@ -241,7 +241,10 @@ const clearInvoice = async (req, res) => {
       payments.fail(400,err.message);
     }
     const { dispatcherAmountPKR, accountsAmountPKR, partnerProfitPKR, partnerSplits, dispatcherSplits } = calc;
-    const paidPartnerSplits = invoiceFees.distributeToPartners(partnerSplits, req.body.accountsFeePartnerSplits, feePlan.accountsFeeUSD, usdRate);
+    if (req.body.accountsFeePartnerSplits?.length) payments.fail(400, 'Accounts fees can no longer be assigned to partners. Refresh and use Accounts Team.');
+    const accountsTeamTotalPKR = (payments.cents(accountsAmountPKR)+payments.cents(invoiceAccountsFeePKR))/100;
+    const accountsTeamSplits = invoiceFees.accountsTeamSplits(req.body.accountsTeamSplits, accountsTeamTotalPKR);
+    paymentAllocations[0].accountsTeamSplits = accountsTeamSplits;
 
     const settlement = await tx.invoiceSettlement.create({
       data: {
@@ -265,11 +268,11 @@ const clearInvoice = async (req, res) => {
 
         accountsType,
         accountsValue,
-        accountsAmountPKR: (payments.cents(accountsAmountPKR)+payments.cents(invoiceAccountsFeePKR))/100,
+        accountsAmountPKR: accountsTeamTotalPKR,
         accountsPartnerId,
 
         partnerProfitPKR,
-        partnerSplits: paidPartnerSplits,
+        partnerSplits,
 
         clearedBy: req.user?.name || req.user?.email || "Admin",
         settlementDate,

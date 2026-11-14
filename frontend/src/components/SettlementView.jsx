@@ -1,4 +1,5 @@
-import { receivedInvoiceFeeUSD, partnerReceiptGross } from "../finance/invoiceAccountsFees.js";
+import {createAccountsTeamPdf} from "../finance/accountsTeamPdf.js";
+import { receivedInvoiceFeeUSD, partnerReceiptGross, accountsTeamSummary } from "../finance/invoiceAccountsFees.js";
 import {loadLetterLogo} from '../hr/letterPdf';
 import {createPartnerStatementPdf,loadAccountsSignature} from "../finance/partnerStatementPdf";
 import { useState } from "react";
@@ -33,6 +34,7 @@ function SettlementView({ settlement, onClose }) {
   const dispatcherValue = Number(settlement.dispatcherValue ?? 0);
   const accountsValue = Number(settlement.accountsValue ?? 0);
   const dispatcherAmountPKR = Number(settlement.dispatcherAmountPKR ?? 0);
+  const accountsTeam = accountsTeamSummary(settlement);
   const accountsAmountPKR = Number(settlement.accountsAmountPKR ?? 0);
   const invoiceFeeUSD = receivedInvoiceFeeUSD(settlement);
   const partnerGross = partnerReceiptGross(settlement);
@@ -118,6 +120,7 @@ function SettlementView({ settlement, onClose }) {
         <button disabled={printing} onClick={() => printSettlement()}>
           Download Full Settlement PDF
         </button>
+        <button disabled={printing} onClick={()=>{try{createAccountsTeamPdf(settlement).save(`accounts-team-${settlement.id}.pdf`);}catch(error){alert(error.message || "Unable to create Accounts Team PDF");}}}>Download Accounts Team Settlement</button>
         {partnerSplits.map((partner, index) => (
           <button
             key={partner.partnerId ?? `${partner.name}-${index}`}
@@ -272,6 +275,12 @@ function SettlementView({ settlement, onClose }) {
           </>
         )}
 
+        <h3>Accounts Team</h3>
+        <p>Total received: {accountsTeam.totalPKR.toLocaleString()} PKR</p>
+        <table className="settlement-table"><thead><tr><th>Name</th><th>Amount PKR</th></tr></thead><tbody>
+          {accountsTeam.splits.map((row,index)=><tr key={index}><td>{row.name}</td><td>{Number(row.amountPKR).toLocaleString()}</td></tr>)}
+          {accountsTeam.unassignedPKR>0 && <tr><td>Accounts Team - unassigned</td><td>{accountsTeam.unassignedPKR.toLocaleString()}</td></tr>}
+        </tbody></table>
         <h3>Partner Split</h3>
 
         <table className="settlement-table">
@@ -279,9 +288,7 @@ function SettlementView({ settlement, onClose }) {
             <tr>
               <th>Partner</th>
               <th>Percentage</th>
-              <th>Normal Share PKR</th>
-              <th>Accounts Fee Allocation PKR</th>
-              <th>Total Received PKR</th>
+              <th>Amount PKR</th>
             </tr>
           </thead>
 
@@ -290,15 +297,13 @@ function SettlementView({ settlement, onClose }) {
               <tr key={index}>
                 <td>{partner.name}</td>
                 <td>{partner.percent}%</td>
-                <td>{Number(partner.normalSharePKR ?? partner.amountPKR ?? 0).toLocaleString()}</td>
-                <td>{Number(partner.accountsFeeReceivedPKR || 0).toLocaleString()}</td>
                 <td>{Number(partner.amountPKR || 0).toLocaleString()}</td>
               </tr>
             ))}
 
             {partnerSplits.length === 0 && (
               <tr>
-                <td colSpan="5">No partner split found.</td>
+                <td colSpan="3">No partner split found.</td>
               </tr>
             )}
           </tbody>

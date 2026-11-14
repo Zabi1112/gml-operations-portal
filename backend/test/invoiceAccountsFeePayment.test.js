@@ -21,11 +21,13 @@ test('payment endpoint excludes invoice fee before allocations, is idempotent, a
  const reversed=res();await controller.deleteSettlement({params:{id:10}},reversed);
  assert.equal(reversed.code,200);assert.equal(invoice.paidAmountUSD,0);assert.equal(saved,null);
  req.body.amountReceivedUSD=1000;req.body.accountsFeeReceivedUSD=0;
- req.body.accountsFeePartnerSplits=[{partnerId:1,amountUSD:260}];
+ req.body.accountsTeamSplits=[{name:'Ali',amountPKR:60000},{name:'Sara',amountPKR:33520}];
  const full=res();await controller.clearInvoice(req,full);assert.equal(full.code,201);
  assert.equal(saved.paymentAllocations[0].accountsFeeUSD,260);assert.equal(invoice.isCleared,true);
  assert.equal(saved.accountsAmountPKR,93520);assert.equal(saved.partnerProfitPKR,134680);
- assert.equal(saved.partnerSplits[0].normalSharePKR,134680);
- assert.equal(saved.partnerSplits[0].accountsFeeReceivedPKR,72800);
- assert.equal(saved.partnerSplits[0].amountPKR,207480);
+ assert.equal(saved.partnerSplits[0].amountPKR,134680);
+ assert.equal(saved.partnerSplits[0].accountsFeeReceivedPKR,undefined);
+ assert.deepEqual(saved.paymentAllocations[0].accountsTeamSplits,req.body.accountsTeamSplits);
+ const undone=res();await controller.deleteSettlement({params:{id:10}},undone);
+ assert.equal(undone.code,200);assert.equal(invoice.paidAmountUSD,0);assert.equal(saved,null);
 });

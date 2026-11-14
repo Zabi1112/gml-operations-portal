@@ -25,3 +25,10 @@ export function partnerReceiptGross(settlement) {
     pkr: (cents(settlement.totalAmountPKR) - feePKR) / 100
   };
 }
+
+export function accountsTeamSummary(settlement) {
+  const splits = (settlement.paymentAllocations || []).flatMap(item => Array.isArray(item.accountsTeamSplits) ? item.accountsTeamSplits : []);
+  const total = cents(settlement.accountsAmountPKR);
+  const assigned = splits.reduce((sum,row)=>sum+cents(row.amountPKR),0);
+  return {splits,totalPKR:total/100,unassignedPKR:Math.max(0,total-assigned)/100};
+}

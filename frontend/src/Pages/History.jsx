@@ -67,7 +67,7 @@ function History() {
   const [settlementForm, setSettlementForm] = useState({
     amountReceivedUSD: "",
     includesAccountsFee: "",
-    accountsFeePartnerAmounts: {},
+    accountsTeamSplits: [],
     accountsFeeReceivedUSD: "",
     paymentRequestId: "",
     usdRate: "",
@@ -203,7 +203,7 @@ function History() {
     setSettlementForm({
       amountReceivedUSD: invoice.outstandingAmountUSD ?? invoice.netPayable,
       includesAccountsFee: "",
-      accountsFeePartnerAmounts: {},
+      accountsTeamSplits: [],
       accountsFeeReceivedUSD: "",
       paymentRequestId:crypto.randomUUID(),
       usdRate: "",
@@ -237,7 +237,7 @@ function History() {
   const submitClearInvoice = async (e) => {
     e.preventDefault();
     if (!clearInvoiceData) return;
-    if (feePreview.error || feeSplitError || partnerAllocationError) return alert(feePreview.error || feeSplitError || partnerAllocationError);
+    if (feePreview.error || accountsTeamError || partnerAllocationError) return alert(feePreview.error || accountsTeamError || partnerAllocationError);
 
     const splitsTotal = settlementForm.dispatcherSplits.reduce(
       (sum, s) => sum + (Number(s.amount) || 0),
@@ -253,7 +253,7 @@ function History() {
         {
           amountReceivedUSD:Number(settlementForm.amountReceivedUSD),
           accountsFeeReceivedUSD:feePreview.feeUSD,
-          accountsFeePartnerSplits: feePartnerSplits,
+          accountsTeamSplits: settlementForm.accountsTeamSplits || [],
           paymentRequestId:settlementForm.paymentRequestId,
           paymentMethod:settlementForm.paymentMethod,
           otherPaymentMethod:settlementForm.otherPaymentMethod,
@@ -446,14 +446,6 @@ function History() {
   const usdRate = Number(settlementForm.usdRate || 0);
   const invoiceAmountPKR = Math.round(invoiceAmountUSD * usdRate * 100) / 100;
   const feePreview = paymentFeePreview(clearInvoiceData, settlementForm);
-  const feePartnerSplits = Object.entries(settlementForm.accountsFeePartnerAmounts || {})
-    .filter(([, amount]) => amount !== "" && Number(amount) !== 0)
-    .map(([partnerId, amountUSD]) => ({partnerId:Number(partnerId), amountUSD:Number(amountUSD)}));
-  const allocatedFeeCents = feePartnerSplits.reduce((sum, entry) => sum + Math.round(entry.amountUSD * 100), 0);
-  const feeSplitError = feePartnerSplits.some(entry => !Number.isFinite(entry.amountUSD) || entry.amountUSD < 0 || Math.abs(entry.amountUSD * 100 - Math.round(entry.amountUSD * 100)) > 0.00001)
-    ? "Enter valid accounts fee allocations with at most two decimal places."
-    : allocatedFeeCents > Math.round(feePreview.feeUSD * 100)
-      ? "Partner allocations exceed the accounts fee received in this payment." : "";
   const invoiceFeePKR = Math.round(feePreview.feeUSD * usdRate * 100) / 100;
   const settlementRevenuePKR = Math.round((invoiceAmountPKR - invoiceFeePKR) * 100) / 100;
   const dispatcherPercent = Number(settlementForm.dispatcherPercent || 0);
@@ -467,6 +459,12 @@ function History() {
     settlementForm.accountsType === "PERCENTAGE"
       ? (settlementRevenuePKR * accountsValue) / 100
       : accountsValue;
+  const accountsTeamTotalPKR = Math.round(accountsAmountPKR * 100) / 100 + invoiceFeePKR;
+  const teamRows = settlementForm.accountsTeamSplits || [];
+  const teamAllocatedCents = teamRows.reduce((sum, row) => sum + Math.round(Number(row.amountPKR || 0) * 100), 0);
+  const accountsTeamError = teamRows.some(row => !row.name?.trim() || !Number.isFinite(Number(row.amountPKR)) || Number(row.amountPKR) <= 0)
+    ? "Enter a name and positive amount for each Accounts Team row."
+    : teamAllocatedCents > Math.round(accountsTeamTotalPKR * 100) ? "Accounts Team amounts exceed the total available." : "";
   let partnerProfitPKR =
     settlementRevenuePKR - dispatcherAmountPKR - accountsAmountPKR;
   let partnerAllocationError = "";
@@ -864,7 +862,7 @@ function History() {
                     <th>USD Rate</th>
                     <th>Invoice PKR</th>
                     <th>Dispatcher</th>
-                    <th>Accounts</th>
+                    <th>Accounts Team</th>
                     <th>Partner Profit</th>
                     <th>Cleared By</th>
                     <th>Payment Method</th>
@@ -1034,22 +1032,6 @@ function History() {
                     </div>
                   )}
                   {feePreview.error && <p className="warning-message" role="alert">{feePreview.error}</p>}
-                  {(feePreview.feeUSD > 0 || feePartnerSplits.length > 0) && (
-                    <fieldset>
-                      <legend>Assign received accounts fees to partners</legend>
-                      <p>Enter an amount for each recipient. Leave others blank. Unassigned fees remain with Accounts.</p>
-                      {partners.map(partner => (
-                        <div className="form-group" key={partner.id}>
-                          <label htmlFor={'fee-partner-' + partner.id}>{partner.name} ? accounts fee (USD)</label>
-                          <input id={'fee-partner-' + partner.id} type="number" min="0" step="0.01" max={feePreview.feeUSD}
-                            value={settlementForm.accountsFeePartnerAmounts?.[partner.id] ?? ""}
-                            onChange={e => setSettlementForm({...settlementForm, accountsFeePartnerAmounts:{...settlementForm.accountsFeePartnerAmounts,[partner.id]:e.target.value}})}/>
-                        </div>
-                      ))}
-                      <p>Assigned: {(allocatedFeeCents / 100).toFixed(2)} USD ? Remaining with Accounts: {(feePreview.feeUSD - allocatedFeeCents / 100).toFixed(2)} USD</p>
-                    </fieldset>
-                  )}
-                  {feeSplitError && <p className="warning-message" role="alert">{feeSplitError} Clear recipient amounts or increase the accounts fee received.</p>}
                   <div className="form-group">
                     <label>USD Rate</label>
                     <input
@@ -1172,6 +1154,23 @@ function History() {
                     </p>
                   )}
 
+                  <fieldset>
+                    <legend>Accounts Team</legend>
+                    <p>Total received by Accounts Team: {accountsTeamTotalPKR.toLocaleString()} PKR</p>
+                    <p>Assign names and amounts below. This does not change partner shares.</p>
+                    {teamRows.map((row,index) => (
+                      <div className="payment-details-fields" key={index}>
+                        <label>Name<input aria-label={'Accounts Team name ' + (index+1)} value={row.name} maxLength={100} required
+                          onChange={e=>setSettlementForm({...settlementForm,accountsTeamSplits:teamRows.map((item,i)=>i===index?{...item,name:e.target.value}:item)})}/></label>
+                        <label>Amount PKR<input aria-label={'Accounts Team amount ' + (index+1)} type="number" min="0.01" step="0.01" required value={row.amountPKR}
+                          onChange={e=>setSettlementForm({...settlementForm,accountsTeamSplits:teamRows.map((item,i)=>i===index?{...item,amountPKR:e.target.value}:item)})}/></label>
+                        <button type="button" onClick={()=>setSettlementForm({...settlementForm,accountsTeamSplits:teamRows.filter((_,i)=>i!==index)})}>Remove</button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={()=>setSettlementForm({...settlementForm,accountsTeamSplits:[...teamRows,{name:"",amountPKR:""}]})}>Add Accounts Team member</button>
+                    <p>Assigned: {(teamAllocatedCents/100).toLocaleString()} PKR | Unassigned: {(accountsTeamTotalPKR-teamAllocatedCents/100).toLocaleString()} PKR</p>
+                    {accountsTeamError && <p className="warning-message" role="alert">{accountsTeamError}</p>}
+                  </fieldset>
                   <div className="settlement-summary">
                     <p>
                       <strong>Invoice PKR:</strong>{" "}
@@ -1184,8 +1183,11 @@ function History() {
                       {dispatcherAmountPKR.toLocaleString()}
                     </p>
                     <p>
-                      <strong>Partner-funded Accounts Allocation:</strong>{" "}
+                      <strong>Accounts allocation from partner share:</strong>{" "}
                       {accountsAmountPKR.toLocaleString()}
+                    </p>
+                    <p>
+                      <strong>Accounts Team total:</strong> {accountsTeamTotalPKR.toLocaleString()} PKR
                     </p>
                     <p>
                       <strong>Partner Profit:</strong>{" "}
@@ -1207,7 +1209,7 @@ function History() {
                   </div>
 
                   <div className="settlement-actions">
-                    <button type="submit" disabled={Boolean(feePreview.error || feeSplitError || partnerAllocationError)}>Record payment</button>
+                    <button type="submit" disabled={Boolean(feePreview.error || accountsTeamError || partnerAllocationError)}>Record payment</button>
                     <button type="button" onClick={closeClearInvoice}>
                       Cancel
                     </button>

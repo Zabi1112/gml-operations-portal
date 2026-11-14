@@ -728,7 +728,7 @@ const Settlements = () => {
                     <th>Type</th>
                     <th>Payment Method</th>
                     <th>Dispatcher</th>
-                    <th>Accounts</th>
+                    <th>Accounts Team</th>
                     <th>Partner Profit</th>
                     <th>Cleared By</th>
                     {isAdmin && <th>Actions</th>}

@@ -3,7 +3,6 @@ import {jsPDF} from 'jspdf';
 // Explicit field selection keeps other partners, staff names, and internal notes private.
 export function createPartnerStatementPdf(settlement,partner,assets={}) {
  const gross=partnerReceiptGross(settlement);
- const hasFeeAllocation=Number(partner.accountsFeeReceivedUSD)>0;
  const normalShare=Number(partner.normalSharePKR ?? partner.amountPKR ?? 0);
  const doc=new jsPDF({unit:'pt',format:'a4',compress:true});
  const W=595.28,H=841.89,M=42,bottom=767,usable=W-2*M;
@@ -42,8 +41,7 @@ export function createPartnerStatementPdf(settlement,partner,assets={}) {
  section('YOUR PARTNER SETTLEMENT');
  if(Number.isFinite(Number(partner.percent))&&partner.percent!=null)row('Your partnership share',Number(partner.percent)+'%');
  if(Number(partner.accountsDeductionPKR)>0){row('Your share before accounts fee',money(partner.grossAmountPKR??(normalShare+Number(partner.accountsDeductionPKR))));row('Accounts fee from your share',money(partner.accountsDeductionPKR));}
- if(hasFeeAllocation){row('Normal partner share',money(normalShare));row('Your accounts fee allocation',money(partner.accountsFeeReceivedPKR));}
- ensure(65);doc.setFillColor(...navy);doc.roundedRect(M,y-6,usable,52,5,5,'F');doc.setFillColor(...orange);doc.roundedRect(M,y-6,5,52,2,2,'F');font(11,true,[255,255,255]);doc.text(hasFeeAllocation?'TOTAL RECEIVED':'YOUR NET SETTLEMENT',M+16,y+24);font(19,true,[255,255,255]);doc.text(money(partner.amountPKR),W-M-16,y+25,{align:'right'});y+=65;
+ ensure(65);doc.setFillColor(...navy);doc.roundedRect(M,y-6,usable,52,5,5,'F');doc.setFillColor(...orange);doc.roundedRect(M,y-6,5,52,2,2,'F');font(11,true,[255,255,255]);doc.text('YOUR NET SETTLEMENT',M+16,y+24);font(19,true,[255,255,255]);doc.text(money(partner.amountPKR),W-M-16,y+25,{align:'right'});y+=65;
  ensure(110);if(assets.signature)image(assets.signature,W-M-205,y,195,65);doc.setDrawColor(...navy);doc.line(W-M-210,y+73,W-M,y+73);font(10,true,navy);doc.text('Accounts Office Signature',W-M-210,y+90);y+=110;
  const pages=doc.getNumberOfPages();for(let n=1;n<=pages;n++){doc.setPage(n);doc.setFillColor(...orange);doc.rect(0,H-43,W,3,'F');doc.setFillColor(...navy);doc.rect(0,H-40,W,40,'F');font(8,true,[255,255,255]);doc.text('FREIGHT WITH STRATEGY',M,H-26);font(7,false,[255,255,255]);doc.text('Private partner statement',M,H-16);doc.text('ACCOUNTS OFFICE  |  '+n+' / '+pages,W-M,H-20,{align:'right'});}
  return doc;

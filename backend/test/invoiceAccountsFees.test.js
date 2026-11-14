@@ -80,20 +80,12 @@ test('fees from another branch or company cannot enter a receipt', () => {
   assert.equal(fees.context(invoice,[invoice,unrelated],[]).pendingCents,1000);
 });
 
-test('accounts fees can be split across recipients without changing other partners',()=>{
- const splits=[{partnerId:1,amountPKR:1000},{partnerId:2,amountPKR:2000},{partnerId:3,amountPKR:3000}];
- const result=fees.distributeToPartners(splits,[{partnerId:1,amountUSD:100},{partnerId:2,amountUSD:160}],260,280);
- assert.equal(result[0].normalSharePKR,1000);assert.equal(result[0].accountsFeeReceivedPKR,28000);assert.equal(result[0].amountPKR,29000);
- assert.equal(result[1].amountPKR,46800);assert.deepEqual(result[2],splits[2]);assert.equal(splits[0].amountPKR,1000);
+
+test('Accounts Team records names and PKR amounts separately from partners',()=>{
+ assert.deepEqual(fees.accountsTeamSplits([{name:' Ali ',amountPKR:100},{name:'Sara',amountPKR:200}],400),[{name:'Ali',amountPKR:100},{name:'Sara',amountPKR:200}]);
+ assert.deepEqual(fees.accountsTeamSplits(undefined,100),[]);
 });
-test('fee recipient validation rejects unknown, duplicate, negative and excessive allocations',()=>{
- const splits=[{partnerId:1,amountPKR:1000}];
- for(const requested of [[{partnerId:9,amountUSD:1}],[{partnerId:1,amountUSD:1},{partnerId:1,amountUSD:1}],[{partnerId:1,amountUSD:-1}],[{partnerId:1,amountUSD:0.001}],[{partnerId:1,amountUSD:101}],null])
-   assert.throws(()=>fees.distributeToPartners(splits,requested,100,280));
- assert.throws(()=>fees.distributeToPartners(splits,[{partnerId:1,amountUSD:1}],0,280));
- assert.deepEqual(fees.distributeToPartners(splits,[],100,280),splits);
-});
-test('recipient currency conversion preserves aggregate rounding',()=>{
- const result=fees.distributeToPartners([{partnerId:1,amountPKR:0},{partnerId:2,amountPKR:0}],[{partnerId:1,amountUSD:0.01},{partnerId:2,amountUSD:0.01}],0.02,280.5);
- assert.equal(Math.round(result.reduce((n,p)=>n+p.accountsFeeReceivedPKR,0)*100),561);
+test('Accounts Team rejects duplicate names, missing names, invalid money and excessive totals',()=>{
+ for(const requested of [null,[{name:'',amountPKR:1}],[{name:'Ali',amountPKR:-1}],[{name:'Ali',amountPKR:0.001}],[{name:'Ali',amountPKR:101}],[{name:'Ali',amountPKR:1},{name:' ali ',amountPKR:1}]])assert.throws(()=>fees.accountsTeamSplits(requested,100));
+ assert.throws(()=>fees.accountsTeamSplits([{name:'Ali',amountPKR:1}],0));
 });

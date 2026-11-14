@@ -100,33 +100,20 @@ async function decorate(db, invoices, rows) {
       accountsFeeBalanceConflict: state.conflict };
   });
 }
-// Keep normal profit separate while amountPKR records the actual total payable.
-function distributeToPartners(splits, requested = [], feeUSD, rate) {
-  if (!Array.isArray(requested)) fail(400, 'Accounts fee recipients must be a list.');
-  const selected = new Map();
-  let totalCents = 0;
-  for (const item of requested) {
-    const id = Number(item?.partnerId), amount = Number(item?.amountUSD);
-    const amountCents = cents(amount);
-    if (!splits.some(partner => Number(partner.partnerId) === id) || selected.has(id))
-      fail(400, 'Select each accounts fee recipient once, from this branch.');
-    if (!Number.isFinite(amount) || !Number.isSafeInteger(amountCents) || amountCents <= 0 || Math.abs(amount * 100 - amountCents) > 0.00001)
-      fail(400, 'Enter a positive accounts fee allocation with at most two decimal places.');
-    selected.set(id, amountCents);
-    totalCents += amountCents;
-  }
-  if (totalCents > cents(feeUSD)) fail(400, 'Partner accounts fee allocations exceed the accounts fee received in this payment.');
-  let runningUSD = 0, runningPKR = 0;
-  return splits.map(partner => {
-    const usd = selected.get(Number(partner.partnerId));
-    if (!usd) return partner;
-    runningUSD += usd;
-    const converted = cents(runningUSD / 100 * rate);
-    const feePKR = converted - runningPKR;
-    runningPKR = converted;
-    return { ...partner, normalSharePKR: partner.amountPKR,
-      accountsFeeReceivedUSD: usd / 100, accountsFeeReceivedPKR: feePKR / 100,
-      amountPKR: (cents(partner.amountPKR) + feePKR) / 100 };
+// Team payouts are independent of branch partners and never increase partner shares.
+function accountsTeamSplits(requested = [], totalPKR) {
+  if (!Array.isArray(requested) || requested.length > 100) fail(400, 'Enter a valid Accounts Team list.');
+  const names = new Set();
+  let allocated = 0;
+  const splits = requested.map(item => {
+    const name = typeof item?.name === 'string' ? item.name.trim() : '';
+    const amount = Number(item?.amountPKR), value = cents(amount);
+    if (!name || name.length > 100 || names.has(name.toLowerCase())) fail(400, 'Enter a distinct Accounts Team name for each row (up to 100 characters).');
+    if (!Number.isFinite(amount) || !Number.isSafeInteger(value) || value <= 0 || Math.abs(amount * 100 - value) > 0.00001) fail(400, 'Enter a positive Accounts Team amount with at most two decimal places.');
+    names.add(name.toLowerCase());allocated += value;
+    return {name, amountPKR:value / 100};
   });
+  if (allocated > cents(totalPKR)) fail(400, 'Accounts Team amounts exceed the total received by Accounts.');
+  return splits;
 }
-module.exports = { receipts, context, plan, decorate, distributeToPartners };
+module.exports = { receipts, context, plan, decorate, accountsTeamSplits };
