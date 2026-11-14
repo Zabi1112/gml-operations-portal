@@ -1,5 +1,5 @@
-import {createAccountsTeamPdf} from "../finance/accountsTeamPdf.js";
-import { receivedInvoiceFeeUSD, partnerReceiptGross, accountsTeamSummary } from "../finance/invoiceAccountsFees.js";
+import {createAccountsTeamPdf,createAccountantsPdf} from "../finance/accountsTeamPdf.js";
+import { receivedInvoiceFeeUSD, partnerReceiptGross, accountsTeamSummary, accountantsSummary } from "../finance/invoiceAccountsFees.js";
 import {loadLetterLogo} from '../hr/letterPdf';
 import {createPartnerStatementPdf,loadAccountsSignature} from "../finance/partnerStatementPdf";
 import { useState } from "react";
@@ -34,6 +34,7 @@ function SettlementView({ settlement, onClose }) {
   const dispatcherValue = Number(settlement.dispatcherValue ?? 0);
   const accountsValue = Number(settlement.accountsValue ?? 0);
   const dispatcherAmountPKR = Number(settlement.dispatcherAmountPKR ?? 0);
+  const accountants = accountantsSummary(settlement);
   const accountsTeam = accountsTeamSummary(settlement);
   const accountsAmountPKR = Number(settlement.accountsAmountPKR ?? 0);
   const invoiceFeeUSD = receivedInvoiceFeeUSD(settlement);
@@ -44,8 +45,8 @@ function SettlementView({ settlement, onClose }) {
 
   const accountsLabel =
     settlement.accountsType === "ABSOLUTE"
-      ? `Accounts (Fixed PKR)`
-      : `Accounts (${accountsValue}%)`;
+      ? `Accounts Team (Fixed PKR)`
+      : `Accounts Team (${accountsValue}%)`;
   const accountsPartner = partnerSplits.find(
     (partner) => Number(partner.partnerId) === Number(settlement.accountsPartnerId)
   );
@@ -121,6 +122,7 @@ function SettlementView({ settlement, onClose }) {
           Download Full Settlement PDF
         </button>
         <button disabled={printing} onClick={()=>{try{createAccountsTeamPdf(settlement).save(`accounts-team-${settlement.id}.pdf`);}catch(error){alert(error.message || "Unable to create Accounts Team PDF");}}}>Download Accounts Team Settlement</button>
+        <button disabled={printing} onClick={()=>{try{createAccountantsPdf(settlement).save(`accountants-${settlement.id}.pdf`);}catch(error){alert(error.message || "Unable to create Accountants PDF");}}}>Download Accountants Settlement</button>
         {partnerSplits.map((partner, index) => (
           <button
             key={partner.partnerId ?? `${partner.name}-${index}`}
@@ -243,7 +245,7 @@ function SettlementView({ settlement, onClose }) {
               <td>{partnerAccountsPKR.toLocaleString()}</td>
             </tr>
 
-            {invoiceFeeUSD > 0 && <tr><td>Invoice accounts fee received ({invoiceFeeUSD.toFixed(2)} USD)</td><td>{invoiceFeePKR.toLocaleString()}</td></tr>}
+            {invoiceFeeUSD > 0 && <tr><td>Accountants - invoice fees received ({invoiceFeeUSD.toFixed(2)} USD)</td><td>{invoiceFeePKR.toLocaleString()}</td></tr>}
             <tr className="settlement-net-row">
               <td>Partner Profit</td>
               <td>{partnerProfitPKR.toLocaleString()}</td>
@@ -276,10 +278,12 @@ function SettlementView({ settlement, onClose }) {
         )}
 
         <h3>Accounts Team</h3>
-        <p>Total received: {accountsTeam.totalPKR.toLocaleString()} PKR</p>
+        <p>Deducted from partner shares: {accountsTeam.totalPKR.toLocaleString()} PKR</p>
+        <h3>Accountants</h3>
+        <p>Invoice fees received: {accountants.totalPKR.toLocaleString()} PKR</p>
         <table className="settlement-table"><thead><tr><th>Name</th><th>Amount PKR</th></tr></thead><tbody>
-          {accountsTeam.splits.map((row,index)=><tr key={index}><td>{row.name}</td><td>{Number(row.amountPKR).toLocaleString()}</td></tr>)}
-          {accountsTeam.unassignedPKR>0 && <tr><td>Accounts Team - unassigned</td><td>{accountsTeam.unassignedPKR.toLocaleString()}</td></tr>}
+          {accountants.splits.map((row,index)=><tr key={index}><td>{row.name}</td><td>{Number(row.amountPKR).toLocaleString()}</td></tr>)}
+          {accountants.unassignedPKR>0 && <tr><td>Accountants - unassigned</td><td>{accountants.unassignedPKR.toLocaleString()}</td></tr>}
         </tbody></table>
         <h3>Partner Split</h3>
 

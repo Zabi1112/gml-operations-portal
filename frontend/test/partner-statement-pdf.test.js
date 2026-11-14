@@ -14,8 +14,8 @@ test('partner PDF gross excludes received invoice fees in USD and PKR without ex
 });
 
 
-test('partner PDF never includes Accounts Team names or payments',async()=>{
- const doc=createPartnerStatementPdf({invoiceAmountUSD:2500,totalAmountPKR:700000,usdRate:280,accountsAmountPKR:72800,paymentAllocations:[{accountsFeeUSD:260,accountsTeamSplits:[{name:'PRIVATE TEAM MEMBER',amountPKR:72800}]}]},{name:'Partner',amountPKR:100000});
+test('partner PDF never includes Accountants names or payments',async()=>{
+ const doc=createPartnerStatementPdf({invoiceAmountUSD:2500,totalAmountPKR:700000,usdRate:280,accountsAmountPKR:72800,paymentAllocations:[{accountsFeeUSD:260,accountantsSplits:[{name:'PRIVATE TEAM MEMBER',amountPKR:72800}]}]},{name:'Partner',amountPKR:100000});
  const task=getDocument({data:new Uint8Array(doc.output('arraybuffer')),useSystemFonts:true});const pdf=await task.promise;let text='';
  for(let n=1;n<=pdf.numPages;n++)for(const item of (await (await pdf.getPage(n)).getTextContent()).items)text+=item.str+' ';
  assert.match(text,/2,240.00 USD/);assert.match(text,/100,000.00 PKR/);

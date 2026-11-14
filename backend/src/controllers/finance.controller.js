@@ -241,10 +241,11 @@ const clearInvoice = async (req, res) => {
       payments.fail(400,err.message);
     }
     const { dispatcherAmountPKR, accountsAmountPKR, partnerProfitPKR, partnerSplits, dispatcherSplits } = calc;
-    if (req.body.accountsFeePartnerSplits?.length) payments.fail(400, 'Accounts fees can no longer be assigned to partners. Refresh and use Accounts Team.');
-    const accountsTeamTotalPKR = (payments.cents(accountsAmountPKR)+payments.cents(invoiceAccountsFeePKR))/100;
-    const accountsTeamSplits = invoiceFees.accountsTeamSplits(req.body.accountsTeamSplits, accountsTeamTotalPKR);
-    paymentAllocations[0].accountsTeamSplits = accountsTeamSplits;
+    if (req.body.accountsFeePartnerSplits?.length) payments.fail(400, 'Accounts fees can no longer be assigned to partners. Refresh and use Accountants.');
+    const combinedAccountsPKR = (payments.cents(accountsAmountPKR)+payments.cents(invoiceAccountsFeePKR))/100;
+    if (req.body.accountsTeamSplits?.length) payments.fail(400, 'Refresh: invoice fees now belong to Accountants, separately from Accounts Team.');
+    const accountantsSplits = invoiceFees.accountantsSplits(req.body.accountantsSplits, invoiceAccountsFeePKR);
+    paymentAllocations[0].accountantsSplits = accountantsSplits;
 
     const settlement = await tx.invoiceSettlement.create({
       data: {
@@ -268,7 +269,7 @@ const clearInvoice = async (req, res) => {
 
         accountsType,
         accountsValue,
-        accountsAmountPKR: accountsTeamTotalPKR,
+        accountsAmountPKR: combinedAccountsPKR,
         accountsPartnerId,
 
         partnerProfitPKR,

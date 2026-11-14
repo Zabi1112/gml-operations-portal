@@ -101,19 +101,19 @@ async function decorate(db, invoices, rows) {
   });
 }
 // Team payouts are independent of branch partners and never increase partner shares.
-function accountsTeamSplits(requested = [], totalPKR) {
-  if (!Array.isArray(requested) || requested.length > 100) fail(400, 'Enter a valid Accounts Team list.');
+function accountantsSplits(requested = [], totalPKR) {
+  if (!Array.isArray(requested) || requested.length > 100) fail(400, 'Enter a valid Accountants list.');
   const names = new Set();
   let allocated = 0;
   const splits = requested.map(item => {
     const name = typeof item?.name === 'string' ? item.name.trim() : '';
     const amount = Number(item?.amountPKR), value = cents(amount);
-    if (!name || name.length > 100 || names.has(name.toLowerCase())) fail(400, 'Enter a distinct Accounts Team name for each row (up to 100 characters).');
-    if (!Number.isFinite(amount) || !Number.isSafeInteger(value) || value <= 0 || Math.abs(amount * 100 - value) > 0.00001) fail(400, 'Enter a positive Accounts Team amount with at most two decimal places.');
+    if (!name || name.length > 100 || names.has(name.toLowerCase())) fail(400, 'Enter a distinct Accountants name for each row (up to 100 characters).');
+    if (!Number.isFinite(amount) || !Number.isSafeInteger(value) || value <= 0 || Math.abs(amount * 100 - value) > 0.00001) fail(400, 'Enter a positive Accountants amount with at most two decimal places.');
     names.add(name.toLowerCase());allocated += value;
     return {name, amountPKR:value / 100};
   });
-  if (allocated > cents(totalPKR)) fail(400, 'Accounts Team amounts exceed the total received by Accounts.');
+  if (allocated > cents(totalPKR)) fail(400, 'Accountants amounts exceed the invoice fees received by Accountants.');
   return splits;
 }
-module.exports = { receipts, context, plan, decorate, accountsTeamSplits };
+module.exports = { receipts, context, plan, decorate, accountantsSplits };

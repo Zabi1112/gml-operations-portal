@@ -1,10 +1,9 @@
 import {jsPDF} from 'jspdf';
-import {accountsTeamSummary} from './invoiceAccountsFees.js';
-export function createAccountsTeamPdf(settlement) {
+import {accountsTeamSummary, accountantsSummary} from './invoiceAccountsFees.js';
+function createAccountsPdf(settlement, summary, title) {
   const doc=new jsPDF({unit:'pt',format:'a4'});
-  const summary=accountsTeamSummary(settlement);
   let y=48;
-  function header(){doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('EASTWEST Logistics',42,y);y+=27;doc.setFontSize(14);doc.text('Accounts Team Settlement',42,y);y+=32;doc.setFont('helvetica','normal');doc.setFontSize(10);}
+  function header(){doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('EASTWEST Logistics',42,y);y+=27;doc.setFontSize(14);doc.text(title + ' Settlement',42,y);y+=32;doc.setFont('helvetica','normal');doc.setFontSize(10);}
   function row(label,value){
     const lines=doc.splitTextToSize(String(label),280);
     for(let i=0;i<lines.length;i++){
@@ -17,8 +16,11 @@ export function createAccountsTeamPdf(settlement) {
   header();
   row('Invoice / reference',settlement.invoiceNumber||'Manual settlement');
   row('Clearance date',String(settlement.settlementDate||settlement.clearedAt||'').slice(0,10)||'-');
-  row('Total received by Accounts Team',money(summary.totalPKR));
+  row('Total received by ' + title,money(summary.totalPKR));
   for(const split of summary.splits)row(split.name,money(split.amountPKR));
-  if(summary.unassignedPKR>0)row('Accounts Team - unassigned',money(summary.unassignedPKR));
+  if(summary.unassignedPKR>0)row(title + ' - unassigned',money(summary.unassignedPKR));
   return doc;
 }
+
+export const createAccountsTeamPdf = settlement => createAccountsPdf(settlement,accountsTeamSummary(settlement),'Accounts Team');
+export const createAccountantsPdf = settlement => createAccountsPdf(settlement,accountantsSummary(settlement),'Accountants');

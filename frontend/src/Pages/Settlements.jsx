@@ -1,3 +1,4 @@
+import {accountsTeamSummary, accountantsSummary} from "../finance/invoiceAccountsFees.js";
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { BranchContext } from "../context/BranchContext";
@@ -729,6 +730,7 @@ const Settlements = () => {
                     <th>Payment Method</th>
                     <th>Dispatcher</th>
                     <th>Accounts Team</th>
+                    <th>Accountants</th>
                     <th>Partner Profit</th>
                     <th>Cleared By</th>
                     {isAdmin && <th>Actions</th>}
@@ -751,7 +753,8 @@ const Settlements = () => {
                       </td>
                       <td>{settlement.paymentMethod || "-"}</td>
                       <td>{formatCurrency(settlement.dispatcherAmountPKR)}</td>
-                      <td>{formatCurrency(settlement.accountsAmountPKR)}</td>
+                      <td>{formatCurrency(accountsTeamSummary(settlement).totalPKR)}</td>
+                      <td>{formatCurrency(accountantsSummary(settlement).totalPKR)}</td>
                       <td>{formatCurrency(settlement.partnerProfitPKR)}</td>
                       <td>{settlement.clearedBy || "-"}</td>
                       {isAdmin && (

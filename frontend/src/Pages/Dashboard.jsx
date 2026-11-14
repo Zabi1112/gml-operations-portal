@@ -1,3 +1,4 @@
+import {accountsTeamSummary, accountantsSummary} from "../finance/invoiceAccountsFees.js";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../api";
@@ -122,9 +123,11 @@ function Dashboard() {
   );
 
   const totalAccountsPKR = settlements.reduce(
-    (sum, item) => sum + Number(item.accountsAmountPKR || 0),
+    (sum, item) => sum + accountsTeamSummary(item).totalPKR,
     0
   );
+
+  const totalAccountantsPKR = settlements.reduce((sum,item)=>sum+accountantsSummary(item).totalPKR,0);
 
   const partnerRows = summarizePartnerEarnings(settlements, branchPartners);
 
@@ -299,12 +302,13 @@ function Dashboard() {
                     </div>
 
                     <div className="finance-summary-card accounts-card">
-                      <span>Total Accounts Money</span>
+                      <span>Accounts Team (partner deductions)</span>
                       <strong>
                         PKR {totalAccountsPKR.toLocaleString()}
                       </strong>
                     </div>
 
+                    <div className="finance-summary-card accounts-card"><span>Accountants (invoice fees)</span><strong>PKR {totalAccountantsPKR.toLocaleString()}</strong></div>
                     <div className="finance-summary-card">
                       <span>Total Settlements</span>
                       <strong>{settlements.length}</strong>

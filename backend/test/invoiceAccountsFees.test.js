@@ -81,11 +81,11 @@ test('fees from another branch or company cannot enter a receipt', () => {
 });
 
 
-test('Accounts Team records names and PKR amounts separately from partners',()=>{
- assert.deepEqual(fees.accountsTeamSplits([{name:' Ali ',amountPKR:100},{name:'Sara',amountPKR:200}],400),[{name:'Ali',amountPKR:100},{name:'Sara',amountPKR:200}]);
- assert.deepEqual(fees.accountsTeamSplits(undefined,100),[]);
+test('Accountants records names and PKR amounts separately from partners',()=>{
+ assert.deepEqual(fees.accountantsSplits([{name:' Ali ',amountPKR:100},{name:'Sara',amountPKR:200}],400),[{name:'Ali',amountPKR:100},{name:'Sara',amountPKR:200}]);
+ assert.deepEqual(fees.accountantsSplits(undefined,100),[]);
 });
-test('Accounts Team rejects duplicate names, missing names, invalid money and excessive totals',()=>{
- for(const requested of [null,[{name:'',amountPKR:1}],[{name:'Ali',amountPKR:-1}],[{name:'Ali',amountPKR:0.001}],[{name:'Ali',amountPKR:101}],[{name:'Ali',amountPKR:1},{name:' ali ',amountPKR:1}]])assert.throws(()=>fees.accountsTeamSplits(requested,100));
- assert.throws(()=>fees.accountsTeamSplits([{name:'Ali',amountPKR:1}],0));
+test('Accountants rejects duplicate names, missing names, invalid money and excessive totals',()=>{
+ for(const requested of [null,[{name:'',amountPKR:1}],[{name:'Ali',amountPKR:-1}],[{name:'Ali',amountPKR:0.001}],[{name:'Ali',amountPKR:101}],[{name:'Ali',amountPKR:1},{name:' ali ',amountPKR:1}]])assert.throws(()=>fees.accountantsSplits(requested,100));
+ assert.throws(()=>fees.accountantsSplits([{name:'Ali',amountPKR:1}],0));
 });

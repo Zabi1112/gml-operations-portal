@@ -26,9 +26,15 @@ export function partnerReceiptGross(settlement) {
   };
 }
 
-export function accountsTeamSummary(settlement) {
-  const splits = (settlement.paymentAllocations || []).flatMap(item => Array.isArray(item.accountsTeamSplits) ? item.accountsTeamSplits : []);
-  const total = cents(settlement.accountsAmountPKR);
+// Existing storage contains the combined accounts total. Separate its two sources
+// for every display; manual/legacy records without fee receipts belong to Accounts Team.
+export function accountantsSummary(settlement) {
+  const splits = (settlement.paymentAllocations || []).flatMap(item => Array.isArray(item.accountantsSplits) ? item.accountantsSplits : []);
+  const total = cents(receivedInvoiceFeeUSD(settlement) * Number(settlement.usdRate || 0));
   const assigned = splits.reduce((sum,row)=>sum+cents(row.amountPKR),0);
   return {splits,totalPKR:total/100,unassignedPKR:Math.max(0,total-assigned)/100};
+}
+export function accountsTeamSummary(settlement) {
+  const total = Math.max(0,cents(settlement.accountsAmountPKR) - cents(accountantsSummary(settlement).totalPKR));
+  return {splits:[],totalPKR:total/100,unassignedPKR:total/100};
 }
