@@ -1,3 +1,4 @@
+const invoiceFees=require("../utils/invoiceAccountsFees");
 const payments=require("../utils/invoicePayments");
 const {
   allocatePartnerAmounts,
@@ -194,7 +195,9 @@ const clearInvoice = async (req, res) => {
     if (!branch)payments.fail(404,"Branch not found");
 
     const invoiceAmountUSD = Number(req.body.amountReceivedUSD);
-    const paymentAllocations=payments.paymentPlan(invoice,await payments.companyRows(tx,invoice),invoiceAmountUSD);
+    const companyInvoices = await payments.companyRows(tx,invoice);
+    const feePlan = invoiceFees.plan(invoice, companyInvoices, await invoiceFees.receipts(tx,companyInvoices), invoiceAmountUSD, req.body.accountsFeeReceivedUSD);
+    const paymentAllocations = feePlan.allocations;
     const { paymentMethod, settlementDate } = payments.validatePaymentDetails(
       req.body.paymentMethod,
       req.body.otherPaymentMethod,
@@ -203,6 +206,8 @@ const clearInvoice = async (req, res) => {
     const usdRate = Number(req.body.usdRate || 0);
     if(!Number.isFinite(usdRate)||usdRate<=0)payments.fail(400,"Enter a valid USD to PKR rate.");
     const totalAmountPKR = payments.cents(invoiceAmountUSD * usdRate)/100;
+    const invoiceAccountsFeePKR = payments.cents(feePlan.accountsFeeUSD * usdRate)/100;
+    const settlementRevenuePKR = (payments.cents(totalAmountPKR)-payments.cents(invoiceAccountsFeePKR))/100;
 
     const dispatcherType = req.body.dispatcherType || "PERCENTAGE";
     const dispatcherValue = Number(req.body.dispatcherValue ?? branch.dispatcherPercent ?? 25);
@@ -222,7 +227,7 @@ const clearInvoice = async (req, res) => {
     let calc;
     try {
       calc = calculateSettlementAmounts(
-        totalAmountPKR,
+        settlementRevenuePKR,
         dispatcherValue,
         dispatcherType,
         accountsValue,
@@ -236,6 +241,7 @@ const clearInvoice = async (req, res) => {
       payments.fail(400,err.message);
     }
     const { dispatcherAmountPKR, accountsAmountPKR, partnerProfitPKR, partnerSplits, dispatcherSplits } = calc;
+    const paidPartnerSplits = invoiceFees.distributeToPartners(partnerSplits, req.body.accountsFeePartnerSplits, feePlan.accountsFeeUSD, usdRate);
 
     const settlement = await tx.invoiceSettlement.create({
       data: {
@@ -259,11 +265,11 @@ const clearInvoice = async (req, res) => {
 
         accountsType,
         accountsValue,
-        accountsAmountPKR,
+        accountsAmountPKR: (payments.cents(accountsAmountPKR)+payments.cents(invoiceAccountsFeePKR))/100,
         accountsPartnerId,
 
         partnerProfitPKR,
-        partnerSplits,
+        partnerSplits: paidPartnerSplits,
 
         clearedBy: req.user?.name || req.user?.email || "Admin",
         settlementDate,

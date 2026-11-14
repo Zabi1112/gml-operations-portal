@@ -281,7 +281,7 @@ const getInvoices = async (req, res) => {
       }
     });
 
-    res.json(await payments.decorate(prisma,invoices));
+    res.json(await payments.decorate(prisma,invoices,req.user?.role === "ADMIN"));
   } catch (error) {
     console.log(error);
     res.status(error.status || 500).json({
@@ -314,7 +314,7 @@ const getInvoicesByBranch = async (req, res) => {
       }
     });
 
-    res.json(await payments.decorate(prisma,invoices));
+    res.json(await payments.decorate(prisma,invoices,req.user?.role === "ADMIN"));
   } catch (error) {
     console.log(error);
     res.status(error.status || 500).json({

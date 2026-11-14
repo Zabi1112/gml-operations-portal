@@ -1,3 +1,4 @@
+import { paymentFeePreview } from "../finance/invoiceAccountsFees.js";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../api";
@@ -65,6 +66,9 @@ function History() {
 
   const [settlementForm, setSettlementForm] = useState({
     amountReceivedUSD: "",
+    includesAccountsFee: "",
+    accountsFeePartnerAmounts: {},
+    accountsFeeReceivedUSD: "",
     paymentRequestId: "",
     usdRate: "",
     dispatcherPercent: "",
@@ -198,6 +202,9 @@ function History() {
     setClearInvoiceData(invoice);
     setSettlementForm({
       amountReceivedUSD: invoice.outstandingAmountUSD ?? invoice.netPayable,
+      includesAccountsFee: "",
+      accountsFeePartnerAmounts: {},
+      accountsFeeReceivedUSD: "",
       paymentRequestId:crypto.randomUUID(),
       usdRate: "",
       dispatcherPercent: selectedBranch?.dispatcherPercent ?? 25,
@@ -230,6 +237,7 @@ function History() {
   const submitClearInvoice = async (e) => {
     e.preventDefault();
     if (!clearInvoiceData) return;
+    if (feePreview.error || feeSplitError || partnerAllocationError) return alert(feePreview.error || feeSplitError || partnerAllocationError);
 
     const splitsTotal = settlementForm.dispatcherSplits.reduce(
       (sum, s) => sum + (Number(s.amount) || 0),
@@ -244,6 +252,8 @@ function History() {
         `${API}/finance/clear-invoice/${clearInvoiceData.id}`,
         {
           amountReceivedUSD:Number(settlementForm.amountReceivedUSD),
+          accountsFeeReceivedUSD:feePreview.feeUSD,
+          accountsFeePartnerSplits: feePartnerSplits,
           paymentRequestId:settlementForm.paymentRequestId,
           paymentMethod:settlementForm.paymentMethod,
           otherPaymentMethod:settlementForm.otherPaymentMethod,
@@ -434,24 +444,35 @@ function History() {
 
   const invoiceAmountUSD = Number(settlementForm.amountReceivedUSD || 0);
   const usdRate = Number(settlementForm.usdRate || 0);
-  const invoiceAmountPKR = invoiceAmountUSD * usdRate;
+  const invoiceAmountPKR = Math.round(invoiceAmountUSD * usdRate * 100) / 100;
+  const feePreview = paymentFeePreview(clearInvoiceData, settlementForm);
+  const feePartnerSplits = Object.entries(settlementForm.accountsFeePartnerAmounts || {})
+    .filter(([, amount]) => amount !== "" && Number(amount) !== 0)
+    .map(([partnerId, amountUSD]) => ({partnerId:Number(partnerId), amountUSD:Number(amountUSD)}));
+  const allocatedFeeCents = feePartnerSplits.reduce((sum, entry) => sum + Math.round(entry.amountUSD * 100), 0);
+  const feeSplitError = feePartnerSplits.some(entry => !Number.isFinite(entry.amountUSD) || entry.amountUSD < 0 || Math.abs(entry.amountUSD * 100 - Math.round(entry.amountUSD * 100)) > 0.00001)
+    ? "Enter valid accounts fee allocations with at most two decimal places."
+    : allocatedFeeCents > Math.round(feePreview.feeUSD * 100)
+      ? "Partner allocations exceed the accounts fee received in this payment." : "";
+  const invoiceFeePKR = Math.round(feePreview.feeUSD * usdRate * 100) / 100;
+  const settlementRevenuePKR = Math.round((invoiceAmountPKR - invoiceFeePKR) * 100) / 100;
   const dispatcherPercent = Number(settlementForm.dispatcherPercent || 0);
   const accountsValue = Number(settlementForm.accountsValue || 0);
   const dispatcherAmountPKR =
     settlementForm.dispatcherType === "ABSOLUTE"
       ? dispatcherPercent
-      : (invoiceAmountPKR * dispatcherPercent) / 100;
+      : (settlementRevenuePKR * dispatcherPercent) / 100;
 
   const accountsAmountPKR =
     settlementForm.accountsType === "PERCENTAGE"
-      ? (invoiceAmountPKR * accountsValue) / 100
+      ? (settlementRevenuePKR * accountsValue) / 100
       : accountsValue;
   let partnerProfitPKR =
-    invoiceAmountPKR - dispatcherAmountPKR - accountsAmountPKR;
+    settlementRevenuePKR - dispatcherAmountPKR - accountsAmountPKR;
   let partnerAllocationError = "";
   try {
     partnerProfitPKR = allocatePartnerAmounts(
-      invoiceAmountPKR,
+      settlementRevenuePKR,
       dispatcherAmountPKR,
       accountsAmountPKR,
       partners,
@@ -677,6 +698,9 @@ function History() {
                               <span className="status-cleared">{invoice.balanceTransferredToInvoiceId ? "Carried forward" : "Paid"}</span>
                             ) : (
                               <span className="status-pending">{invoice.paymentStatus === "CARRIED_FORWARD" ? "Carried forward" : invoice.paymentStatus === "PARTIAL" ? "Partially paid" : "Pending"}</span>
+                            )}
+                            {isAdmin && invoice.canRecordPayment && invoice.accountsFeePendingUSD > 0 && (
+                              <p>Accounts fees pending: {Number(invoice.accountsFeePendingUSD).toFixed(2)} USD</p>
                             )}
                           </td>
                           <td>
@@ -981,6 +1005,51 @@ function History() {
                   <div className="form-group">
                 <label>Amount received (USD)<input type="number" min="0.01" step="0.01" max={clearInvoiceData.outstandingAmountUSD ?? clearInvoiceData.netPayable} required value={settlementForm.amountReceivedUSD} onChange={e=>setSettlementForm({...settlementForm,amountReceivedUSD:e.target.value})}/></label>
                   </div>
+                  {feePreview.pendingUSD > 0 && (
+                    <div className="payment-details-fields">
+                      <p><strong>Accounts fees pending (including previous invoices):</strong> {feePreview.pendingUSD.toFixed(2)} USD</p>
+                      {feePreview.full ? (
+                        <p>Full clearance includes all pending accounts fees.</p>
+                      ) : (
+                        <>
+                          <div className="form-group">
+                            <label htmlFor="includes-accounts-fee">Does this partial payment include accounts fees?</label>
+                            <select id="includes-accounts-fee" value={settlementForm.includesAccountsFee}
+                              onChange={e => setSettlementForm({...settlementForm, includesAccountsFee:e.target.value, accountsFeeReceivedUSD:""})} required>
+                              <option value="">Select an option</option><option value="no">No</option><option value="yes">Yes</option>
+                            </select>
+                          </div>
+                          {settlementForm.includesAccountsFee === "yes" && (
+                            <div className="form-group">
+                              <label htmlFor="accounts-fee-received">Accounts fee received (USD)</label>
+                              <input id="accounts-fee-received" type="number" min="0.01" step="0.01"
+                                max={Math.min(feePreview.pendingUSD, invoiceAmountUSD)} required
+                                value={settlementForm.accountsFeeReceivedUSD}
+                                onChange={e => setSettlementForm({...settlementForm, accountsFeeReceivedUSD:e.target.value})}/>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      <p>Accounts fees remaining after this payment: {Math.max(0, feePreview.pendingUSD-feePreview.feeUSD).toFixed(2)} USD</p>
+                    </div>
+                  )}
+                  {feePreview.error && <p className="warning-message" role="alert">{feePreview.error}</p>}
+                  {(feePreview.feeUSD > 0 || feePartnerSplits.length > 0) && (
+                    <fieldset>
+                      <legend>Assign received accounts fees to partners</legend>
+                      <p>Enter an amount for each recipient. Leave others blank. Unassigned fees remain with Accounts.</p>
+                      {partners.map(partner => (
+                        <div className="form-group" key={partner.id}>
+                          <label htmlFor={'fee-partner-' + partner.id}>{partner.name} ? accounts fee (USD)</label>
+                          <input id={'fee-partner-' + partner.id} type="number" min="0" step="0.01" max={feePreview.feeUSD}
+                            value={settlementForm.accountsFeePartnerAmounts?.[partner.id] ?? ""}
+                            onChange={e => setSettlementForm({...settlementForm, accountsFeePartnerAmounts:{...settlementForm.accountsFeePartnerAmounts,[partner.id]:e.target.value}})}/>
+                        </div>
+                      ))}
+                      <p>Assigned: {(allocatedFeeCents / 100).toFixed(2)} USD ? Remaining with Accounts: {(feePreview.feeUSD - allocatedFeeCents / 100).toFixed(2)} USD</p>
+                    </fieldset>
+                  )}
+                  {feeSplitError && <p className="warning-message" role="alert">{feeSplitError} Clear recipient amounts or increase the accounts fee received.</p>}
                   <div className="form-group">
                     <label>USD Rate</label>
                     <input
@@ -1018,7 +1087,7 @@ function History() {
                   </div>
 
                   <div className="form-group">
-                    <label>Accounts Payment Type</label>
+                    <label>Partner-funded Accounts Allocation Type</label>
                     <div style={{ display: "flex", gap: "15px", marginBottom: "10px" }}>
                       <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                         <input
@@ -1078,7 +1147,7 @@ function History() {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Deduct Accounts Fee From *</label>
+                    <label>Deduct Partner-funded Accounts Allocation From *</label>
                     <select
                       value={settlementForm.accountsPartnerId}
                       onChange={(e) =>
@@ -1108,12 +1177,14 @@ function History() {
                       <strong>Invoice PKR:</strong>{" "}
                       {invoiceAmountPKR.toLocaleString()}
                     </p>
+                    <p><strong>Invoice accounts fee to Accounts:</strong> {invoiceFeePKR.toLocaleString()} PKR ({feePreview.feeUSD.toFixed(2)} USD)</p>
+                    <p><strong>Revenue for settlement:</strong> {settlementRevenuePKR.toLocaleString()} PKR</p>
                     <p>
                       <strong>Dispatcher Amount:</strong>{" "}
                       {dispatcherAmountPKR.toLocaleString()}
                     </p>
                     <p>
-                      <strong>Accounts Amount:</strong>{" "}
+                      <strong>Partner-funded Accounts Allocation:</strong>{" "}
                       {accountsAmountPKR.toLocaleString()}
                     </p>
                     <p>
@@ -1136,7 +1207,7 @@ function History() {
                   </div>
 
                   <div className="settlement-actions">
-                    <button type="submit">Record payment</button>
+                    <button type="submit" disabled={Boolean(feePreview.error || feeSplitError || partnerAllocationError)}>Record payment</button>
                     <button type="button" onClick={closeClearInvoice}>
                       Cancel
                     </button>

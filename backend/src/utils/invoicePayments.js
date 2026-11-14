@@ -40,14 +40,14 @@ function paymentPlan(invoice,rows,received){assertPaymentTarget(invoice,rows);le
 async function companyRows(db,invoice){return db.invoice.findMany({where:invoice.companyId?{branchId:invoice.branchId,companyId:invoice.companyId}:{id:invoice.id},orderBy:[{createdAt:'asc'},{id:'asc'}]});}
 async function lockCompany(db,branchId,companyId){await db.$executeRawUnsafe('SELECT pg_advisory_xact_lock($1::integer,$2::integer)',Number(branchId),Number(companyId||0));}
 async function outstanding(db,branchId,companyId){const rows=await db.invoice.findMany({where:{branchId:Number(branchId),companyId:Number(companyId)},orderBy:[{createdAt:'asc'},{id:'asc'}]});const items=rows.filter(i=>ownDue(i)>0).map(i=>({invoiceId:i.id,invoiceNumber:i.invoiceNumber,amountUSD:ownDue(i)/100}));return {items,totalUSD:items.reduce((sum,i)=>sum+cents(i.amountUSD),0)/100};}
-async function decorate(db,invoices){
+async function decorate(db,invoices,includeAccountsFees=false){
  if(!invoices.length)return invoices;
  const ids=[...new Set(invoices.flatMap(i=>Array.isArray(i.carryForward)?i.carryForward.map(s=>s.invoiceId):[]))];
  const scopes=[...new Map(invoices.filter(i=>i.companyId).map(i=>[i.branchId+':'+i.companyId,{branchId:i.branchId,companyId:i.companyId}])).values()];
  const where=[...scopes,...(ids.length?[{id:{in:ids}}]:[])];
  const related=where.length?await db.invoice.findMany({where:{OR:where}}):[];
  const rows=[...new Map([...related,...invoices].map(i=>[i.id,i])).values()];
- return invoices.map(i=>{
+ const decorated = invoices.map(i=>{
   const remaining=allocationsFor(i,rows).reduce((sum,s)=>sum+s.amountCents,0)/100;
   const target=latestInvoice(i,rows),moved=!!i.balanceTransferredToInvoiceId||(target.id!==i.id&&remaining>0);
   return {...i,outstandingAmountUSD:moved?0:remaining,
@@ -58,6 +58,7 @@ async function decorate(db,invoices){
    isCleared:!moved&&remaining===0,
    paymentStatus:moved?'CARRIED_FORWARD':remaining===0?'PAID':remaining<Number(i.netPayable)?'PARTIAL':'PENDING'};
  });
+ return includeAccountsFees ? require("./invoiceAccountsFees").decorate(db,decorated,rows) : decorated;
 }
 async function refreshFlags(db,invoice){const rows=await companyRows(db,invoice);for(const i of rows){const cleared=allocationsFor(i,rows).length===0;if(cleared!==i.isCleared)await db.invoice.update({where:{id:i.id},data:{isCleared:cleared,clearedAt:cleared?new Date():null}});}}
 async function assertMutable(db,invoice){const rows=await companyRows(db,invoice);const referenced=rows.some(i=>i.balanceTransferredToInvoiceId===invoice.id||(Array.isArray(i.carryForward)&&i.carryForward.some(s=>s.invoiceId===invoice.id)));const settlements=await db.invoiceSettlement.count({where:{invoiceId:invoice.id}});if((invoice.currentChargesUSD!==null&&invoice.currentChargesUSD!==undefined&&!Array.isArray(invoice.carryForward))||invoice.balanceTransferredToInvoiceId||cents(invoice.paidAmountUSD)>0||settlements||referenced)fail(409,'This invoice has payments or is carried into a later invoice. Reverse its payments or remove the later unpaid invoice before changing it.');}

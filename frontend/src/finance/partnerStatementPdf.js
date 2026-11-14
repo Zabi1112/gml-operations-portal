@@ -1,6 +1,10 @@
+import {partnerReceiptGross} from './invoiceAccountsFees.js';
 import {jsPDF} from 'jspdf';
 // Explicit field selection keeps other partners, staff names, and internal notes private.
 export function createPartnerStatementPdf(settlement,partner,assets={}) {
+ const gross=partnerReceiptGross(settlement);
+ const hasFeeAllocation=Number(partner.accountsFeeReceivedUSD)>0;
+ const normalShare=Number(partner.normalSharePKR ?? partner.amountPKR ?? 0);
  const doc=new jsPDF({unit:'pt',format:'a4',compress:true});
  const W=595.28,H=841.89,M=42,bottom=767,usable=W-2*M;
  const navy=[10,49,83],orange=[232,91,23],ink=[28,47,65];let y=0;
@@ -31,14 +35,15 @@ export function createPartnerStatementPdf(settlement,partner,assets={}) {
  row('Clearance date',String(settlement.settlementDate||settlement.clearedAt||'').slice(0,10)||'-');
  if(settlement.paymentMethod)row('Payment method',settlement.paymentMethod);
  section('RECEIPTS & DISPATCH');
- if(Number(settlement.invoiceAmountUSD)>0)row('Amount received (USD)',money(settlement.invoiceAmountUSD,'USD'));
+ if(Number(settlement.invoiceAmountUSD)>0)row('Gross amount (USD)',money(gross.usd,'USD'));
  if(Number(settlement.usdRate)>0)row('Exchange rate', '1 USD = '+money(settlement.usdRate));
- row('Company amount received',money(settlement.totalAmountPKR));
+ row('Gross amount (PKR)',money(gross.pkr));
  row('Given to dispatch',money(settlement.dispatcherAmountPKR));
  section('YOUR PARTNER SETTLEMENT');
  if(Number.isFinite(Number(partner.percent))&&partner.percent!=null)row('Your partnership share',Number(partner.percent)+'%');
- if(Number(partner.accountsDeductionPKR)>0){row('Your share before accounts fee',money(partner.grossAmountPKR??(Number(partner.amountPKR)+Number(partner.accountsDeductionPKR))));row('Accounts fee from your share',money(partner.accountsDeductionPKR));}
- ensure(65);doc.setFillColor(...navy);doc.roundedRect(M,y-6,usable,52,5,5,'F');doc.setFillColor(...orange);doc.roundedRect(M,y-6,5,52,2,2,'F');font(11,true,[255,255,255]);doc.text('YOUR NET SETTLEMENT',M+16,y+24);font(19,true,[255,255,255]);doc.text(money(partner.amountPKR),W-M-16,y+25,{align:'right'});y+=65;
+ if(Number(partner.accountsDeductionPKR)>0){row('Your share before accounts fee',money(partner.grossAmountPKR??(normalShare+Number(partner.accountsDeductionPKR))));row('Accounts fee from your share',money(partner.accountsDeductionPKR));}
+ if(hasFeeAllocation){row('Normal partner share',money(normalShare));row('Your accounts fee allocation',money(partner.accountsFeeReceivedPKR));}
+ ensure(65);doc.setFillColor(...navy);doc.roundedRect(M,y-6,usable,52,5,5,'F');doc.setFillColor(...orange);doc.roundedRect(M,y-6,5,52,2,2,'F');font(11,true,[255,255,255]);doc.text(hasFeeAllocation?'TOTAL RECEIVED':'YOUR NET SETTLEMENT',M+16,y+24);font(19,true,[255,255,255]);doc.text(money(partner.amountPKR),W-M-16,y+25,{align:'right'});y+=65;
  ensure(110);if(assets.signature)image(assets.signature,W-M-205,y,195,65);doc.setDrawColor(...navy);doc.line(W-M-210,y+73,W-M,y+73);font(10,true,navy);doc.text('Accounts Office Signature',W-M-210,y+90);y+=110;
  const pages=doc.getNumberOfPages();for(let n=1;n<=pages;n++){doc.setPage(n);doc.setFillColor(...orange);doc.rect(0,H-43,W,3,'F');doc.setFillColor(...navy);doc.rect(0,H-40,W,40,'F');font(8,true,[255,255,255]);doc.text('FREIGHT WITH STRATEGY',M,H-26);font(7,false,[255,255,255]);doc.text('Private partner statement',M,H-16);doc.text('ACCOUNTS OFFICE  |  '+n+' / '+pages,W-M,H-20,{align:'right'});}
  return doc;

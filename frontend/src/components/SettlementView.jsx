@@ -1,3 +1,4 @@
+import { receivedInvoiceFeeUSD, partnerReceiptGross } from "../finance/invoiceAccountsFees.js";
 import {loadLetterLogo} from '../hr/letterPdf';
 import {createPartnerStatementPdf,loadAccountsSignature} from "../finance/partnerStatementPdf";
 import { useState } from "react";
@@ -33,6 +34,10 @@ function SettlementView({ settlement, onClose }) {
   const accountsValue = Number(settlement.accountsValue ?? 0);
   const dispatcherAmountPKR = Number(settlement.dispatcherAmountPKR ?? 0);
   const accountsAmountPKR = Number(settlement.accountsAmountPKR ?? 0);
+  const invoiceFeeUSD = receivedInvoiceFeeUSD(settlement);
+  const partnerGross = partnerReceiptGross(settlement);
+  const invoiceFeePKR = Math.round(invoiceFeeUSD * usdRate * 100) / 100;
+  const partnerAccountsPKR = Math.round((accountsAmountPKR - invoiceFeePKR) * 100) / 100;
   const partnerProfitPKR = Number(settlement.partnerProfitPKR ?? 0);
 
   const accountsLabel =
@@ -159,7 +164,7 @@ function SettlementView({ settlement, onClose }) {
               <tbody>
                 <tr>
                   <td>Company Generated</td>
-                  <td>{totalAmountPKR.toLocaleString()} PKR</td>
+                  <td>{partnerGross.pkr.toLocaleString()} PKR</td>
                 </tr>
                 <tr>
                   <td>Given to Dispatch</td>
@@ -232,9 +237,10 @@ function SettlementView({ settlement, onClose }) {
                     {accountsLabel}
                     {accountsPartner ? ` - deducted from ${accountsPartner.name}` : ""}
                   </td>
-              <td>{accountsAmountPKR.toLocaleString()}</td>
+              <td>{partnerAccountsPKR.toLocaleString()}</td>
             </tr>
 
+            {invoiceFeeUSD > 0 && <tr><td>Invoice accounts fee received ({invoiceFeeUSD.toFixed(2)} USD)</td><td>{invoiceFeePKR.toLocaleString()}</td></tr>}
             <tr className="settlement-net-row">
               <td>Partner Profit</td>
               <td>{partnerProfitPKR.toLocaleString()}</td>
@@ -273,7 +279,9 @@ function SettlementView({ settlement, onClose }) {
             <tr>
               <th>Partner</th>
               <th>Percentage</th>
-              <th>Amount PKR</th>
+              <th>Normal Share PKR</th>
+              <th>Accounts Fee Allocation PKR</th>
+              <th>Total Received PKR</th>
             </tr>
           </thead>
 
@@ -282,13 +290,15 @@ function SettlementView({ settlement, onClose }) {
               <tr key={index}>
                 <td>{partner.name}</td>
                 <td>{partner.percent}%</td>
+                <td>{Number(partner.normalSharePKR ?? partner.amountPKR ?? 0).toLocaleString()}</td>
+                <td>{Number(partner.accountsFeeReceivedPKR || 0).toLocaleString()}</td>
                 <td>{Number(partner.amountPKR || 0).toLocaleString()}</td>
               </tr>
             ))}
 
             {partnerSplits.length === 0 && (
               <tr>
-                <td colSpan="3">No partner split found.</td>
+                <td colSpan="5">No partner split found.</td>
               </tr>
             )}
           </tbody>

@@ -93,7 +93,7 @@ Before deploying payment-method tracking, run `npm run invoice:payment-details` 
 - Prisma ORM
 
 ## Database
-- PostgreSQL / SQLite (development)
+- PostgreSQL (including Supabase PostgreSQL)
 
 ---
 
@@ -132,35 +132,26 @@ cd gml-operations-portal
 
 ```bash
 cd backend
-npm install
+npm ci
 ```
 
-Create `.env`
+In PowerShell, create the local environment file:
 
-```env
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="your_secret"
-PORT=5000
+```powershell
+Copy-Item .env.example .env
 ```
 
-Run Prisma:
+Set `DATABASE_URL` in `backend/.env` to the PostgreSQL connection string from your Supabase project's database settings, and replace `JWT_SECRET` with a long, random value. Keep the connection string private. Use a development Supabase project when possible; the app will read and write data in whichever database this URL selects.
 
 ```bash
-npx prisma migrate dev
+npx prisma db push
 npx prisma generate
-```
-
-Start backend:
-
-```bash
 npm run dev
 ```
 
-Backend runs on:
+`prisma db push` synchronizes the Prisma schema to a new, empty development database. The checked-in migration history does not contain a complete initial schema, so do not run `migrate deploy` against a new project or use `db push` on a database with valuable data without first reviewing its schema and taking a backup.
 
-```bash
-http://localhost:5000
-```
+The API runs at `http://localhost:5000`.
 
 ---
 
@@ -168,15 +159,28 @@ http://localhost:5000
 
 ```bash
 cd frontend
-npm install
+npm ci
+```
+
+In PowerShell, create the local environment file:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+The included production environment file is for the deployed API; `.env.local` makes local development use the API on port 5000.
+
+```bash
 npm run dev
 ```
 
-Frontend runs on:
+The frontend runs at:
 
 ```bash
 http://localhost:5173
 ```
+
+Start the backend and frontend in separate terminals. The backend requires a reachable Supabase PostgreSQL database; the frontend environment file alone does not configure a database connection.
 
 ---
 
