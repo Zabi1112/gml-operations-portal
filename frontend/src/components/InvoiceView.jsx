@@ -8,7 +8,7 @@ import "./InvoiceView.css";
 const invoiceAddresses = {
   usa: {
     label: "United States",
-    address: "5 Hillcrest Dr, Downingtown, PA 19335"
+    address: "328 Main St, Denver, PA 17517"
   },
   pakistan: {
     label: "Pakistan",

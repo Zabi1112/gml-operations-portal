@@ -53,3 +53,16 @@ test("legacy invoice settlements without allocations use their recorded invoice 
   assert.equal(records.length, 1);
   assert.equal(records[0].amountReceivedUSD, 60);
 });
+
+
+test('Remitly receipt on the current invoice shows the full payment including previous balance', () => {
+  const receipt = {id:4,invoiceId:20,invoiceAmountUSD:2500,paymentMethod:'Remitly',paymentAllocations:[{invoiceId:10,amountUSD:2106.50},{invoiceId:20,amountUSD:393.50}]};
+  assert.equal(getInvoicePaymentRecords(20,[receipt])[0].amountReceivedUSD,2500);
+  assert.equal(getInvoicePaymentRecords(10,[receipt])[0].amountReceivedUSD,2106.50);
+  assert.equal(receipt.paymentAllocations[1].amountUSD,393.50);
+});
+test('a payment applied entirely to previous debt is still listed on the invoice receiving it', () => {
+  const receipt={id:5,invoiceId:20,invoiceAmountUSD:500,paymentMethod:'Remitly',paymentAllocations:[{invoiceId:10,amountUSD:500}]};
+  assert.equal(getInvoicePaymentRecords(20,[receipt])[0].amountReceivedUSD,500);
+  assert.deepEqual(getInvoicePaymentRecords(30,[receipt]),[]);
+});

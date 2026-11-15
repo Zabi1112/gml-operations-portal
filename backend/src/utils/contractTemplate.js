@@ -49,7 +49,7 @@ Changes require written agreement. Invalid clauses will not affect the rest of t
 
 Company Information
 ${COMPANY} is an independent LLC owned and operated by ${OWNER}.
-5 Hillcrest Dr, Downingtown, PA 19335
+328 Main St, Denver, PA 17517
 info@eastandwestlogistics.com | (409) 248-2002 | +92 344 6060933
 https://eastandwestlogistics.com/
 

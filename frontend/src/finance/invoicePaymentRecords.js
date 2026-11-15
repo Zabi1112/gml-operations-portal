@@ -3,6 +3,11 @@ export function getInvoicePaymentRecords(invoiceId, settlements) {
 
   return settlements
     .map((settlement) => {
+      // A receipt recorded on this invoice includes its carried-forward balance.
+      // Its internal allocation to new charges is not the amount received.
+      if (Number(settlement.invoiceId) === targetInvoiceId) {
+        return { ...settlement, amountReceivedUSD: Number(settlement.invoiceAmountUSD || 0) };
+      }
       if (Array.isArray(settlement.paymentAllocations)) {
         const amountReceivedUSD = settlement.paymentAllocations
           .filter((allocation) => Number(allocation.invoiceId) === targetInvoiceId)
@@ -13,12 +18,7 @@ export function getInvoicePaymentRecords(invoiceId, settlements) {
           : null;
       }
 
-      if (Number(settlement.invoiceId) !== targetInvoiceId) return null;
-
-      return {
-        ...settlement,
-        amountReceivedUSD: Number(settlement.invoiceAmountUSD || 0)
-      };
+      return null;
     })
     .filter(Boolean)
     .sort(
