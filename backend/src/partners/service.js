@@ -29,6 +29,7 @@ function createPartnerService(db) {
    return db.$queryRawUnsafe('SELECT "id", "settings"->>\'managerName\' AS "managerName", "settings"->>\'silentName\' AS "silentName", "status", "createdAt" FROM "PartnerAgreement" WHERE "branchId"=$1 ORDER BY "createdAt" DESC LIMIT 200', id(branchId));
   },
   async create(input, userId) {
+   if(input.revisionOfId)await detail(input.revisionOfId,input.branchId);
    const draft = preview(input);
    if (input.reviewed !== true || input.documentHash !== draft.documentHash) fail('Preview and confirm the current agreement before creating signing links.');
    const links = { manager: crypto.randomBytes(32).toString('hex'), silent: crypto.randomBytes(32).toString('hex') };

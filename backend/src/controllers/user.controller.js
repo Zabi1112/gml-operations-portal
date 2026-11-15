@@ -109,7 +109,27 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const updateUser = async (req,res) => {
+  try {
+    const id=Number(req.params.id), {name,email,role}=req.body;
+    if(!Number.isSafeInteger(id)||id<1||typeof name!=="string"||!name.trim()||name.length>200||typeof email!=="string"||email.length>254||!/^\S+@\S+\.\S+$/.test(email)||!["ADMIN","MANAGER","EDITOR","VIEWER"].includes(role))
+      return res.status(400).json({message:"Enter a valid name, email and role"});
+    if(id===req.user.id&&role!=="ADMIN")return res.status(400).json({message:"You cannot remove your own administrator access"});
+    const current=await prisma.user.findUnique({where:{id}});
+    if(!current)return res.status(404).json({message:"User not found"});
+    const data={name:name.trim(),email:email.trim(),role};
+    if(req.body.password) {
+      if(typeof req.body.password!=="string"||req.body.password.length<8||Buffer.byteLength(req.body.password)>72)
+        return res.status(400).json({message:"New passwords must contain at least 8 characters and at most 72 bytes"});
+      data.password=await bcrypt.hash(req.body.password,10);
+    }
+    const user=await prisma.user.update({where:{id},data,select:{id:true,name:true,email:true,role:true,isActive:true}});
+    res.json({message:"User updated",user});
+  }catch(error){res.status(error.code==="P2002"?409:500).json({message:error.code==="P2002"?"Email already belongs to another user":"Unable to update user"});}
+};
+
 module.exports = {
+  updateUser,
   createUser,
   getUsers,
   updateUserStatus,

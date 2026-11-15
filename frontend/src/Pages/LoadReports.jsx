@@ -17,6 +17,9 @@ function LoadReports() {
 
   const [companies, setCompanies] = useState([]);
   const [loads, setLoads] = useState([]);
+  const isAdmin=JSON.parse(localStorage.getItem("user")||"{}").role==="ADMIN";
+  const [editingReason,setEditingReason]=useState(null);
+  const [savingReason,setSavingReason]=useState(false);
   const [reasons, setReasons] = useState([]);
   const [report, setReport] = useState(null);
 
@@ -44,6 +47,7 @@ function LoadReports() {
     reasonNote: ""
   });
 
+  useEffect(()=>{setEditingReason(null);setReasonForm({reasonDate:"",reasonType:"No Dispatch",reasonNote:""});},[selectedBranch?.id,form.companyId,form.truckId]);
   const loadCompanies = async () => {
     if (!selectedBranch?.id) {
       setCompanies([]);
@@ -262,8 +266,10 @@ function LoadReports() {
       return;
     }
 
-    await axios.post(
-      `${API}/loads/reasons`,
+    try {
+    setSavingReason(true);
+    await axios[editingReason?"patch":"post"](
+      API+"/loads/reasons"+(editingReason?"/"+editingReason:""),
       {
         branchId: selectedBranch.id,
         companyId: Number(form.companyId),
@@ -279,13 +285,15 @@ function LoadReports() {
       auth
     );
 
+    setEditingReason(null);
     setReasonForm({
       reasonDate: "",
       reasonType: "No Dispatch",
       reasonNote: ""
     });
 
-    fetchReportData();
+    await fetchReportData();
+    }catch(error){alert(error.response?.data?.message||"Unable to save reason");}finally{setSavingReason(false);}
   };
 
   const generateReport = () => {
@@ -519,8 +527,8 @@ function LoadReports() {
               <button disabled={selectedBranch?.isActive === false}>Add Load</button>
             </form>
 
-            <form className="load-mini-form" onSubmit={saveReason}>
-              <h3>Add No-Load Reason</h3>
+            <form id="reason-form" className="load-mini-form" onSubmit={saveReason}>
+              <h3>{editingReason?"Edit":"Add"} No-Load Reason</h3>
 
               <div className="form-group">
                 <label>Date</label>
@@ -568,7 +576,7 @@ function LoadReports() {
                 />
               </div>
 
-              <button disabled={selectedBranch?.isActive === false}>Add Reason</button>
+              <button disabled={savingReason||selectedBranch?.isActive === false}>{editingReason?"Save reason":"Add Reason"}</button>{editingReason&&<button type="button" disabled={savingReason} onClick={()=>{setEditingReason(null);setReasonForm({reasonDate:"",reasonType:"No Dispatch",reasonNote:""});}}>Cancel edit</button>}
             </form>
           </div>
 
@@ -720,7 +728,7 @@ function LoadReports() {
                     <td>{new Date(reason.reasonDate).toLocaleDateString()}</td>
                     <td>{reason.reasonType}</td>
                     <td>{reason.reasonNote || "-"}</td>
-                    <td>
+                    <td>{isAdmin&&<button type="button" disabled={savingReason||selectedBranch?.isActive===false} onClick={()=>{setEditingReason(reason.id);setReasonForm({reasonDate:reason.reasonDate.slice(0,10),reasonType:reason.reasonType,reasonNote:reason.reasonNote||""});document.getElementById("reason-form")?.scrollIntoView({behavior:"smooth"});}}>Edit</button>}
                       <button
                         type="button"
                         disabled={selectedBranch?.isActive === false} onClick={() => deleteReason(reason.id)}

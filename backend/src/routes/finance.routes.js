@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+  updatePartner, updateDispatcher,
   getFinanceSettings,
   updateFinanceSettings,
   createPartner,
@@ -29,6 +30,9 @@ router.use(protect, branchWriteGuard);
 // Finance Settings — ADMIN only
 router.get("/settings/:branchId", allowRoles("ADMIN"), getFinanceSettings);
 router.patch("/settings/:branchId", allowRoles("ADMIN"), updateFinanceSettings);
+
+router.patch("/partners/:id", allowRoles("ADMIN"), updatePartner);
+router.patch("/dispatchers/:id", allowRoles("ADMIN"), updateDispatcher);
 
 // Partners — ADMIN only
 router.post("/partners", allowRoles("ADMIN"), createPartner);

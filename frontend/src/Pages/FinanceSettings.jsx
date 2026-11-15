@@ -20,6 +20,9 @@ function FinanceSettings() {
     accountsPercent: 10
   });
 
+  const [editingPartnerId,setEditingPartnerId]=useState(null);
+  const [editingDispatcherId,setEditingDispatcherId]=useState(null);
+  const [saveError,setSaveError]=useState("");
   const [partners, setPartners] = useState([]);
   const [dispatchers, setDispatchers] = useState([]);
 
@@ -55,6 +58,8 @@ function FinanceSettings() {
 
   useEffect(() => {
     loadSettings();
+    setEditingPartnerId(null);setEditingDispatcherId(null);setSaveError("");
+    setPartnerForm({name:"",percent:"",phone:"",notes:""});setDispatcherForm({name:"",phone:"",notes:""});
   }, [selectedBranch]);
 
   const saveSettings = async () => {
@@ -71,14 +76,12 @@ function FinanceSettings() {
   const addPartner = async (e) => {
     e.preventDefault();
 
-    await axios.post(
-      `${API}/finance/partners`,
-      {
-        branchId: selectedBranch.id,
-        ...partnerForm
-      },
-      auth
-    );
+    setSaveError("");
+    try{const payload={branchId:selectedBranch.id,...partnerForm};
+      if(editingPartnerId)await axios.patch(API+'/finance/partners/'+editingPartnerId,payload,auth);
+      else await axios.post(API+'/finance/partners',payload,auth);
+    }catch(error){setSaveError(error.response?.data?.message||'Unable to save');return;}
+    setEditingPartnerId(null);
 
     setPartnerForm({
       name: "",
@@ -101,14 +104,12 @@ function FinanceSettings() {
   const addDispatcher = async (e) => {
     e.preventDefault();
 
-    await axios.post(
-      `${API}/finance/dispatchers`,
-      {
-        branchId: selectedBranch.id,
-        ...dispatcherForm
-      },
-      auth
-    );
+    setSaveError("");
+    try{const payload={branchId:selectedBranch.id,...dispatcherForm};
+      if(editingDispatcherId)await axios.patch(API+'/finance/dispatchers/'+editingDispatcherId,payload,auth);
+      else await axios.post(API+'/finance/dispatchers',payload,auth);
+    }catch(error){setSaveError(error.response?.data?.message||'Unable to save');return;}
+    setEditingDispatcherId(null);
 
     setDispatcherForm({
       name: "",
@@ -134,6 +135,7 @@ function FinanceSettings() {
 
   return (
     <Layout title="Finance Settings">
+      {saveError && <p role="alert">{saveError}</p>}
       {!selectedBranch && (
         <div className="warning-message">Please select a branch first.</div>
       )}
@@ -192,7 +194,7 @@ function FinanceSettings() {
             </div>
 
             <div className="finance-card">
-              <h3>Add Partner</h3>
+              <h3>{editingPartnerId ? "Edit Partner" : "Add Partner"}</h3>
               <p className="finance-muted">
                 Partner split will be calculated from remaining profit.
               </p>
@@ -258,13 +260,14 @@ function FinanceSettings() {
                 </div>
 
                 <button disabled={selectedBranch?.isActive === false} className="primary-btn" type="submit">
-                  Add Partner
+                  {editingPartnerId ? "Save changes" : "Add Partner"}
                 </button>
+                {editingPartnerId && <button type="button" onClick={()=>{setEditingPartnerId(null);setPartnerForm({name:"",phone:"",notes:"",percent:""});}}>Cancel Edit</button>}
               </form>
             </div>
 
             <div className="finance-card">
-              <h3>Add Dispatcher</h3>
+              <h3>{editingDispatcherId ? "Edit Dispatcher" : "Add Dispatcher"}</h3>
               <p className="finance-muted">
                 Dispatchers you can assign amounts to when settling.
               </p>
@@ -314,8 +317,9 @@ function FinanceSettings() {
                 </div>
 
                 <button disabled={selectedBranch?.isActive === false} className="primary-btn" type="submit">
-                  Add Dispatcher
+                  {editingDispatcherId ? "Save changes" : "Add Dispatcher"}
                 </button>
+                {editingDispatcherId && <button type="button" onClick={()=>{setEditingDispatcherId(null);setDispatcherForm({name:"",phone:"",notes:""});}}>Cancel Edit</button>}
               </form>
             </div>
           </div>
@@ -348,6 +352,7 @@ function FinanceSettings() {
                       <td>{dispatcher.phone || "-"}</td>
                       <td>{dispatcher.notes || "-"}</td>
                       <td>
+                        <button disabled={selectedBranch?.isActive === false} onClick={()=>{setEditingDispatcherId(dispatcher.id);setDispatcherForm({name:dispatcher.name||"",phone:dispatcher.phone||"",notes:dispatcher.notes||""});window.scrollTo({top:0,behavior:'smooth'});}}>Edit</button>
                         <button disabled={selectedBranch?.isActive === false}
                           className="danger-btn"
                           onClick={() => deleteDispatcher(dispatcher.id)}
@@ -412,6 +417,7 @@ function FinanceSettings() {
                       <td>{partner.phone || "-"}</td>
                       <td>{partner.notes || "-"}</td>
                       <td>
+                        <button disabled={selectedBranch?.isActive === false} onClick={()=>{setEditingPartnerId(partner.id);setPartnerForm({name:partner.name||"",phone:partner.phone||"",notes:partner.notes||"",percent:partner.percent});window.scrollTo({top:0,behavior:'smooth'});}}>Edit</button>
                         <button disabled={selectedBranch?.isActive === false}
                           className="danger-btn"
                           onClick={() => deletePartner(partner.id)}

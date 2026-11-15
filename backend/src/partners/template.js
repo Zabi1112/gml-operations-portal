@@ -28,12 +28,14 @@ function settings(input) {
  if (!['MANAGER','SILENT'].includes(s.filingCosts)) fail('Choose which partner bears formation and filing costs.');
  s.contributions = text(input.contributions, 'initial contributions and commitments', 2500);
  s.additionalTerms = text(input.additionalTerms, 'additional agreed terms', 5000, true);
+ if(input.revisionOfId!==undefined&&input.revisionOfId!==null){const original=Number(input.revisionOfId);if(!Number.isSafeInteger(original)||original<=0)fail("Invalid original agreement.");s.revisionOfId=original;}
  return s;
 }
 function render(s) {
  const filingPayer = s.filingCosts === 'MANAGER' ? s.managerName : s.silentName;
  return `PENNSYLVANIA LLC OPERATING AGREEMENT — DISPATCHING MEMBERS
 ${s.companyName}
+${s.revisionOfId ? "Revision of partner agreement #"+s.revisionOfId+". Fresh signatures are required; original records remain on file." : ""}
 Template ${VERSION}
 
 1. PARTIES, FORMATION AND EFFECTIVE DATE

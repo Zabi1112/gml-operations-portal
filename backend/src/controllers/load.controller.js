@@ -253,7 +253,18 @@ const deleteLoadReason = async (req, res) => {
   }
 };
 
+const updateLoadReason = async (req,res) => {
+  try {
+    const {reasonDate,reasonType,reasonNote}=req.body;
+    if(typeof reasonDate!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(reasonDate)||!Number.isFinite(Date.parse(reasonDate))||new Date(reasonDate).toISOString().slice(0,10)!==reasonDate||!["Team Holiday","Breakdown","No Dispatch","Custom"].includes(reasonType)||typeof reasonNote!=="string"||reasonNote.length>2000)
+      return res.status(400).json({message:"Enter a valid date, reason and note"});
+    const reason=await prisma.loadReportReason.update({where:{id:Number(req.params.id)},data:{reasonDate:new Date(reasonDate),reasonType,reasonNote}});
+    res.json({message:"Reason updated",reason});
+  }catch(error){res.status(error.code==="P2025"?404:500).json({message:"Unable to update reason"});}
+};
+
 module.exports = {
+  updateLoadReason,
   createLoad,
   getLoads,
   updateLoad,

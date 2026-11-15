@@ -7,6 +7,8 @@ import "./UserManagement.css";
 function UserManagement() {
   const token = localStorage.getItem("token");
 
+  const [editingId,setEditingId]=useState(null);
+  const [saving,setSaving]=useState(false);
   const [users, setUsers] = useState([]);
   const [form, setForm] = useState({
     name: "",
@@ -39,7 +41,10 @@ function UserManagement() {
     e.preventDefault();
 
     try {
-      await axios.post(`${API}/users`, form, auth);
+      setSaving(true);
+      if(editingId) await axios.patch(API+"/users/"+editingId,form,auth);
+      else await axios.post(`${API}/users`, form, auth);
+      setEditingId(null);
       setForm({
         name: "",
         email: "",
@@ -48,8 +53,8 @@ function UserManagement() {
       });
       loadUsers();
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to create user");
-    }
+      alert(error.response?.data?.message || "Failed to save user");
+    } finally {setSaving(false); }
   };
 
   const toggleStatus = async (id, isActive) => {
@@ -99,13 +104,13 @@ function UserManagement() {
         />
 
         <input
-          placeholder="Password"
+          placeholder={editingId?"New password (leave blank to keep current)":"Password"}
           type="password"
           value={form.password}
           onChange={(e) =>
             setForm({ ...form, password: e.target.value })
           }
-          required
+          required={!editingId}
         />
 
         <select
@@ -120,7 +125,7 @@ function UserManagement() {
           <option value="VIEWER">VIEWER</option>
         </select>
 
-        <button type="submit">Create User</button>
+        <button type="submit" disabled={saving}>{editingId?"Save user":"Create User"}</button>{editingId&&<button type="button" disabled={saving} onClick={()=>{setEditingId(null);setForm({name:"",email:"",password:"",role:"VIEWER"});}}>Cancel edit</button>}
       </form>
 
       <div className="user-table">
@@ -143,6 +148,7 @@ function UserManagement() {
                 <td>{u.role}</td>
                 <td>{u.isActive ? "Active" : "Inactive"}</td>
                 <td>
+                  <button disabled={saving} onClick={()=>{setEditingId(u.id);setForm({name:u.name,email:u.email,password:"",role:u.role});window.scrollTo({top:0,behavior:"smooth"});}}>Edit</button>
                   <button onClick={() => toggleStatus(u.id, u.isActive)}>
                     {u.isActive ? "Deactivate" : "Activate"}
                   </button>

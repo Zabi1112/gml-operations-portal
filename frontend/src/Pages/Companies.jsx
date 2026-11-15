@@ -52,6 +52,10 @@ function Companies() {
   const [companyForm, setCompanyForm] = useState(emptyCompany);
   const [truckForm, setTruckForm] = useState(emptyTruck);
   const [driverForm, setDriverForm] = useState(emptyDriver);
+  const [editingTruckId, setEditingTruckId] = useState(null);
+  const [editingDriverId, setEditingDriverId] = useState(null);
+  const [savingAsset, setSavingAsset] = useState(false);
+  const [assetError, setAssetError] = useState("");
   const [editingCompanyId, setEditingCompanyId] = useState(null);
 
   const loadCompanies = async () => {
@@ -74,6 +78,7 @@ function Companies() {
     setTruckForm(emptyTruck);
     setDriverForm(emptyDriver);
     setEditingCompanyId(null);
+    setEditingTruckId(null); setEditingDriverId(null); setAssetError("");
   }, [selectedBranch]);
 
   const saveCompany = async (e) => {
@@ -131,50 +136,30 @@ function Companies() {
     loadCompanies();
   };
 
-  const saveTruck = async (e) => {
-    e.preventDefault();
-
-    if (!selectedBranch?.id) {
-      alert("Please select a branch first.");
-      return;
-    }
-
-    await axios.post(
-      `${API}/trucks`,
-      {
-        ...truckForm,
-        branchId: selectedBranch.id,
-        companyId: Number(truckForm.companyId)
-      },
-      auth
-    );
-
-    setTruckForm(emptyTruck);
-    loadCompanies();
+  const editTruck = (truck, companyId) => {
+    setEditingTruckId(truck.id);setAssetError("");
+    setTruckForm({companyId:String(companyId),truckNumber:truck.truckNumber||"",trailerNumber:truck.trailerNumber||"",notes:truck.notes||""});
+    document.getElementById('truck-form')?.scrollIntoView({behavior:'smooth',block:'start'});
   };
-
-  const saveDriver = async (e) => {
-    e.preventDefault();
-
-    if (!selectedBranch?.id) {
-      alert("Please select a branch first.");
-      return;
-    }
-
-    await axios.post(
-      `${API}/drivers`,
-      {
-        ...driverForm,
-        branchId: selectedBranch.id,
-        companyId: Number(driverForm.companyId),
-        truckId: driverForm.truckId ? Number(driverForm.truckId) : null
-      },
-      auth
-    );
-
-    setDriverForm(emptyDriver);
-    loadCompanies();
+  const editDriver = (driver, companyId) => {
+    setEditingDriverId(driver.id);setAssetError("");
+    setDriverForm({companyId:String(companyId),truckId:driver.truckId ? String(driver.truckId) : "",name:driver.name||"",phone:driver.phone||"",email:driver.email||""});
+    document.getElementById('driver-form')?.scrollIntoView({behavior:'smooth',block:'start'});
   };
+  const saveAsset = async (event, kind) => {
+    event.preventDefault();if(savingAsset || !selectedBranch?.id)return;
+    const truck = kind === 'trucks', form = truck ? truckForm : driverForm, id = truck ? editingTruckId : editingDriverId;
+    const payload = {...form,branchId:selectedBranch.id,companyId:Number(form.companyId),...(!truck?{truckId:form.truckId?Number(form.truckId):null}:{})};
+    setSavingAsset(true);setAssetError("");
+    try {
+      if(id)await axios.patch(API+'/'+kind+'/'+id,payload,auth);else await axios.post(API+'/'+kind,payload,auth);
+      if(truck){setTruckForm(emptyTruck);setEditingTruckId(null);}else{setDriverForm(emptyDriver);setEditingDriverId(null);}
+      await loadCompanies();
+    }catch(error){setAssetError(error.response?.data?.message || 'Unable to save. Your changes are still in the form.');}
+    finally{setSavingAsset(false);}
+  };
+  const saveTruck = event => saveAsset(event,'trucks');
+  const saveDriver = event => saveAsset(event,'drivers');
 
   const trucksForDriver =
     companies.find((c) => c.id === Number(driverForm.companyId))?.trucks || [];
@@ -381,8 +366,9 @@ function Companies() {
 
           {canEdit && (
             <div className="sub-forms">
-              <form className="mini-form" onSubmit={saveTruck}>
-                <h3>Add Truck</h3>
+              {assetError && <p role="alert">{assetError}</p>}
+              <form id="truck-form" className="mini-form" onSubmit={saveTruck}>
+                <h3>{editingTruckId ? "Edit Truck" : "Add Truck"}</h3>
 
                 <div className="form-group">
                   <label>Client Company</label>
@@ -442,11 +428,12 @@ function Companies() {
                   />
                 </div>
 
-                <button type="submit">Add Truck</button>
+                <button type="submit" disabled={savingAsset}>{editingTruckId ? "Save Truck Changes" : "Add Truck"}</button>
+                {editingTruckId && <button type="button" disabled={savingAsset} onClick={()=>{setEditingTruckId(null);setTruckForm(emptyTruck);setAssetError("");}}>Cancel Edit</button>}
               </form>
 
-              <form className="mini-form" onSubmit={saveDriver}>
-                <h3>Add Driver</h3>
+              <form id="driver-form" className="mini-form" onSubmit={saveDriver}>
+                <h3>{editingDriverId ? "Edit Driver" : "Add Driver"}</h3>
 
                 <div className="form-group">
                   <label>Client Company</label>
@@ -521,7 +508,8 @@ function Companies() {
                   />
                 </div>
 
-                <button type="submit">Add Driver</button>
+                <button type="submit" disabled={savingAsset}>{editingDriverId ? "Save Driver Changes" : "Add Driver"}</button>
+                {editingDriverId && <button type="button" disabled={savingAsset} onClick={()=>{setEditingDriverId(null);setDriverForm(emptyDriver);setAssetError("");}}>Cancel Edit</button>}
               </form>
             </div>
           )}
@@ -582,8 +570,10 @@ function Companies() {
                       <thead>
                         <tr>
                           <th>Truck</th>
+                          {canDelete && <th>Actions</th>}
                           <th>Trailer</th>
                           <th>Notes</th>
+                          {canDelete && <th>Actions</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -592,6 +582,7 @@ function Companies() {
                             <td>{truck.truckNumber}</td>
                             <td>{truck.trailerNumber || "-"}</td>
                             <td>{truck.notes || "-"}</td>
+                            {canDelete && <td><button onClick={()=>editTruck(truck,company.id)}>Edit Truck</button></td>}
                           </tr>
                         ))}
                       </tbody>
@@ -620,6 +611,7 @@ function Companies() {
                             <td>{driver.phone || "-"}</td>
                             <td>{driver.email || "-"}</td>
                             <td>{driver.truck?.truckNumber || "-"}</td>
+                            {canDelete && <td><button onClick={()=>editDriver(driver,company.id)}>Edit Driver</button></td>}
                           </tr>
                         ))}
                       </tbody>

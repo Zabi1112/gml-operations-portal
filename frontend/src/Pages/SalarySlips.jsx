@@ -89,14 +89,13 @@ function SalarySlips() {
   const bonus = Number(form.bonus || 0);
 
   const employeeShareUSD =
-    form.salaryType === "COMMISSION"
+    ["COMMISSION", "FIXED_COMMISSION"].includes(form.salaryType)
       ? (dispatchAmountUSD * commissionPercent) / 100
       : 0;
 
-  const grossSalaryPKR =
-    form.salaryType === "COMMISSION"
-      ? employeeShareUSD * usdRate
-      : fixedSalaryPKR;
+  const commissionSalaryPKR = employeeShareUSD * usdRate;
+  const fixedComponentPKR = ["FIXED", "FIXED_COMMISSION"].includes(form.salaryType) ? fixedSalaryPKR : 0;
+  const grossSalaryPKR = commissionSalaryPKR + fixedComponentPKR;
 
   const netSalaryPKR =
     grossSalaryPKR +
@@ -163,7 +162,7 @@ function SalarySlips() {
               <option value="">Select Staff</option>
               {employees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
-                  {emp.name} — {emp.role} — {emp.salaryType}
+                  {emp.name} — {emp.role} — {emp.salaryType === "FIXED_COMMISSION" ? "Fixed + Commission" : emp.salaryType}
                 </option>
               ))}
             </select>
@@ -188,7 +187,7 @@ function SalarySlips() {
             <label>Salary Type</label>
             <select value={form.salaryType} disabled>
               <option value="FIXED">Fixed Monthly</option>
-              <option value="COMMISSION">Commission Based</option>
+              <option value="COMMISSION">Commission Based</option><option value="FIXED_COMMISSION">Fixed + Commission</option>
             </select>
           </div>
 
@@ -216,7 +215,7 @@ function SalarySlips() {
             />
           </div>
 
-          {form.salaryType === "COMMISSION" && (
+          {["COMMISSION", "FIXED_COMMISSION"].includes(form.salaryType) && (
             <>
               <div className="form-group">
                 <label>Dispatch Company</label>
@@ -257,7 +256,7 @@ function SalarySlips() {
             </>
           )}
 
-          {form.salaryType === "FIXED" && (
+          {["FIXED", "FIXED_COMMISSION"].includes(form.salaryType) && (
             <div className="form-group">
               <label>Fixed Salary PKR</label>
               <input value={form.fixedSalaryPKR} readOnly />
@@ -317,11 +316,13 @@ function SalarySlips() {
           <div className="salary-preview">
             <strong>Employee Share USD:</strong> {employeeShareUSD.toFixed(2)}
             <br />
-            <strong>Gross Salary PKR:</strong> {grossSalaryPKR.toFixed(0)}
+            <strong>Fixed Salary PKR:</strong> {fixedComponentPKR.toFixed(2)}<br />
+            <strong>Commission PKR:</strong> {commissionSalaryPKR.toFixed(2)}<br />
+            <strong>Gross Salary PKR:</strong> {grossSalaryPKR.toFixed(2)}
             <br />
-            <strong>Bonus PKR:</strong> {bonus.toFixed(0)}
+            <strong>Bonus PKR:</strong> {bonus.toFixed(2)}
             <br />
-            <strong>Net Salary PKR:</strong> {netSalaryPKR.toFixed(0)}
+            <strong>Net Salary PKR:</strong> {netSalaryPKR.toFixed(2)}
           </div>
 
           <button type="submit">Preview Salary Slip</button>

@@ -50,7 +50,13 @@ function createContractService(db) {
           const company = await tx.company.findUnique({ where: { id: input.companyId } });
           if (!company || company.branchId !== input.branchId) throw new ContractError(400, "Company must belong to the selected branch.");
         }
-        const termsText = contractText(input);
+        let revisionNote='';
+        if(body.revisionOfId){
+          const original=await tx.dispatchContract.findFirst({where:{id:positiveId(body.revisionOfId),branchId:input.branchId}});
+          if(!original)throw new ContractError(404,'Original agreement not found in this branch.');
+          revisionNote='Revision of agreement EWL-'+original.id+'. This revision requires new signatures; the original signed record is retained.\n\n';
+        }
+        const termsText = revisionNote+contractText(input);
         return tx.dispatchContract.create({ data: { ...input, termsText, documentHash: createHash("sha256").update(termsText).digest("hex"), token: randomBytes(32).toString("hex"), createdBy: userId } });
       });
     },

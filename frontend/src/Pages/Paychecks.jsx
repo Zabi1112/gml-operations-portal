@@ -21,6 +21,7 @@ function Charges({ title, rows, change, add, remove }) {
   </div>)}<button type="button" className="pay-secondary" disabled={rows.length >= 30} onClick={add}>Add {title.toLowerCase()}</button></section>;
 }
 function BranchPaychecks({ branch }) {
+  const isAdmin = JSON.parse(localStorage.getItem("user") || "null")?.role === "ADMIN";
   const [form, setForm] = useState(emptyStatement);
   const [companies, setCompanies] = useState([]);
   const [listing, setListing] = useState({ items: [], total: 0, page: 1 });
@@ -96,7 +97,7 @@ function BranchPaychecks({ branch }) {
       }
     } catch (e) { setError(errorMessage(e)); } finally { setBusy(false); }
   }
-  async function open(item, reuse = false) {
+  async function open(item, reuse = false, editing = false) {
     if (dirty && !window.confirm("Discard unsaved statement changes?")) return;
     setBusy(true); setError(""); setNotice("");
     try {
@@ -104,7 +105,7 @@ function BranchPaychecks({ branch }) {
       if (reuse) {
         const dates = emptyStatement(); setForm({ ...data.snapshot.form, periodStart: dates.periodStart, periodEnd: dates.periodEnd, loads: [emptyLoad()] }); setRecord(null); setSnapshot(null); setDirty(true);
         setNotice("New statement started with the saved company branding and pay rates. Enter the new period and loads.");
-      } else { setForm(data.snapshot.form); setRecord(data); setSnapshot(data.snapshot); setDirty(false); }
+      } else { setForm(data.snapshot.form); setRecord(data); setSnapshot(data.snapshot); setDirty(false); if(editing)setNotice("Editing saved statement PS-"+data.id+". Change any field, then choose Save changes."); }
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) { setError(errorMessage(e)); } finally { setBusy(false); }
   }
@@ -145,7 +146,7 @@ function BranchPaychecks({ branch }) {
     </fieldset></form>}
     {snapshot && <PayStatementView key={String(record?.id) + ":" + String(record?.revision) + ":" + dirty} snapshot={snapshot} record={dirty ? null : record} />}
     <section className="pay-card"><div className="pay-actions"><h3>Saved statements ({listing.total})</h3><button className="pay-secondary" disabled={busy} onClick={() => refresh(listing.page).catch(e => setError(errorMessage(e)))}>Refresh</button></div>
-      {loading ? <p>Loading statements...</p> : !listing.items.length ? <p>No saved statements yet.</p> : <div className="pay-table-wrap"><table><thead><tr><th>Company / Recipient</th><th>Type</th><th>Period</th><th>Net payable</th><th>Actions</th></tr></thead><tbody>{listing.items.map(item => <tr key={item.id}><td><strong>{item.companyName}</strong><br />{item.recipientName}<br /><small>PS-{item.id} / Rev {item.revision}</small></td><td>{item.recipientType === "DRIVER" ? "Driver" : "Owner-operator"}</td><td>{item.periodStart}<br />{item.periodEnd}</td><td>{money(item.netCents)}</td><td><div className="pay-actions"><button disabled={busy} onClick={() => open(item)}>Open / PDF</button>{branch.isActive && <button className="pay-secondary" disabled={busy} onClick={() => open(item, true)}>Use as template</button>}</div></td></tr>)}</tbody></table></div>}
+      {loading ? <p>Loading statements...</p> : !listing.items.length ? <p>No saved statements yet.</p> : <div className="pay-table-wrap"><table><thead><tr><th>Company / Recipient</th><th>Type</th><th>Period</th><th>Net payable</th><th>Actions</th></tr></thead><tbody>{listing.items.map(item => <tr key={item.id}><td><strong>{item.companyName}</strong><br />{item.recipientName}<br /><small>PS-{item.id} / Rev {item.revision}</small></td><td>{item.recipientType === "DRIVER" ? "Driver" : "Owner-operator"}</td><td>{item.periodStart}<br />{item.periodEnd}</td><td>{money(item.netCents)}</td><td><div className="pay-actions"><button disabled={busy} onClick={() => open(item)}>Open / PDF</button>{isAdmin && branch.isActive && <button disabled={busy} onClick={()=>open(item,false,true)}>Edit</button>}{branch.isActive && <button className="pay-secondary" disabled={busy} onClick={() => open(item, true)}>Use as template</button>}</div></td></tr>)}</tbody></table></div>}
       {listing.total > 25 && <div className="pay-actions"><button disabled={busy || listing.page === 1} onClick={() => refresh(listing.page - 1).catch(e => setError(errorMessage(e)))}>Previous</button><span>Page {listing.page} of {Math.ceil(listing.total / 25)}</span><button disabled={busy || listing.page * 25 >= listing.total} onClick={() => refresh(listing.page + 1).catch(e => setError(errorMessage(e)))}>Next</button></div>}
     </section>
   </div>;

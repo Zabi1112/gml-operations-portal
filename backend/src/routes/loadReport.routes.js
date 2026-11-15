@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+  updateLoadReport,getLoadReportRevisions,
   createLoadReport,
   getLoadReports,
   deleteLoadReport
@@ -18,6 +19,8 @@ router.use(protect, branchWriteGuard);
 
 router.get("/", getLoadReports);
 router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createLoadReport);
+router.patch('/:id',allowRoles('ADMIN'),updateLoadReport);
+router.get('/:id/revisions',allowRoles('ADMIN'),getLoadReportRevisions);
 router.delete("/:id", allowRoles("ADMIN"), deleteLoadReport);
 
 module.exports = router;

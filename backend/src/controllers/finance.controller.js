@@ -166,6 +166,22 @@ const deleteDispatcher = async (req, res) => {
   }
 };
 
+const updateFinancePerson = model => async (req,res) => {
+ try{
+  const current=await prisma[model].findUnique({where:{id:Number(req.params.id)}});
+  if(!current)payments.fail(404,'Record not found');
+  if(req.body.branchId!==undefined&&Number(req.body.branchId)!==current.branchId)payments.fail(400,'Record belongs to another branch.');
+  const name=typeof req.body.name==='string'?req.body.name.trim():'';
+  if(!name||name.length>200)payments.fail(400,'Enter a name of up to 200 characters.');
+  const data={name};
+  for(const key of ['phone','notes'])if(req.body[key]!==undefined){if(req.body[key]!==null&&typeof req.body[key]!=='string')payments.fail(400,'Invalid '+key);data[key]=req.body[key]?.trim()||null;}
+  if(model==='branchPartner'){const percent=Number(req.body.percent);if(!Number.isFinite(percent)||percent<0||percent>100)payments.fail(400,'Partner percentage must be between 0 and 100.');data.percent=percent;}
+  res.json(await prisma[model].update({where:{id:current.id},data}));
+ }catch(error){res.status(error.status||500).json({message:error.status?error.message:'Unable to update record'});}
+};
+const updatePartner=updateFinancePerson('branchPartner');
+const updateDispatcher=updateFinancePerson('branchDispatcher');
+
 const clearInvoice = async (req, res) => {
   try {
     const invoiceId = Number(req.params.invoiceId);
@@ -599,6 +615,7 @@ const deleteSettlement = async (req, res) => {
 };
 
 module.exports = {
+  updatePartner, updateDispatcher,
   calculateSettlementAmounts,
   getFinanceSettings,
   updateFinanceSettings,

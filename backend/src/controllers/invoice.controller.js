@@ -1,7 +1,12 @@
+const {reopenInvoice}=require("../utils/invoiceCorrection");
+const adminRevisions=require("../utils/adminRevisions");
 const {validateInvoice,validateLoadOwners}=require('../utils/invoiceValidation');
 const payments=require("../utils/invoicePayments");
 const prisma = require("../utils/prisma");
 const { createLoadsSafely } = require("../utils/loadDedup");
+
+const reopenForCorrection=async(req,res)=>{try{res.json(await reopenInvoice(prisma,req.params.id,req.body.reason,req.user.id));}catch(error){res.status(error.status||500).json({message:error.status?error.message:'Unable to archive/reopen invoice. Confirm the admin revision migration is installed.'});}};
+const getInvoiceRevisions=async(req,res)=>{try{res.json(await adminRevisions.revisions(prisma,'Invoice',req.params.id));}catch{res.status(500).json({message:'Unable to load revision history. Confirm the admin revision migration is installed.'});}};
 
 const generateInvoiceNumber = async (branchId, db = prisma) => {
   const branch=await db.branch.findUnique({where:{id:Number(branchId)}});
@@ -466,6 +471,7 @@ const deleteInvoice = async (req, res) => {
 
 const getOutstanding = async (req,res) => {try {const branchId=Number(req.query.branchId),companyId=Number(req.query.companyId);if(!Number.isSafeInteger(branchId)||branchId<1||!Number.isSafeInteger(companyId)||companyId<1)return res.status(400).json({message:'Choose a branch and company.'});res.json(await payments.outstanding(prisma,branchId,companyId));}catch(error){res.status(error.status||500).json({message:error.status?error.message:'Unable to load pending balance.'});}};
 module.exports = {
+  reopenForCorrection,getInvoiceRevisions,
   getOutstanding,
   calculateInvoice,
   createInvoice,

@@ -186,7 +186,7 @@ function Employees() {
               }
             >
               <option value="FIXED">Fixed</option>
-              <option value="COMMISSION">Commission</option>
+              <option value="COMMISSION">Commission</option><option value="FIXED_COMMISSION">Fixed + Commission</option>
             </select>
           </div>
 
@@ -251,7 +251,7 @@ function Employees() {
                   <td>{emp.email || "-"}</td>
                   <td>{emp.cnic || "-"}</td>
                   <td>{emp.role}</td>
-                  <td>{emp.salaryType}</td>
+                  <td>{emp.salaryType === "FIXED_COMMISSION" ? "Fixed + Commission" : emp.salaryType}</td>
                   <td>{Number(emp.fixedSalary || 0).toFixed(0)}</td>
                   <td>{Number(emp.commission || 0).toFixed(2)}</td>
                   {(canEdit || canDelete) && (

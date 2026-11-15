@@ -1,39 +1,6 @@
 const prisma = require("../utils/prisma");
 
-const calculateSlip = (data) => {
-  const salaryType = data.salaryType;
-
-  const dispatchAmountUSD = Number(data.dispatchAmountUSD || 0);
-  const commissionPercent = Number(data.commissionPercent || 0);
-  const usdRate = Number(data.usdRate || 0);
-  const fixedSalaryPKR = Number(data.fixedSalaryPKR || 0);
-
-  const loanDeduction = Number(data.loanDeduction || 0);
-  const advanceDeduction = Number(data.advanceDeduction || 0);
-  const otherDeduction = Number(data.otherDeduction || 0);
-  const bonus = Number(data.bonus || 0);
-
-  let employeeShareUSD = 0;
-  let grossSalaryPKR = 0;
-
-  if (salaryType === "COMMISSION") {
-    employeeShareUSD = (dispatchAmountUSD * commissionPercent) / 100;
-    grossSalaryPKR = employeeShareUSD * usdRate;
-  }
-
-  if (salaryType === "FIXED") {
-    grossSalaryPKR = fixedSalaryPKR;
-  }
-
-  const netSalaryPKR =
-    grossSalaryPKR + bonus - loanDeduction - advanceDeduction - otherDeduction;
-
-  return {
-    employeeShareUSD,
-    grossSalaryPKR,
-    netSalaryPKR
-  };
-};
+const { calculateSlip } = require("../utils/salaryCalculation");
 
 const createSalarySlip = async (req, res) => {
   try {
@@ -171,7 +138,10 @@ const deleteSalarySlip = async (req, res) => {
   }
 };
 
+const documents=require("../utils/documentEdits");
 module.exports = {
+  updateSalarySlip:documents.editDocument(prisma,"salarySlip","SalarySlip",body=>documents.salaryData(body,calculateSlip)),
+  getSalaryRevisions:documents.history(prisma,"SalarySlip"),
   createSalarySlip,
   getSalarySlips,
   deleteSalarySlip

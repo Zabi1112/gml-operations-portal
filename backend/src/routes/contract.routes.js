@@ -19,7 +19,7 @@ router.get("/public/:token", handle(req => service.publicGet(req.params.token)))
 router.post("/public/:token/respond", handle(req => service.respond(req.params.token, req.body || {})));
 router.use(authenticate, allowRoles("ADMIN", "MANAGER", "EDITOR"));
 router.get("/", handle(req => service.list(req.query.branchId)));
-router.post("/", handle(req => service.create(req.body || {}, req.user.id), 201));
+router.post("/", (req,res,next)=>req.body?.revisionOfId && req.user.role!=="ADMIN" ? res.status(403).json({message:"Only admins can create agreement revisions."}) : next(), handle(req => service.create(req.body || {}, req.user.id), 201));
 router.get("/:id", handle(req => service.detail(req.params.id, req.query.branchId)));
 router.post("/:id/cancel", handle(req => service.cancel(req.params.id, req.body?.branchId)));
 return router;

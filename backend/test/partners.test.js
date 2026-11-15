@@ -43,3 +43,8 @@ test('old issued passport-only terms cannot silently accept a driving licence',a
  const token='a'.repeat(64);assert.deepEqual((await service.publicGet(token)).allowedDocumentTypes,['PASSPORT']);
  await assert.rejects(service.respond(token,{documentType:'DRIVING_LICENSE',action:'sign',signedName:'Synthetic Manager',documentHash:'old-hash',consent:true,identityConsent:true,passportNumber:'DL12345678',passportCountry:'USA / Pennsylvania',passportFile:scan}),e=>e.status===400&&/requires a passport/.test(e.message));
 });
+
+test('partner revision is in the reviewed document hash and has no inherited signatures',()=>{
+ const original=preview(input),revision=preview({...input,revisionOfId:42});
+ assert.match(revision.termsText,/Revision of partner agreement #42/);assert.notEqual(revision.documentHash,original.documentHash);assert.deepEqual(revision.signatures,{});
+});

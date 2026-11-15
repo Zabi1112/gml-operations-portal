@@ -102,7 +102,7 @@ function SalarySlipView({ slip, onClose, onSaved, isPreview = false }) {
             <strong>CNIC:</strong> {slip.cnic || "-"}
           </div>
           <div>
-            <strong>Salary Type:</strong> {slip.salaryType}
+            <strong>Salary Type:</strong> {slip.salaryType === "FIXED_COMMISSION" ? "Fixed + Commission" : slip.salaryType}
           </div>
           <div>
             <strong>Period:</strong>{" "}
@@ -113,7 +113,7 @@ function SalarySlipView({ slip, onClose, onSaved, isPreview = false }) {
 
         <table className="slip-table">
           <tbody>
-            {slip.salaryType === "COMMISSION" && (
+            {["COMMISSION", "FIXED_COMMISSION"].includes(slip.salaryType) && (
               <>
                 <tr>
                   <td>Dispatch Company</td>
@@ -135,44 +135,45 @@ function SalarySlipView({ slip, onClose, onSaved, isPreview = false }) {
                   <td>USD Rate</td>
                   <td>{slip.usdRate}</td>
                 </tr>
+                <tr><td>Commission PKR</td><td>{(Number(slip.employeeShareUSD || 0) * Number(slip.usdRate || 0)).toFixed(2)}</td></tr>
               </>
             )}
 
-            {slip.salaryType === "FIXED" && (
+            {["FIXED", "FIXED_COMMISSION"].includes(slip.salaryType) && (
               <tr>
                 <td>Fixed Salary PKR</td>
-                <td>{Number(slip.fixedSalaryPKR || 0).toFixed(0)}</td>
+                <td>{Number(slip.fixedSalaryPKR || 0).toFixed(2)}</td>
               </tr>
             )}
 
             <tr>
               <td>Gross Salary PKR</td>
-              <td>{Number(slip.grossSalaryPKR || 0).toFixed(0)}</td>
+              <td>{Number(slip.grossSalaryPKR || 0).toFixed(2)}</td>
             </tr>
 
             <tr>
               <td>Bonus PKR</td>
-              <td>{Number(slip.bonus || 0).toFixed(0)}</td>
+              <td>{Number(slip.bonus || 0).toFixed(2)}</td>
             </tr>
 
             <tr>
               <td>Loan Deduction</td>
-              <td>{Number(slip.loanDeduction || 0).toFixed(0)}</td>
+              <td>{Number(slip.loanDeduction || 0).toFixed(2)}</td>
             </tr>
 
             <tr>
               <td>Advance Deduction</td>
-              <td>{Number(slip.advanceDeduction || 0).toFixed(0)}</td>
+              <td>{Number(slip.advanceDeduction || 0).toFixed(2)}</td>
             </tr>
 
             <tr>
               <td>Other Deduction</td>
-              <td>{Number(slip.otherDeduction || 0).toFixed(0)}</td>
+              <td>{Number(slip.otherDeduction || 0).toFixed(2)}</td>
             </tr>
 
             <tr className="net-row">
               <td>Net Salary PKR</td>
-              <td>{Number(slip.netSalaryPKR || 0).toFixed(0)}</td>
+              <td>{Number(slip.netSalaryPKR || 0).toFixed(2)}</td>
             </tr>
           </tbody>
         </table>

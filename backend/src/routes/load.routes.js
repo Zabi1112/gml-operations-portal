@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+  updateLoadReason,
   createLoad,
   getLoads,
   updateLoad,
@@ -25,6 +26,7 @@ router.get("/reasons", getLoadReasons);
 router.post("/", allowRoles("ADMIN", "MANAGER", "EDITOR"), createLoad);
 router.patch("/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), updateLoad);
 router.post("/reasons", allowRoles("ADMIN", "MANAGER", "EDITOR"), createLoadReason);
+router.patch("/reasons/:id", allowRoles("ADMIN"), updateLoadReason);
 router.delete("/reasons/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), deleteLoadReason);
 router.delete("/:id", allowRoles("ADMIN", "MANAGER", "EDITOR"), deleteLoad);
 

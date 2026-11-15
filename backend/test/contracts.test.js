@@ -92,3 +92,11 @@ test("company references, details and cancellation enforce branch boundaries", a
 test("invalid company, date, fee and seat values are rejected", () => {
   for (const patch of [{ companyName: "" }, { companyName: "A\nFake clause" }, { companyName: "x".repeat(201) }, { effectiveDate: "2026-02-30" }, { effectiveDate: "bad" }, { ratePercent: -1 }, { ratePercent: 101 }, { ratePercent: true }, { seats: 1.5 }, { seats: -1 }, { seats: "" }, { branchId: -1 }]) assert.throws(() => validateInput({ ...input, ...patch }), status(400));
 });
+
+test('revision of a signed agreement retains original signatures and requires a new signature',async()=>{
+ const {service}=fixture();const original=await service.create(input,7);await service.respond(original.token,response(original));
+ const revised=await service.create({...input,ratePercent:6,revisionOfId:original.id},7);
+ assert.equal(revised.status,'PENDING');assert.notEqual(revised.token,original.token);assert.match(revised.termsText,/Revision of agreement EWL-/);
+ assert.equal((await service.publicGet(original.token)).status,'SIGNED');assert.match((await service.publicGet(original.token)).termsText,/4% weekly/);
+ await assert.rejects(()=>service.create({...input,revisionOfId:999},7),status(404));
+});

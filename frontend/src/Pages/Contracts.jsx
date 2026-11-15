@@ -11,6 +11,8 @@ const auth = () => ({ headers: { Authorization: "Bearer " + localStorage.getItem
 const shareUrl = token => window.location.origin + "/agreement/" + token;
 const message = error => error.response?.data?.message || "Unable to connect. Please try again.";
 function BranchContracts({ branch }) {
+  const isAdmin=JSON.parse(localStorage.getItem("user")||"null")?.role==="ADMIN";
+  const [revisionOfId,setRevisionOfId]=useState(null);
   const [items, setItems] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [form, setForm] = useState({ companyId: "", companyName: "", companyMC: "", ratePercent: "", seats: "0", effectiveDate: new Date().toLocaleDateString("en-CA") });
@@ -42,8 +44,8 @@ function BranchContracts({ branch }) {
   async function create(event) {
     event.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
-      const { data } = await axios.post(API + "/contracts", { ...form, branchId: branch.id }, auth());
-      setCreated(data); setDetail(data); setNotice("Agreement created. Copy the link to share with your client.");
+      const { data } = await axios.post(API + "/contracts", { ...form, branchId: branch.id, revisionOfId }, auth());
+      setCreated(data); setDetail(data); setRevisionOfId(null); setNotice("Agreement created. Copy the link to share with your client.");
       await refresh();
     } catch (e) { setError(message(e)); }
     finally { setBusy(false); }
@@ -53,6 +55,13 @@ function BranchContracts({ branch }) {
     try { const { data } = await axios.get(API + "/contracts/" + item.id, { ...auth(), params: { branchId: branch.id } }); setDetail(data); }
     catch (e) { setError(message(e)); }
     finally { setBusy(false); }
+  }
+  async function revise(item){
+    setBusy(true);setError("");try{
+      const {data}=await axios.get(API+'/contracts/'+item.id,{...auth(),params:{branchId:branch.id}});
+      setForm({companyId:"",companyName:data.companyName,companyMC:data.companyMC,ratePercent:data.ratePercent,seats:data.seats,effectiveDate:new Date().toLocaleDateString('en-CA')});
+      setRevisionOfId(item.id);setCreated(null);setDetail(null);setNotice('Review and change the draft. Saving creates a new signing link; the original agreement remains on file.');window.scrollTo({top:0,behavior:'smooth'});
+    }catch(e){setError(message(e));}finally{setBusy(false);}
   }
   async function copy(token) {
     try { await navigator.clipboard.writeText(shareUrl(token)); setNotice("Agreement link copied."); }
@@ -72,7 +81,7 @@ function BranchContracts({ branch }) {
     <p>Create an agreement for an existing company or a new carrier. Clients can review and sign without a portal account.</p>
     {error && <p role="alert" className="contract-error">{error}</p>}
     {notice && <p role="status" className="contract-notice">{notice}</p>}
-    {branch.isActive && <section className="contract-card"><h3>New dispatch agreement</h3><p>Issued by <strong>EASTWEST Logistics</strong> &middot; Owner: <strong>Zeeshan Cheema</strong></p>
+    {branch.isActive && <section className="contract-card"><h3>{revisionOfId ? "Revision of EWL-"+revisionOfId : "New dispatch agreement"}</h3>{revisionOfId && <button onClick={()=>{setRevisionOfId(null);setForm({companyId:"",companyName:"",companyMC:"",ratePercent:"",seats:"0",effectiveDate:new Date().toLocaleDateString("en-CA")});}}>Cancel revision</button>}<p>Issued by <strong>EASTWEST Logistics</strong> &middot; Owner: <strong>Zeeshan Cheema</strong></p>
       <form onSubmit={create}>
         <div className="contract-grid">
           <label>Existing company (optional)<select value={form.companyId} onChange={chooseCompany}><option value="">New / enter manually</option>{companies.map(company => <option key={company.id} value={company.id}>{company.companyName}</option>)}</select></label>
@@ -88,7 +97,7 @@ function BranchContracts({ branch }) {
     </section>}
     {created && <section className="contract-card"><h3>Share with {created.companyName}</h3><input aria-label="Shareable agreement link" readOnly value={shareUrl(created.token)} onFocus={e => e.target.select()} /><button onClick={() => copy(created.token)}>Copy link</button></section>}
     <section className="contract-card"><div className="contract-actions"><h3>Agreements ({items.length})</h3><label>Status<select value={filter} onChange={e => setFilter(e.target.value)}>{["ALL", "PENDING", "SIGNED", "REJECTED", "CANCELLED"].map(status => <option key={status}>{status}</option>)}</select></label><button disabled={busy} onClick={() => refresh().catch(e => setError(message(e)))}>Refresh</button></div>
-      {loading ? <p>Loading agreements...</p> : !visible.length ? <p>No agreements {filter === "ALL" ? "yet" : "with this status"}.</p> : <div className="contract-table-wrap"><table><thead><tr><th>Agreement / Carrier</th><th>Fee</th><th>Status</th><th>Signature</th><th>Actions</th></tr></thead><tbody>{visible.map(item => <tr key={item.id}><td><strong>{item.companyName}</strong><br /><small>EWL-{item.id} &middot; MC {item.companyMC || "-"}</small></td><td>{item.ratePercent}%</td><td><span className={"contract-status status-" + item.status.toLowerCase()}>{item.status}</span></td><td>{item.signerName || "-"}{item.signedAt && <><br /><small>{new Date(item.signedAt).toLocaleString()}</small></>}</td><td><div className="contract-actions"><button disabled={busy} onClick={() => view(item)}>View / PDF</button>{item.status === "PENDING" && branch.isActive && <><button onClick={() => copy(item.token)}>Copy link</button><button className="contract-secondary" disabled={busy} onClick={() => setCancelId(item.id)}>Cancel</button></>}</div></td></tr>)}</tbody></table></div>}
+      {loading ? <p>Loading agreements...</p> : !visible.length ? <p>No agreements {filter === "ALL" ? "yet" : "with this status"}.</p> : <div className="contract-table-wrap"><table><thead><tr><th>Agreement / Carrier</th><th>Fee</th><th>Status</th><th>Signature</th><th>Actions</th></tr></thead><tbody>{visible.map(item => <tr key={item.id}><td><strong>{item.companyName}</strong><br /><small>EWL-{item.id} &middot; MC {item.companyMC || "-"}</small></td><td>{item.ratePercent}%</td><td><span className={"contract-status status-" + item.status.toLowerCase()}>{item.status}</span></td><td>{item.signerName || "-"}{item.signedAt && <><br /><small>{new Date(item.signedAt).toLocaleString()}</small></>}</td><td><div className="contract-actions"><button disabled={busy} onClick={() => view(item)}>View / PDF</button>{isAdmin && branch.isActive && <button disabled={busy} onClick={()=>revise(item)}>Revise</button>}{item.status === "PENDING" && branch.isActive && <><button onClick={() => copy(item.token)}>Copy link</button><button className="contract-secondary" disabled={busy} onClick={() => setCancelId(item.id)}>Cancel</button></>}</div></td></tr>)}</tbody></table></div>}
     </section>
     {cancelId && <section className="contract-card" role="alert"><p>Cancel agreement EWL-{cancelId}? Its signing link will close permanently.</p><div className="contract-actions"><button disabled={busy} onClick={cancel}>Yes, cancel agreement</button><button className="contract-secondary" disabled={busy} onClick={() => setCancelId(null)}>Keep agreement</button></div></section>}
     {detail && <section className="contract-card"><div className="contract-actions"><h3>Agreement EWL-{detail.id}</h3><button className="contract-secondary" onClick={() => setDetail(null)}>Close preview</button></div><AgreementDocument agreement={detail} /></section>}

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+  updateUser,
   createUser,
   getUsers,
   updateUserStatus,
@@ -18,6 +19,7 @@ router.use(allowRoles("ADMIN"));
 
 router.post("/", createUser);
 router.get("/", getUsers);
+router.patch("/:id", updateUser);
 router.patch("/:id/status", updateUserStatus);
 router.delete("/:id", deleteUser);
 module.exports = router;

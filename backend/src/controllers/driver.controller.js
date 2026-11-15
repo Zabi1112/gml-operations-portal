@@ -1,3 +1,4 @@
+const {fleetUpdate}=require("../utils/fleetUpdates");
 const prisma = require("../utils/prisma");
 
 const createDriver = async (req, res) => {
@@ -104,42 +105,15 @@ const getDrivers = async (req, res) => {
   }
 };
 
-const updateDriver = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const driver = await prisma.driver.update({
-      where: { id: Number(id) },
-      data: {
-        branchId: req.body.branchId ? Number(req.body.branchId) : undefined,
-        companyId: req.body.companyId ? Number(req.body.companyId) : undefined,
-        truckId:
-          req.body.truckId !== undefined && req.body.truckId !== ""
-            ? Number(req.body.truckId)
-            : req.body.truckId === ""
-              ? null
-              : undefined,
-        name: req.body.name,
-        phone: req.body.phone,
-        email: req.body.email,
-        isActive:
-          req.body.isActive !== undefined ? Boolean(req.body.isActive) : undefined
-      },
-      include: {
-        branch: true,
-        company: true,
-        truck: true
-      }
-    });
-
-    res.json({
-      message: "Driver updated successfully",
-      driver
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Server error" });
-  }
+const updateDriver = async (req,res) => {
+ try{
+  const record=await prisma.$transaction(async tx=>{
+   const current=await tx.driver.findUnique({where:{id:Number(req.params.id)}});
+   const data=await fleetUpdate(tx,'driver',current,req.body);
+   return tx.driver.update({where:{id:current.id},data,include:{branch:true,company:true,truck:true}});
+  });
+  res.json({message:'Updated successfully',driver:record});
+ }catch(error){res.status(error.status||500).json({message:error.status?error.message:'Unable to update driver'});}
 };
 
 const deleteDriver = async (req, res) => {

@@ -1,3 +1,4 @@
+import DocumentEditModal from "../components/DocumentEditModal.jsx";
 import { paymentFeePreview, accountsTeamSummary, accountantsSummary } from "../finance/invoiceAccountsFees.js";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
@@ -57,8 +58,14 @@ function History() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [selectedLoadReport, setSelectedLoadReport] = useState(null);
   const [selectedSettlement, setSelectedSettlement] = useState(null);
+  const [documentEdit,setDocumentEdit]=useState(null);
   const [editingSettlement, setEditingSettlement] = useState(null);
 
+  const [correctionInvoice,setCorrectionInvoice]=useState(null);
+  const [correctionReason,setCorrectionReason]=useState("");
+  const [correctionBusy,setCorrectionBusy]=useState(false);
+  const [correctionError,setCorrectionError]=useState("");
+  const [invoiceRevisions,setInvoiceRevisions]=useState(null);
   const [editInvoiceData, setEditInvoiceData] = useState(null);
   const [editForm, setEditForm] = useState(null);
 
@@ -305,6 +312,12 @@ function History() {
     }
   };
 
+  const reopenInvoiceForCorrection=async event=>{
+    event.preventDefault();setCorrectionBusy(true);setCorrectionError("");
+    try{await axios.post(API+'/invoices/'+correctionInvoice.id+'/reopen',{reason:correctionReason},auth);setCorrectionInvoice(null);await loadInvoiceHistory();await loadSettlements();alert('Payments reversed and archived. Use Edit on the latest invoice, then record the corrected payments.');}
+    catch(error){setCorrectionError(error.response?.data?.message||'Unable to reopen invoice');}finally{setCorrectionBusy(false);}
+  };
+  const viewInvoiceRevisions=async invoice=>{try{const {data}=await axios.get(API+'/invoices/'+invoice.id+'/revisions',auth);setInvoiceRevisions(data);}catch(error){alert(error.response?.data?.message||'Unable to load revisions');}};
   const openEditInvoice = (invoice) => {
     setEditInvoiceData(invoice);
     setEditForm({
@@ -485,6 +498,9 @@ function History() {
 
   return (
     <Layout title="History">
+      {documentEdit && <DocumentEditModal key={documentEdit.type+documentEdit.record.id} {...documentEdit} employees={employees} auth={auth} onClose={()=>setDocumentEdit(null)} onSaved={async()=>{await loadSalaryHistory();await loadLoadReportHistory();}}/>}
+      {correctionInvoice && <div className="settlement-modal"><div className="settlement-box"><h2>Correct invoice {correctionInvoice.invoiceNumber}</h2><p>This archives the original invoice and all its receipts, reverses their financial allocations, and reopens the invoice for editing. After editing, record the corrected payments again. This does not issue a customer refund.</p><form onSubmit={reopenInvoiceForCorrection}><label>Reason<textarea required maxLength={1000} value={correctionReason} onChange={e=>setCorrectionReason(e.target.value)}/></label>{correctionError&&<p role="alert">{correctionError}</p>}<button disabled={correctionBusy}>Archive receipts and reopen</button><button type="button" disabled={correctionBusy} onClick={()=>setCorrectionInvoice(null)}>Cancel</button></form></div></div>}
+      {invoiceRevisions && <div className="settlement-modal"><div className="settlement-box"><h2>Invoice revision history</h2>{invoiceRevisions.length?invoiceRevisions.map(revision=><section key={revision.id}><p>{new Date(revision.createdAt).toLocaleString()} - {revision.reason}</p><p>Original invoice: {revision.snapshot.invoice?.invoiceNumber} | Payable: {Number(revision.snapshot.invoice?.netPayable||0).toFixed(2)} USD</p><p>Archived receipts: {(revision.snapshot.settlements||[]).length}</p><button onClick={()=>{const blob=new Blob([JSON.stringify(revision,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='invoice-revision-'+revision.id+'.json';a.click();URL.revokeObjectURL(url);}}>Download archived records</button></section>):<p>No corrections recorded.</p>}<button onClick={()=>setInvoiceRevisions(null)}>Close</button></div></div>}
       {!selectedBranch && (
         <div className="warning-message">
           Please select a branch from Dashboard first.
@@ -581,6 +597,7 @@ function History() {
                         <td>{Number(slip.netSalaryPKR || 0).toFixed(0)}</td>
                         <td>{new Date(slip.createdAt).toLocaleDateString()}</td>
                         <td style={{ display: "flex", gap: "5px" }}>
+                          {isAdmin && <button disabled={selectedBranch?.isActive===false} onClick={()=>setDocumentEdit({type:"salary",record:slip})}>Edit</button>}
                           <button onClick={() => setSelectedSlip(slip)}>
                             View
                           </button>
@@ -708,6 +725,8 @@ function History() {
                             <button onClick={() => setSelectedInvoice(invoice)}>
                               View / Download
                             </button>
+                            {isAdmin && <button onClick={()=>viewInvoiceRevisions(invoice)}>Revision history</button>}
+                            {isAdmin && !canEditInvoice && invoice.paymentStatus!=="CARRIED_FORWARD" && <button disabled={selectedBranch?.isActive===false} onClick={()=>{setCorrectionInvoice(invoice);setCorrectionReason("");setCorrectionError("");}}>Correct paid invoice</button>}
                             {isAdmin && canEditInvoice && (
                               <button disabled={selectedBranch?.isActive === false} onClick={() => openEditInvoice(invoice)}>
                                 Edit
@@ -826,6 +845,7 @@ function History() {
                         <td>${Number(item.totalGross || 0).toFixed(2)}</td>
                         <td>{new Date(item.createdAt).toLocaleDateString()}</td>
                         <td style={{ display: "flex", gap: "5px" }}>
+                          {isAdmin && <button disabled={selectedBranch?.isActive===false} onClick={()=>setDocumentEdit({type:"report",record:item})}>Edit</button>}
                           <button onClick={() => openLoadReport(item)}>
                             View
                           </button>

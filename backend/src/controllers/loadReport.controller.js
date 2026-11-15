@@ -113,7 +113,10 @@ const deleteLoadReport = async (req, res) => {
   }
 };
 
+const documents=require("../utils/documentEdits");
 module.exports = {
+  updateLoadReport:documents.editDocument(prisma,"loadReport","LoadReport",documents.reportData),
+  getLoadReportRevisions:documents.history(prisma,"LoadReport"),
   createLoadReport,
   getLoadReports,
   deleteLoadReport
