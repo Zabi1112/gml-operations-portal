@@ -433,6 +433,10 @@ const getSettlements = async (req, res) => {
 };
 
 const updateSettlement = async (req, res) => {
+  if(req.body.correctDispatcher === true){
+    try {const settlement=await require("../utils/settlementCorrection").correctSettlement(prisma,Number(req.params.id),req.body,req.user.id);return res.json({message:"Settlement corrected",settlement});}
+    catch(error){return res.status(error.status||500).json({message:error.status?error.message:"Unable to save settlement correction"});}
+  }
   try {
     const id = Number(req.params.id);
 

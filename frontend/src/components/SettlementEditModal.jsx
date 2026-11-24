@@ -1,3 +1,4 @@
+import {partnerReceiptGross,accountsTeamSummary} from "../finance/invoiceAccountsFees";
 import { useState } from "react";
 import axios from "axios";
 import { API } from "../api";
@@ -49,6 +50,8 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
     ),
     notes: settlement.notes || ""
   });
+  const [correctDispatcher,setCorrectDispatcher]=useState(false);
+  const [reason,setReason]=useState("");
   const [saving, setSaving] = useState(false);
 
   const formatCurrency = (value) =>
@@ -58,14 +61,14 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
       minimumFractionDigits: 0
     }).format(Number(value || 0));
 
-  const totalAmount = Number(form.totalAmountPKR) || 0;
+  const totalAmount = settlement.invoiceId ? partnerReceiptGross(settlement).pkr : Number(form.totalAmountPKR) || 0;
 
   const dispatcherAmount =
     form.dispatcherType === "ABSOLUTE"
       ? Number(form.dispatcherValue) || 0
       : (totalAmount * (Number(form.dispatcherValue) || 0)) / 100;
 
-  const accountsAmount =
+  const accountsAmount = settlement.invoiceId ? accountsTeamSummary(settlement).totalPKR :
     form.accountsType === "ABSOLUTE"
       ? Number(form.accountsValue) || 0
       : (totalAmount * (Number(form.accountsValue) || 0)) / 100;
@@ -78,8 +81,8 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
       totalAmount,
       dispatcherAmount,
       accountsAmount,
-      partners,
-      form.accountsPartnerId
+      settlement.invoiceId ? (settlement.partnerSplits||[]).map(row=>({id:row.partnerId,name:row.name,percent:row.percent})) : partners,
+      settlement.invoiceId ? settlement.accountsPartnerId : form.accountsPartnerId
     );
     partnerProfit = allocation.partnerProfitPKR;
     partnerSplitsPreview = allocation.partnerSplits;
@@ -103,6 +106,8 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
         const res = await axios.patch(
           `${API}/finance/settlements/${settlement.id}`,
           {
+            correctDispatcher,
+            ...(correctDispatcher?{dispatcherType:form.dispatcherType,dispatcherValue:form.dispatcherValue,dispatcherSplits:form.dispatcherSplits,reason,expectedUpdatedAt:settlement.updatedAt}:{}),
             paymentMethod: form.paymentMethod,
             otherPaymentMethod: form.otherPaymentMethod,
             settlementDate: form.settlementDate
@@ -158,7 +163,7 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
     return (
       <div className="settlement-modal">
         <div className="settlement-box wide-box">
-          <h2>Add / Edit Invoice Payment Details</h2>
+          <h2>Edit Invoice Settlement</h2>
           <p>
             <strong>Invoice:</strong> {settlement.invoiceNumber || "-"}
             {" · "}
@@ -208,9 +213,18 @@ function SettlementEditModal({ settlement, dispatchers, partners, auth, onClose,
               />
             </div>
 
+            <label><input type="checkbox" checked={correctDispatcher} onChange={e=>setCorrectDispatcher(e.target.checked)}/> Correct dispatcher share</label>
+            {correctDispatcher && <section>
+              <p>Receipt amount and Accountants money remain unchanged. Partner shares use the percentages saved with this settlement.</p>
+              <DispatcherSplitEditor dispatchers={dispatchers} dispatcherType={form.dispatcherType} dispatcherValue={form.dispatcherValue} onDispatcherTypeChange={type=>setForm({...form,dispatcherType:type})} onDispatcherValueChange={value=>setForm({...form,dispatcherValue:value})} dispatcherAmount={dispatcherAmount} splits={form.dispatcherSplits} onSplitsChange={splits=>setForm({...form,dispatcherSplits:splits})} formatCurrency={formatCurrency}/>
+              <p>Dispatcher total: {formatCurrency(dispatcherAmount)} ? Partner total: {formatCurrency(partnerProfit)}</p>
+              {partnerSplitsPreview.map(row=><p key={row.partnerId}>{row.name}: {formatCurrency(row.amountPKR)}</p>)}
+              {allocationError&&<p role="alert">{allocationError}</p>}
+              <label>Correction reason<textarea required maxLength={1000} value={reason} onChange={e=>setReason(e.target.value)}/></label>
+            </section>}
             <div className="settlement-actions">
               <button type="submit" disabled={saving}>
-                {saving ? "Saving..." : "Save Payment Details"}
+                {saving ? "Saving..." : "Save Settlement"}
               </button>
               <button type="button" onClick={onClose}>Cancel</button>
             </div>

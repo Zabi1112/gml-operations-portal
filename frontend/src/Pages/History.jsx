@@ -931,7 +931,7 @@ function History() {
                             View / Print
                           </button>
                           <button disabled={selectedBranch?.isActive === false} onClick={() => setEditingSettlement(settlement)}>
-                            {settlement.paymentMethod ? "Edit Details" : "Add Payment Details"}
+                            Edit Settlement
                           </button>
                           <button
                             disabled={selectedBranch?.isActive === false} className="delete-btn"
