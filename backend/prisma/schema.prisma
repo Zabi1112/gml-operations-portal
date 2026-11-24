@@ -119,6 +119,7 @@ model BranchDispatcher {
 }
 
 model InvoiceSettlement {
+  platformFeeUSD Float @default(0)
   paymentAllocations Json?
   paymentRequestId String? @unique
   accountsPartnerId Int?

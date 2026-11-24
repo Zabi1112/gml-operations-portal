@@ -218,17 +218,19 @@ function SettlementView({ settlement, onClose }) {
         <table className="settlement-table">
           <tbody>
             <tr>
-              <td>Invoice Amount USD</td>
+              <td>Customer payment before platform fee (USD)</td>
               <td>{invoiceAmountUSD > 0 ? `$${invoiceAmountUSD.toFixed(2)}` : "-"}</td>
             </tr>
 
+            <tr><td>Platform Fee (USD)</td><td>${Number(settlement.platformFeeUSD||0).toFixed(2)}</td></tr>
+            <tr><td>Net Received (USD)</td><td>${(invoiceAmountUSD-Number(settlement.platformFeeUSD||0)).toFixed(2)}</td></tr>
             <tr>
               <td>USD Rate</td>
               <td>{usdRate > 0 ? usdRate.toFixed(2) : "-"}</td>
             </tr>
 
             <tr>
-              <td>Invoice Amount PKR</td>
+              <td>Net Amount Received (PKR)</td>
               <td>{totalAmountPKR.toLocaleString()}</td>
             </tr>
 

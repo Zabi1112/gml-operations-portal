@@ -21,7 +21,7 @@ export function partnerReceiptGross(settlement) {
   const feeUSD = receivedInvoiceFeeUSD(settlement);
   const feePKR = cents(feeUSD * Number(settlement.usdRate || 0));
   return {
-    usd: (cents(settlement.invoiceAmountUSD) - cents(feeUSD)) / 100,
+    usd: (cents(settlement.invoiceAmountUSD) - cents(settlement.platformFeeUSD) - cents(feeUSD)) / 100,
     pkr: (cents(settlement.totalAmountPKR) - feePKR) / 100
   };
 }

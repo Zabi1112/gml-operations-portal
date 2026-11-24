@@ -46,6 +46,7 @@ router.delete("/dispatchers/:id", allowRoles("ADMIN"), deleteDispatcher);
 router.post("/clear-invoice/:invoiceId", allowRoles("ADMIN"), clearInvoice);
 router.post("/manual-settlement", allowRoles("ADMIN"), createManualSettlement);
 router.get("/settlements", allowRoles("ADMIN", "MANAGER"), getSettlements);
+router.get("/settlements/:id/revisions", allowRoles("ADMIN"), require("../utils/documentEdits").history(require("../utils/prisma"),"InvoiceSettlement"));
 router.patch("/settlements/:id", allowRoles("ADMIN"), updateSettlement);
 router.delete("/settlements/:id", allowRoles("ADMIN"), deleteSettlement);
 

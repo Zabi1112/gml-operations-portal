@@ -23,6 +23,7 @@ const Settlements = () => {
     totalAmountPKR: "",
     totalAmountUSD: "",
     dollarRate: "",
+    platformFeeUSD: 0,
     dispatcherValue: "",
     dispatcherType: "PERCENTAGE",
     dispatcherSplits: [],
@@ -192,18 +193,9 @@ const Settlements = () => {
     setFormData((prev) => {
       const updated = { ...prev, [name]: value };
       const rate = Number(updated.dollarRate) || 0;
-      if (name === "totalAmountUSD" && rate > 0) {
-        updated.totalAmountPKR = (Number(value || 0) * rate).toFixed(2);
-      }
-      if (name === "totalAmountPKR" && rate > 0) {
-        updated.totalAmountUSD = (Number(value || 0) / rate).toFixed(2);
-      }
-      if (name === "dollarRate" && Number(value) > 0) {
-        if (updated.totalAmountUSD) {
-          updated.totalAmountPKR = (Number(updated.totalAmountUSD || 0) * Number(value)).toFixed(2);
-        } else if (updated.totalAmountPKR) {
-          updated.totalAmountUSD = (Number(updated.totalAmountPKR || 0) / Number(value)).toFixed(2);
-        }
+      if (rate > 0) {
+        if(name==='totalAmountPKR') updated.totalAmountUSD=(Number(value||0)/rate+Number(updated.platformFeeUSD||0)).toFixed(2);
+        else if(['totalAmountUSD','dollarRate','platformFeeUSD'].includes(name)) updated.totalAmountPKR=((Number(updated.totalAmountUSD||0)-Number(updated.platformFeeUSD||0))*rate).toFixed(2);
       }
       return updated;
     });
@@ -240,6 +232,7 @@ const Settlements = () => {
           totalAmountPKR: Number(formData.totalAmountPKR),
           totalAmountUSD: Number(formData.totalAmountUSD || 0),
           dollarRate: Number(formData.dollarRate || 0),
+          platformFeeUSD: Number(formData.platformFeeUSD || 0),
           dispatcherValue: Number(formData.dispatcherValue),
           dispatcherType: formData.dispatcherType,
           dispatcherSplits: formData.dispatcherSplits,
@@ -518,7 +511,8 @@ const Settlements = () => {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Total Amount Received (PKR) *</label>
+                      <label>Platform fee deducted (USD)</label><input type="number" name="platformFeeUSD" min="0" step="0.01" value={formData.platformFeeUSD} onChange={handleInputChange}/>
+                      <label>Net Amount Received (PKR) *</label>
                       <input
                         type="number"
                         name="totalAmountPKR"
@@ -725,7 +719,7 @@ const Settlements = () => {
                   <tr>
                     <th>Date</th>
                     <th>Company/Reference</th>
-                    <th>Total Amount</th>
+                    <th>Net Received PKR</th><th>Platform Fee USD</th>
                     <th>Type</th>
                     <th>Payment Method</th>
                     <th>Dispatcher</th>
@@ -745,7 +739,7 @@ const Settlements = () => {
                         ).toLocaleDateString()}
                       </td>
                       <td>{settlement.companyName || settlement.invoiceNumber || "N/A"}</td>
-                      <td>{formatCurrency(settlement.totalAmountPKR)}</td>
+                      <td>{formatCurrency(settlement.totalAmountPKR)}</td><td>{formatUSD(settlement.platformFeeUSD||0)}</td>
                       <td>
                         <span className={`badge badge-${(settlement.amountType || "manual").toLowerCase()}`}>
                           {settlement.amountType || "MANUAL"}
@@ -760,11 +754,7 @@ const Settlements = () => {
                       {isAdmin && (
                         <td>
                           <button className="btn-secondary" disabled={selectedBranch?.isActive === false} onClick={() => setEditingSettlement(settlement)}>
-                            {settlement.invoiceId
-                              ? settlement.paymentMethod
-                                ? "Edit Payment Details"
-                                : "Add Payment Details"
-                              : "Edit"}
+                            Edit Settlement
                           </button>
                         </td>
                       )}

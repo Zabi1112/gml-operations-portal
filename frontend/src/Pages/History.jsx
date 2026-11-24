@@ -78,6 +78,7 @@ function History() {
     accountsFeeReceivedUSD: "",
     paymentRequestId: "",
     usdRate: "",
+    platformFeeUSD: 0,
     dispatcherPercent: "",
     dispatcherType: "PERCENTAGE",
     dispatcherSplits: [],
@@ -214,6 +215,7 @@ function History() {
       accountsFeeReceivedUSD: "",
       paymentRequestId:crypto.randomUUID(),
       usdRate: "",
+    platformFeeUSD: 0,
       dispatcherPercent: selectedBranch?.dispatcherPercent ?? 25,
       dispatcherType: "PERCENTAGE",
       dispatcherSplits: [],
@@ -231,6 +233,7 @@ function History() {
     setClearInvoiceData(null);
     setSettlementForm({
       usdRate: "",
+    platformFeeUSD: 0,
       dispatcherPercent: "",
       dispatcherType: "PERCENTAGE",
       dispatcherSplits: [],
@@ -266,6 +269,7 @@ function History() {
           otherPaymentMethod:settlementForm.otherPaymentMethod,
           settlementDate:settlementForm.settlementDate,
           usdRate: Number(settlementForm.usdRate || 0),
+          platformFeeUSD: Number(settlementForm.platformFeeUSD || 0),
           dispatcherValue: Number(settlementForm.dispatcherPercent || 0),
           dispatcherType: settlementForm.dispatcherType,
           dispatcherSplits: settlementForm.dispatcherSplits,
@@ -457,7 +461,7 @@ function History() {
 
   const invoiceAmountUSD = Number(settlementForm.amountReceivedUSD || 0);
   const usdRate = Number(settlementForm.usdRate || 0);
-  const invoiceAmountPKR = Math.round(invoiceAmountUSD * usdRate * 100) / 100;
+  const invoiceAmountPKR = Math.round((invoiceAmountUSD - Number(settlementForm.platformFeeUSD || 0)) * usdRate * 100) / 100;
   const feePreview = paymentFeePreview(clearInvoiceData, settlementForm);
   const invoiceFeePKR = Math.round(feePreview.feeUSD * usdRate * 100) / 100;
   const settlementRevenuePKR = Math.round((invoiceAmountPKR - invoiceFeePKR) * 100) / 100;
@@ -878,9 +882,9 @@ function History() {
                   <tr>
                     <th>Invoice #</th>
                     <th>Company</th>
-                    <th>Invoice USD</th>
+                    <th>Payment USD</th><th>Platform Fee USD</th>
                     <th>USD Rate</th>
-                    <th>Invoice PKR</th>
+                    <th>Net Received PKR</th>
                     <th>Dispatcher</th>
                     <th>Accounts Team</th>
                     <th>Accountants</th>
@@ -901,6 +905,7 @@ function History() {
                           ? `$${Number(settlement.invoiceAmountUSD).toFixed(2)}`
                           : "-"}
                       </td>
+                      <td>${Number(settlement.platformFeeUSD||0).toFixed(2)}</td>
                       <td>
                         {Number(settlement.usdRate || 0) > 0
                           ? Number(settlement.usdRate).toFixed(2)
@@ -945,7 +950,7 @@ function History() {
                   ))}
                   {settlements.length === 0 && (
                     <tr>
-                      <td colSpan={isAdmin ? 12 : 11}>No settlement history found.</td>
+                      <td colSpan={isAdmin ? 14 : 13}>No settlement history found.</td>
                     </tr>
                   )}
                 </tbody>
@@ -1024,7 +1029,8 @@ function History() {
                     )}
                   </div>
                   <div className="form-group">
-                <label>Amount received (USD)<input type="number" min="0.01" step="0.01" max={clearInvoiceData.outstandingAmountUSD ?? clearInvoiceData.netPayable} required value={settlementForm.amountReceivedUSD} onChange={e=>setSettlementForm({...settlementForm,amountReceivedUSD:e.target.value})}/></label>
+                <label>Platform fee deducted (USD)<input type="number" min="0" step="0.01" value={settlementForm.platformFeeUSD??0} onChange={e=>setSettlementForm({...settlementForm,platformFeeUSD:e.target.value})}/></label><p>Platform fees reduce settlement revenue, not the payment credited to the invoice.</p>
+                <label>Customer payment before platform fee (USD)<input type="number" min="0.01" step="0.01" max={clearInvoiceData.outstandingAmountUSD ?? clearInvoiceData.netPayable} required value={settlementForm.amountReceivedUSD} onChange={e=>setSettlementForm({...settlementForm,amountReceivedUSD:e.target.value})}/></label>
                   </div>
                   {feePreview.pendingUSD > 0 && (
                     <div className="payment-details-fields">
@@ -1200,6 +1206,7 @@ function History() {
                       {invoiceAmountPKR.toLocaleString()}
                     </p>
                     <p><strong>Invoice fee to Accountants:</strong> {invoiceFeePKR.toLocaleString()} PKR ({feePreview.feeUSD.toFixed(2)} USD)</p>
+                    <p><strong>Platform fee:</strong> {Number(settlementForm.platformFeeUSD||0).toFixed(2)} USD</p>
                     <p><strong>Revenue for settlement:</strong> {settlementRevenuePKR.toLocaleString()} PKR</p>
                     <p>
                       <strong>Dispatcher Amount:</strong>{" "}
@@ -1586,7 +1593,9 @@ function History() {
               onClose={() => setEditingSettlement(null)}
               onSaved={() => {
                 setEditingSettlement(null);
+                setSelectedSettlement(null);
                 loadSettlements();
+                loadInvoiceHistory();
               }}
             />
           )}

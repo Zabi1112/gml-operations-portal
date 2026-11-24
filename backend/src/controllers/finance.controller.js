@@ -221,7 +221,8 @@ const clearInvoice = async (req, res) => {
     );
     const usdRate = Number(req.body.usdRate || 0);
     if(!Number.isFinite(usdRate)||usdRate<=0)payments.fail(400,"Enter a valid USD to PKR rate.");
-    const totalAmountPKR = payments.cents(invoiceAmountUSD * usdRate)/100;
+    const amounts=require("../utils/settlementAmounts").receiptAmounts(invoiceAmountUSD,usdRate,req.body.platformFeeUSD??0,feePlan.accountsFeeUSD);
+    const totalAmountPKR = amounts.totalAmountPKR;
     const invoiceAccountsFeePKR = payments.cents(feePlan.accountsFeeUSD * usdRate)/100;
     const settlementRevenuePKR = (payments.cents(totalAmountPKR)-payments.cents(invoiceAccountsFeePKR))/100;
 
@@ -265,6 +266,7 @@ const clearInvoice = async (req, res) => {
 
     const settlement = await tx.invoiceSettlement.create({
       data: {
+        platformFeeUSD: amounts.platformFeeUSD,
         paymentAllocations,
         paymentRequestId:requestId,
         paymentMethod,
@@ -317,7 +319,9 @@ const createManualSettlement = async (req, res) => {
     const branchId = Number(req.body.branchId);
     const usdRate = Number(req.body.dollarRate || req.body.usdRate || 0);
     const invoiceAmountUSD = Number(req.body.totalAmountUSD || 0);
-    const totalAmountPKR = Number(req.body.totalAmountPKR || 0);
+    const platformFeeUSD=require("../utils/settlementAmounts").number(req.body.platformFeeUSD??0,"platform fee USD",{money:true});
+    if(platformFeeUSD>0&&(!invoiceAmountUSD||!usdRate))payments.fail(400,"USD platform fees require a USD amount and exchange rate");
+    const totalAmountPKR = invoiceAmountUSD>0 ? require("../utils/settlementAmounts").receiptAmounts(invoiceAmountUSD,usdRate,platformFeeUSD).totalAmountPKR : require("../utils/settlementAmounts").number(req.body.totalAmountPKR,"received PKR",{positive:true,money:true});
 
     const dispatcherValue = Number(req.body.dispatcherValue || 0);
     const dispatcherType = req.body.dispatcherType || "PERCENTAGE";
@@ -379,6 +383,7 @@ const createManualSettlement = async (req, res) => {
         invoiceNumber: null,
         companyName,
 
+        platformFeeUSD,
         totalAmountPKR,
         invoiceAmountUSD,
         usdRate,
@@ -409,7 +414,7 @@ const createManualSettlement = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(error.status||500).json({ message:error.status?error.message:"Server error" });
   }
 };
 
@@ -433,6 +438,10 @@ const getSettlements = async (req, res) => {
 };
 
 const updateSettlement = async (req, res) => {
+  if(req.body.fullCorrection === true){
+    try {const settlement=await require("../utils/fullSettlementCorrection").fullCorrection(prisma,Number(req.params.id),req.body,req.user.id);return res.json({message:"Settlement corrected",settlement});}
+    catch(error){return res.status(error.status||500).json({message:error.status?error.message:"Unable to save settlement correction"});}
+  }
   if(req.body.correctDispatcher === true){
     try {const settlement=await require("../utils/settlementCorrection").correctSettlement(prisma,Number(req.params.id),req.body,req.user.id);return res.json({message:"Settlement corrected",settlement});}
     catch(error){return res.status(error.status||500).json({message:error.status?error.message:"Unable to save settlement correction"});}
