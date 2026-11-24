@@ -345,7 +345,7 @@ const updateInvoice = async (req, res) => {
     await payments.lockCompany(tx,existing.branchId,existing.companyId);
     const fresh=await tx.invoice.findUnique({where:{id:Number(id)},include:{loads:true}});
     if(!fresh)payments.fail(404,"Invoice not found");
-    await payments.assertEditable(tx,fresh);
+    // Paid invoices retain receipts; corrections are archived and balances reconciled.
     existing=fresh;
     const input={...existing,...req.body,branchId:existing.branchId,companyId:existing.companyId,previousInvoiceAmount:existing.previousInvoiceAmount,includePreviousInvoiceInNet:existing.includePreviousInvoiceInNet};
     validateInvoice(input);
@@ -355,9 +355,10 @@ const updateInvoice = async (req, res) => {
     const calculated = calculateInvoice(input,existing.billingType==='FIXED'?existing.fixedBillingAmount:null);
 
     if(calculated.netPayable-(existing.includePreviousInvoiceInNet?existing.previousInvoiceAmount:0)<0)payments.fail(400,"Deductions cannot exceed new charges.");
+      const revised=await require("../utils/invoiceEditRevision").prepareRevision(tx,existing,calculated,req.body,req.user.id);
       await tx.invoiceLoad.deleteMany({ where: { invoiceId: Number(id) } });
 
-      return tx.invoice.update({
+      const updated=await tx.invoice.update({
         where: { id: Number(id) },
         data: {
           companyName: req.body.companyName ?? existing.companyName,
@@ -382,7 +383,7 @@ const updateInvoice = async (req, res) => {
           invoiceEnd: req.body.invoiceEnd
             ? new Date(req.body.invoiceEnd)
             : existing.invoiceEnd,
-          dueDate: req.body.dueDate ? new Date(req.body.dueDate) : existing.dueDate,
+          dueDate: req.body.dueDate === "" ? null : req.body.dueDate ? new Date(req.body.dueDate) : existing.dueDate,
 
           accountNumber: req.body.accountNumber ?? existing.accountNumber,
           accountTitle: req.body.accountTitle ?? existing.accountTitle,
@@ -406,10 +407,7 @@ const updateInvoice = async (req, res) => {
           includePreviousInvoiceInNet: existing.includePreviousInvoiceInNet,
 
           netPayable: calculated.netPayable,
-          ...(existing.currentChargesUSD !== null ? {currentChargesUSD:(payments.cents(calculated.netPayable)-payments.cents(existing.previousInvoiceAmount))/100} : {}),
-          paidAmountUSD: 0,
-          isCleared: false,
-          clearedAt: null,
+          ...revised,
           notes: req.body.notes ?? existing.notes,
 
           loads: {
@@ -420,7 +418,9 @@ const updateInvoice = async (req, res) => {
           loads: true
         }
       });
-    });
+      await payments.refreshFlags(tx,updated);
+      return tx.invoice.findUnique({where:{id:updated.id},include:{loads:true}});
+    },{timeout:30000});
 
     res.json({
       message: "Invoice updated successfully",

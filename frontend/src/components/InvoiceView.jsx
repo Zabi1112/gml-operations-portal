@@ -391,6 +391,7 @@ const InvoiceView = ({
                 </tr>
               </>
             )}
+            {Number(invoice.overpaymentCreditUSD)>0&&<tr className="payment-row"><td>Excess payment / credit for review</td><td>${Number(invoice.overpaymentCreditUSD).toFixed(2)}</td></tr>}
           </tbody>
         </table>
 

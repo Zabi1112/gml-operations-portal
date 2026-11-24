@@ -68,6 +68,7 @@ function History() {
   const [invoiceRevisions,setInvoiceRevisions]=useState(null);
   const [editInvoiceData, setEditInvoiceData] = useState(null);
   const [editForm, setEditForm] = useState(null);
+  const [savingInvoice,setSavingInvoice]=useState(false);
 
   const [clearInvoiceData, setClearInvoiceData] = useState(null);
 
@@ -325,6 +326,7 @@ function History() {
   const openEditInvoice = (invoice) => {
     setEditInvoiceData(invoice);
     setEditForm({
+      reason: "",
       invoiceNumber: invoice.invoiceNumber || "",
       invoiceStart: invoice.invoiceStart
         ? String(invoice.invoiceStart).slice(0, 10)
@@ -347,6 +349,7 @@ function History() {
       includePreviousInvoiceInNet: !!invoice.includePreviousInvoiceInNet,
       notes: invoice.notes || "",
       loads: (invoice.loads || []).map((load) => ({
+        ...load,
         date: load.date ? String(load.date).slice(0, 10) : "",
         pickup: load.pickup || "",
         dropoff: load.dropoff || "",
@@ -394,12 +397,14 @@ function History() {
 
   const submitEditInvoice = async (e) => {
     e.preventDefault();
-    if (!editInvoiceData || !editForm) return;
+    if (!editInvoiceData || !editForm || savingInvoice) return;
 
     try {
+      setSavingInvoice(true);
       const payload = {
         ...editInvoiceData,
         ...editForm,
+        expectedUpdatedAt: editInvoiceData.updatedAt,
         dispatchPercent: Number(editForm.dispatchPercent || 0),
         fixedMonthlyRate: Number(editForm.fixedMonthlyRate || 0),
         accountsFeeWeeks: Number(editForm.accountsFeeWeeks || 0),
@@ -408,13 +413,7 @@ function History() {
         referralBonus: Number(editForm.referralBonus || 0),
         fineAmount: Number(editForm.fineAmount || 0),
         previousInvoiceAmount: Number(editForm.previousInvoiceAmount || 0),
-        loads: editForm.loads.filter(
-          (load) =>
-            load.date &&
-            load.pickup &&
-            load.dropoff &&
-            Number(load.loadAmount || 0) > 0
-        ),
+        loads: editForm.loads,
         truckRateBreakdown: editForm.truckRateBreakdown.map((truck) => ({
           ...truck,
           rate: Number(truck.rate || 0)
@@ -427,7 +426,7 @@ function History() {
       loadInvoiceHistory();
     } catch (error) {
       alert(error.response?.data?.message || "Failed to update invoice");
-    }
+    } finally {setSavingInvoice(false);}
   };
 
   const handleDeleteLoadReport = async (reportId) => {
@@ -718,6 +717,7 @@ function History() {
                             ) : (
                               <span className="status-pending">{invoice.paymentStatus === "CARRIED_FORWARD" ? "Carried forward" : invoice.paymentStatus === "PARTIAL" ? "Partially paid" : "Pending"}</span>
                             )}
+                            {Number(invoice.overpaymentCreditUSD)>0&&<p>Credit for review: ${Number(invoice.overpaymentCreditUSD).toFixed(2)}</p>}
                             {isAdmin && invoice.canRecordPayment && invoice.accountsFeePendingUSD > 0 && (
                               <p>Accounts fees pending: {Number(invoice.accountsFeePendingUSD).toFixed(2)} USD</p>
                             )}
@@ -730,8 +730,8 @@ function History() {
                               View / Download
                             </button>
                             {isAdmin && <button onClick={()=>viewInvoiceRevisions(invoice)}>Revision history</button>}
-                            {isAdmin && !canEditInvoice && invoice.paymentStatus!=="CARRIED_FORWARD" && <button disabled={selectedBranch?.isActive===false} onClick={()=>{setCorrectionInvoice(invoice);setCorrectionReason("");setCorrectionError("");}}>Correct paid invoice</button>}
-                            {isAdmin && canEditInvoice && (
+                            {isAdmin && !canEditInvoice && invoice.paymentStatus!=="CARRIED_FORWARD" && <button disabled={selectedBranch?.isActive===false} onClick={()=>{setCorrectionInvoice(invoice);setCorrectionReason("");setCorrectionError("");}}>Reverse payments</button>}
+                            {isAdmin && (
                               <button disabled={selectedBranch?.isActive === false} onClick={() => openEditInvoice(invoice)}>
                                 Edit
                               </button>
@@ -1252,7 +1252,7 @@ function History() {
           {editForm && editInvoiceData && (
             <div className="settlement-modal">
               <div className="settlement-box wide-box">
-                <h2>Edit Invoice</h2>
+                <h2>Edit Invoice</h2><p>Recorded payments stay intact. Changes are archived, and later carried-forward balances are updated. Any excess payment is shown as credit for review; it is not automatically refunded or applied elsewhere.</p>
 
                 <p>
                   <strong>Company:</strong>{" "}
@@ -1330,7 +1330,7 @@ function History() {
                       <div className="form-group">
                         <label>Dispatch Percentage %</label>
                         <input
-                          type="number"
+                          type="number" step="0.01" min="0"
                           value={editForm.dispatchPercent}
                           onChange={(e) =>
                             setEditForm({
@@ -1396,7 +1396,7 @@ function History() {
                       <div className="form-group">
                         <label>Fixed Monthly Rate / Truck $</label>
                         <input
-                          type="number"
+                          type="number" step="0.01" min="0"
                           value={editForm.fixedMonthlyRate}
                           onChange={(e) =>
                             setEditForm({
@@ -1415,7 +1415,7 @@ function History() {
                             <div className="edit-load-row" key={index}>
                               <span>{truck.truckNumber || "-"}</span>
                               <input
-                                type="number"
+                                type="number" step="0.01" min="0"
                                 value={truck.rate}
                                 onChange={(e) =>
                                   updateEditTruckRate(index, e.target.value)
@@ -1431,7 +1431,7 @@ function History() {
                   <div className="form-group">
                     <label>Accounts Fee Weeks</label>
                     <input
-                      type="number"
+                      type="number" step="0.01" min="0"
                       value={editForm.accountsFeeWeeks}
                       onChange={(e) =>
                         setEditForm({
@@ -1445,7 +1445,7 @@ function History() {
                   <div className="form-group">
                     <label>Accounts Fee Rate / Week $</label>
                     <input
-                      type="number"
+                      type="number" step="0.01" min="0"
                       value={editForm.accountsFeeRate}
                       onChange={(e) =>
                         setEditForm({
@@ -1459,7 +1459,7 @@ function History() {
                   <div className="form-group">
                     <label>Discount $</label>
                     <input
-                      type="number"
+                      type="number" step="0.01" min="0"
                       value={editForm.discountAmount}
                       onChange={(e) =>
                         setEditForm({
@@ -1473,7 +1473,7 @@ function History() {
                   <div className="form-group">
                     <label>Referral Bonus $</label>
                     <input
-                      type="number"
+                      type="number" step="0.01" min="0"
                       value={editForm.referralBonus}
                       onChange={(e) =>
                         setEditForm({ ...editForm, referralBonus: e.target.value })
@@ -1484,7 +1484,7 @@ function History() {
                   <div className="form-group">
                     <label>Fine $</label>
                     <input
-                      type="number"
+                      type="number" step="0.01" min="0"
                       value={editForm.fineAmount}
                       onChange={(e) =>
                         setEditForm({ ...editForm, fineAmount: e.target.value })
@@ -1503,11 +1503,11 @@ function History() {
                   </div>
 
                   <div className="form-group">
-                    <label>Previous Invoice Amount $</label>
+                    <label>Previous Invoice Amount $ (calculated from earlier invoices)</label>
                     <input
                       type="number"
                       readOnly
-                      value={editForm.previousInvoiceAmount}
+                      readOnly value={editForm.previousInvoiceAmount}
                       onChange={(e) =>
                         setEditForm({
                           ...editForm,
@@ -1522,7 +1522,7 @@ function History() {
                       <input
                         type="checkbox"
                         disabled
-                        checked={editForm.includePreviousInvoiceInNet}
+                        disabled checked={editForm.includePreviousInvoiceInNet}
                         onChange={(e) =>
                           setEditForm({
                             ...editForm,
@@ -1545,8 +1545,9 @@ function History() {
                   </div>
 
                   <div className="settlement-actions">
-                    <button type="submit">Save Changes</button>
-                    <button type="button" onClick={closeEditInvoice}>
+                    <label>Correction reason<textarea required maxLength={800} value={editForm.reason} onChange={e=>setEditForm({...editForm,reason:e.target.value})}/></label>
+                    <button type="submit" disabled={savingInvoice}>{savingInvoice?"Saving?":"Save Changes"}</button>
+                    <button type="button" disabled={savingInvoice} onClick={closeEditInvoice}>
                       Cancel
                     </button>
                   </div>

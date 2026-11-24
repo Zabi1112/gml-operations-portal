@@ -50,11 +50,12 @@ async function decorate(db,invoices,includeAccountsFees=false){
  const decorated = invoices.map(i=>{
   const remaining=allocationsFor(i,rows).reduce((sum,s)=>sum+s.amountCents,0)/100;
   const target=latestInvoice(i,rows),moved=!!i.balanceTransferredToInvoiceId||(target.id!==i.id&&remaining>0);
-  return {...i,outstandingAmountUSD:moved?0:remaining,
+  const credit=i.balanceTransferredToInvoiceId?0:Math.max(0,cents(i.paidAmountUSD)-cents(Array.isArray(i.carryForward)?(i.currentChargesUSD??i.netPayable):i.netPayable))/100;
+  return {...i,overpaymentCreditUSD:credit,outstandingAmountUSD:moved?0:remaining,
    carriedForwardAmountUSD:moved?remaining:0,
    paymentTargetInvoiceId:target.id,paymentTargetInvoiceNumber:target.invoiceNumber,
    canRecordPayment:!moved&&target.id===i.id&&remaining>0,
-   receivedAmountUSD:i.balanceTransferredToInvoiceId?0:Math.max(0,cents(i.netPayable)-cents(remaining))/100,
+   receivedAmountUSD:i.balanceTransferredToInvoiceId?0:Math.max(0,cents(i.netPayable)-cents(remaining)+cents(credit))/100,
    isCleared:!moved&&remaining===0,
    paymentStatus:moved?'CARRIED_FORWARD':remaining===0?'PAID':remaining<Number(i.netPayable)?'PARTIAL':'PENDING'};
  });
